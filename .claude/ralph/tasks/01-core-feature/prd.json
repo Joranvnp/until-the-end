@@ -39,7 +39,7 @@
     {
       "story": "Create basic AI opponent that can move and interact with the world.",
       "id": "8",
-      "passes": false
+      "passes": true
     },
     {
       "story": "Create a main menu UI with Play, Settings, and Quit buttons using Love2D's built-in drawing functions.",
