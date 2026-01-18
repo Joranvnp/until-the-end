@@ -1,2 +1,11 @@
-.claude *
-.claude/ralph
+
+# Ralph / AI artifacts
+.claude/
+.claude/*
+prototype_v1/.claude/
+
+# Large Asset Packs (As requested)
+assets/Kronbits/
+assets/MEGA COLLECTION ASSET PACK/
+assets/Penusbic/
+assets/craftStation/
