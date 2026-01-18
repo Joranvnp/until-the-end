@@ -1,0 +1,9 @@
+# Ralph Progress Log
+Started: 2026-01-18
+Feature: 01-core-feature
+
+## Codebase Patterns
+(Add discovered patterns here - Ralph will read these each iteration)
+
+---
+

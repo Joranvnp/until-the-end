@@ -1,0 +1,50 @@
+{
+  "branchName": "feat/01-core-feature",
+  "userStories": [
+    {
+      "story": "Initialize Love2D project structure with main.lua and basic map rendering.",
+      "id": "1",
+      "passes": true
+    },
+    {
+      "story": "Implement player character with physics-based movement (run, jump, collision).",
+      "id": "2",
+      "passes": true
+    },
+    {
+      "story": "Create a tilemap system that supports digging (removing tiles) and adding them to inventory.",
+      "id": "3",
+      "passes": true
+    },
+    {
+      "story": "Implement building mechanics to place tiles from inventory into the world.",
+      "id": "4",
+      "passes": true
+    },
+    {
+      "story": "Add Base entities for Team Left and Team Right with health properties.",
+      "id": "5",
+      "passes": true
+    },
+    {
+      "story": "Implement resource generation with higher value ores in the map center.",
+      "id": "6",
+      "passes": true
+    },
+    {
+      "story": "Implement base upgrade system consuming collected resources.",
+      "id": "7",
+      "passes": true
+    },
+    {
+      "story": "Create basic AI opponent that can move and interact with the world.",
+      "id": "8",
+      "passes": false
+    },
+    {
+      "story": "Create a main menu UI with Play, Settings, and Quit buttons using Love2D's built-in drawing functions.",
+      "id": "9",
+      "passes": false
+    }
+  ]
+}
