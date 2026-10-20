@@ -25,6 +25,8 @@ function resize(){
   S=Math.max(1,Math.floor(Math.min(cv.width,cv.height)/250));
   // Tablette tactile : au moins ~360 px logiques de haut pour loger HUD + commandes sans chevauchement.
   if((('ontouchstart' in window)||navigator.maxTouchPoints>0)&&Math.min(innerWidth,innerHeight)>=600)S=Math.max(1,Math.min(S,Math.floor(cv.height/360)));
+  // Fenêtre PC étroite (presque carrée) : garder ~400 px logiques de large pour le HUD complet, sans descendre sous 1,5 px écran par pixel.
+  else if(!(('ontouchstart' in window)||navigator.maxTouchPoints>0))S=Math.min(S,Math.max(Math.ceil(1.5*d),Math.floor(cv.width/400)));
   VW=Math.ceil(cv.width/S); VH=Math.ceil(cv.height/S);
   wc.width=VW; wc.height=VH;
 }
