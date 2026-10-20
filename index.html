@@ -698,7 +698,10 @@ const onScreen=e=>e.x>cam.x-20&&e.x<cam.x+VW+20&&e.y>cam.y-20&&e.y<cam.y+VH+20;
 // écart vertical entre deux boîtes (0 si elles se chevauchent en hauteur) : le cœur est grand, le centre ne suffit pas
 const vgap=(a,b)=>Math.max(0,b.y-(a.y+a.h),a.y-(b.y+b.h));
 function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-tgt.w/2-e.w/2,dy=tgt.type==='core'?vgap(e,tgt)+10:Math.abs(tgt.y+tgt.h/2-(e.y+e.h/2));
-  if(gap<=u.range&&dy<(u.ranged?130:30)){meleeOrShoot(e,u,tgt);moveEnt(e,dt);return}
+  if(gap<=u.range&&dy<(u.ranged?130:30)){meleeOrShoot(e,u,tgt);
+    // mêlée : chacun garde sa place dans la portée (offs), pour qu'une troupe ne s'empile pas sur un seul pixel
+    if(!u.ranged){const g=(e.offs+1)/2*(u.range-2)-gap;if(Math.abs(g)>1.5)e.vx=-Math.sign(dx)*Math.sign(g)*uspd(e)*.5}
+    moveEnt(e,dt);return}
   // cible juste en dessous ou au-dessus : creuser vers le bas ou monter en pilier
   if(Math.abs(dx)<T*1.2&&!u.ranged){const vy=tgt.y+tgt.h-(e.y+e.h);
     if(vy>T*.8){
@@ -975,7 +978,9 @@ function drawEnts(g,cx,cy){
   const ox=-cx,oy=-cy;
   for(const e of ents){if(e.dead&&e.type!=='core')continue;if(e.type==='player')continue;
     if(e.x+40<cx||e.x-40>cx+VW||e.y+40<cy||e.y-60>cy+VH)continue;
-    const X=Math.round(e.x+ox),Y=Math.round(e.y+oy+(e.stepOff||0));
+    // troupe à l'arrêt : léger décalage propre à chaque unité pour lire une foule plutôt qu'un seul soldat
+    if(e.type==='unit')e.dOff=(e.dOff||0)+((Math.abs(e.vx)<5?e.offs*4:0)-(e.dOff||0))*.15;
+    const X=Math.round(e.x+ox+(e.type==='unit'?e.dOff:0)),Y=Math.round(e.y+oy+(e.stepOff||0));
     if(e.type==='item'){const ic=ICON[e.id];if(ic)g.drawImage(ic,X-4,Y-6+Math.round(Math.sin(e.age*4)*1.5));continue}
     if(e.type==='core'){if(e.dead)continue;const f=SPR['core'+e.team][Math.floor(e.anim*4)%4];g.drawImage(f,X,Y);if(e.flash>0){g.globalCompositeOperation='lighter';g.globalAlpha=.6;g.drawImage(f,X,Y);g.globalAlpha=1;g.globalCompositeOperation='source-over'}continue}
     let img;
