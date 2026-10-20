@@ -23,6 +23,8 @@ function resize(){
   const d=window.devicePixelRatio||1;
   cv.width=Math.floor(innerWidth*d); cv.height=Math.floor(innerHeight*d);
   S=Math.max(1,Math.floor(Math.min(cv.width,cv.height)/250));
+  // Tablette tactile : au moins ~360 px logiques de haut pour loger HUD + commandes sans chevauchement.
+  if((('ontouchstart' in window)||navigator.maxTouchPoints>0)&&Math.min(innerWidth,innerHeight)>=600)S=Math.max(1,Math.min(S,Math.floor(cv.height/360)));
   VW=Math.ceil(cv.width/S); VH=Math.ceil(cv.height/S);
   wc.width=VW; wc.height=VH;
 }
@@ -571,11 +573,12 @@ function updatePlayer(dt){
   const b=bases[0];if(Math.abs(p.x-b.core.x)<70&&Math.abs(p.y-b.core.y)<80){let got=0;for(const k of['coal','copper','iron','silver','gold','diamond']){const c=countItem(k);if(c>0){takeItem(k,c);b.storage[k]+=c;got+=c}}
     if(got){toast('Dépôt à la base : '+got+' minerais.',2.5,'#9fd0ff');sfx.buy()}}
   // utilisation de l'objet
+  const sel0=p.inv[p.sel];if(touch.a&&!mouse.l){const a=autoAim(sel0&&IT[sel0.id]);mouse.wx=a.x;mouse.wy=a.y}const useL=mouse.l||touch.a,blocked=mouse.l?panelBlocks():paused;
   const wx=mouse.wx,wy=mouse.wy,tx=Math.floor(wx/T),ty=Math.floor(wy/T),pcx=p.x+p.w/2,pcy=p.y+6;
-  const inReach=Math.hypot(tx*T+8-pcx,ty*T+8-pcy)<T*5.5;hoverTile=inReach&&mouse.inside?{tx,ty}:null;
+  const inReach=Math.hypot(tx*T+8-pcx,ty*T+8-pcy)<T*5.5;hoverTile=inReach&&(mouse.inside||touch.a)?{tx,ty}:null;
   const sel=p.inv[p.sel],it=sel&&IT[sel.id];
   let mineWith=null;
-  if(mouse.l&&!panelBlocks()){
+  if(useL&&!blocked){
     if(it&&it.tool==='pick')mineWith=sel.id;
     else if(it&&it.tool==='sword'){if(p.swing<=0){p.swing=.32;p.swingDir=wx<pcx?-1:1;p.dir=p.swingDir;sfx.sword();
         for(const e of ents){if(!e.hp||e===p||!hostile(p,e)||e.type==='item')continue;const ex=e.x+e.w/2,ey=e.y+e.h/2;if(Math.abs(ey-pcy)<26&&(ex-pcx)*p.swingDir>-8&&Math.abs(ex-pcx)<30)hurt(e,it.dmg*(1+(p.critBuff||0)),p)}}}
@@ -584,7 +587,7 @@ function updatePlayer(dt){
     else if(it&&it.place!==undefined)tryPlace(tx,ty,it.place,sel.id);
     else mineWith=bestPick();
   }
-  if(mouse.r&&!panelBlocks()){if(it&&it.place!==undefined&&!mouse.l)tryPlace(tx,ty,it.place,sel.id);else mineWith=bestPick()}
+  if(mouse.r&&!panelBlocks()){if(it&&it.place!==undefined&&!useL)tryPlace(tx,ty,it.place,sel.id);else mineWith=bestPick()}
   if(mineWith&&inReach){const id=getT(tx,ty),d=TD[id];
     if(id!==AIR&&d.hard!==Infinity){const pk=IT[mineWith];
       if(d.tier>pk.tier){if(!mining||mining.warn!==id){toast('Il faut une meilleure pioche pour : '+d.n,2.5,'#ffb0a0');sfx.deny()}mining={tx,ty,p:0,warn:id}}
@@ -1028,7 +1031,7 @@ const COL={panel:'#05050cee',panel2:'#05050c',edge:'#e8ecff8c',gold:'#ffe066',tx
 const UI_GLYPHS={
  A:['010','101','111','101','101'],B:['110','101','110','101','110'],C:['011','100','100','100','011'],D:['110','101','101','101','110'],E:['111','100','110','100','111'],F:['111','100','110','100','100'],G:['011','100','101','101','011'],H:['101','101','111','101','101'],I:['111','010','010','010','111'],J:['001','001','001','101','010'],K:['101','101','110','101','101'],L:['100','100','100','100','111'],M:['10001','11011','10101','10101','10101'],N:['1001','1101','1011','1001','1001'],O:['010','101','101','101','010'],P:['110','101','110','100','100'],Q:['010','101','101','011','001'],R:['110','101','110','101','101'],S:['011','100','010','001','110'],T:['111','010','010','010','010'],U:['101','101','101','101','111'],V:['101','101','101','101','010'],W:['10101','10101','10101','11011','10001'],X:['101','101','010','101','101'],Y:['101','101','010','010','010'],Z:['111','001','010','100','111'],
  '0':['111','101','101','101','111'],'1':['010','110','010','010','111'],'2':['110','001','010','100','111'],'3':['110','001','010','001','110'],'4':['101','101','111','001','001'],'5':['111','100','110','001','110'],'6':['011','100','111','101','111'],'7':['111','001','010','010','010'],'8':['111','101','111','101','111'],'9':['111','101','111','001','110'],
- ' ':['00','00','00','00','00'],'.':['0','0','0','0','1'],',':['00','00','00','01','10'],':':['0','1','0','1','0'],"'":['1','1','0','0','0'],'-':['000','000','111','000','000'],'/':['001','001','010','100','100'],'+':['000','010','111','010','000'],'×':['000','101','010','101','000'],'·':['0','0','1','0','0'],'!':['1','1','1','0','1'],'?':['110','001','010','000','010'],'(':['01','10','10','10','01'],')':['10','01','01','01','10'],'…':['00000','00000','00000','00000','10101'],'★':['00100','11111','01110','11111','10001'],'☆':['00100','11011','10001','01010','10001'],'◇':['00100','01010','10001','01010','00100'],'←':['00100','01000','11111','01000','00100'],'→':['00100','00010','11111','00010','00100'],'↑':['010','111','010','010','010'],'◀':['001','011','111','011','001'],'▶':['100','110','111','110','100'],'▲':['00100','01110','11111','00000','00000'],'=':['000','111','000','111','000']
+ ' ':['00','00','00','00','00'],'.':['0','0','0','0','1'],',':['00','00','00','01','10'],':':['0','1','0','1','0'],"'":['1','1','0','0','0'],'-':['000','000','111','000','000'],'/':['001','001','010','100','100'],'+':['000','010','111','010','000'],'×':['000','101','010','101','000'],'·':['0','0','1','0','0'],'!':['1','1','1','0','1'],'?':['110','001','010','000','010'],'(':['01','10','10','10','01'],')':['10','01','01','01','10'],'…':['00000','00000','00000','00000','10101'],'★':['00100','11111','01110','11111','10001'],'☆':['00100','11011','10001','01010','10001'],'◇':['00100','01010','10001','01010','00100'],'←':['00100','01000','11111','01000','00100'],'→':['00100','00010','11111','00010','00100'],'↑':['010','111','010','010','010'],'◀':['001','011','111','011','001'],'▶':['100','110','111','110','100'],'▲':['00100','01110','11111','00000','00000'],'▼':['00000','00000','11111','01110','00100'],'=':['000','111','000','111','000']
 };
 function uiLetters(s){return String(s).replace(/œ/g,'oe').replace(/Œ/g,'OE').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase()}
 function uiScale(size){return Math.max(1,Math.floor(size/7))}
@@ -1084,7 +1087,7 @@ function drawHUD(){
   const btns=[['= Menu',34,()=>{paused=true;pauseHelp=false;sfx.place()},false],['◇ Base',40,()=>togglePanel('base'),panel==='base'],['+ Forge',40,()=>togglePanel('craft'),panel==='craft'],['· Sac',34,()=>togglePanel('inv'),panel==='inv'],['→ '+ORDERS[b0.order],52,toggleOrder,b0.order!=='defend']];
   if(!isTouch){btns[1][0]+=' B';btns[2][0]+=' C';btns[3][0]+=' E';btns[4][0]+=' R';btns.slice(1).forEach(b=>b[1]+=8)}
   const bw=btns.reduce((a,b)=>a+b[1]+3,0);const same=hx>=bw+12;
-  let bx=same?6:Math.round(VW/2-bw/2),by=same?hy-1:hy-sw-4;
+  let bx=same?6:Math.round(VW/2-bw/2),by=same?hy-1:hy-sw-4;HL.left=Math.min(bx,hx);HL.right=Math.max(bx+bw,hx+9*sw);
   for(const[l,wd,fn,on]of btns){button(bx,by,wd,sw,l,fn,true,on);bx+=wd+3}
   for(let i=0;i<9;i++){const x=hx+i*sw,s=p.inv[i],on=i===p.sel;box(x,hy,sw-2,sw-2,'rgba(5,5,12,.9)',on?'#ffffff':'#e8ecff44');
     if(on){ctx.fillStyle=Math.sin(time*5)>0?'#ffffff':'#a0a4be';ctx.fillRect(x,hy-2,4,1);ctx.fillRect(x-2,hy,1,4)}
@@ -1095,14 +1098,14 @@ function drawHUD(){
   // One-line objective tag; no wide framed banner.
   const ob=OBJ[stats.obj];if(ob&&!panel){const label=uiFit(ob.t,VW-48,7),ow=uiWidth(label,7)+18,ox=Math.round((VW-ow)/2),oy=top-14;
     ctx.fillStyle='#05050ccc';ctx.fillRect(ox,oy,ow,11);txt('◇',ox+3,oy+3,COL.gold,7);txt(label,ox+12,oy+3,COL.txt,7);top=oy-3}
-  HL.touchY=top-40;
+  HL.touchY=top;
   if(isTouch)drawTouch();
   panelRect=null;if(panel==='base')drawBasePanel();else if(panel==='craft')drawCraftPanel();else if(panel==='inv')drawInvPanel();
   if(paused)drawPause();
 }
 function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0,VW,VH);
   const W=Math.min(VW-16,pauseHelp?300:170),help=isTouch?
-    ['Flèches à l\'écran : marcher. ▲ : sauter, nager vers le haut.','Toucher le monde : utiliser l\'objet choisi (miner, frapper, poser).','Barre du bas : choisir un objet. Base : recruter et améliorer.','Forge : fabriquer outils et armes. Ordre : Assaut, Défense ou Suivre.']:
+    ['Flèches à l\'écran : marcher. ▲ : sauter, nager vers le haut.','Gros bouton : utiliser l\'objet, vise tout seul. ▼ + bouton : creuser dessous.','Toucher le monde : utiliser l\'objet à cet endroit précis.','Barre du bas : choisir un objet. Base : recruter et améliorer.','Forge : fabriquer outils et armes. Ordre : Assaut, Défense ou Suivre.']:
     ['Q D ou ← → : marcher. Z, Espace ou ↑ : sauter, nager.','Clic gauche : utiliser l\'objet. Clic droit : miner. Molette : objet.','B : base · C : forge · E : sac · R : ordre · M : son · Échap : menu.'];
   const goal=['But : détruire le cœur rouge à l\'autre bout du monde.','Ton minerai est déposé tout seul à ta base. Les mineurs en rapportent aussi.','La nuit, slimes et zombies sortent. Le champion rouge pille la montagne.'];
   const lines=pauseHelp?[...goal,'',...help].flatMap(l=>l?wrapLines(l,W-16,7):['']):[];
@@ -1153,7 +1156,7 @@ function drawTitle(){
   const sv=hasSave();if(sv)button(VW/2-60,by,120,22,'Continuer',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)},true,true);
   const by2=by+(sv?39:0);if(sv)txt('Nouvelle partie',VW/2,by2-10,COL.dim,7,'center');
   DIFFS.forEach((d,i)=>button(gx+i*(bw+6),by2,bw,22,d.n,()=>{audioInit();newGame(i)},true,i===1&&!sv));
-  const hy=by2+34,lines=isTouch?['← → Marcher   ▲ Sauter','Toucher le monde pour utiliser un objet','Base · Forge · Sac : commandes du bas']:
+  const hy=by2+34,lines=isTouch?['← → Marcher   ▲ Sauter','Gros bouton : miner, frapper, poser','Base · Forge · Sac : commandes du bas']:
     ['Q D / ← → Marcher   Espace Sauter','Clic gauche Utiliser   Clic droit Miner','B Base   C Forge   E Sac   R Ordre   M Son'];
   const ww=Math.min(VW-20,uiWidth(lines[2])+20);box(Math.round((VW-ww)/2),hy,ww,39,COL.panel,'#e8ecff33');lines.forEach((l,i)=>txt(uiFit(l,ww-12),VW/2,hy+7+i*10,COL.dim,7,'center'));
 }
@@ -1164,13 +1167,33 @@ function drawEnd(){ctx.fillStyle='rgba(5,5,12,.82)';ctx.fillRect(0,0,VW,VH);cons
   txt('Recrues '+stats.recruited+' · Ennemis abattus '+stats.kills,VW/2,y+69,COL.dim,7,'center');
   button(VW/2-50,y+94,100,22,'Rejouer',()=>{state='title'})}
 // ---------- contrôles tactiles ----------
-const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;const touch={l:false,r:false,j:false};let touchBtns=[];
-function drawTouch(){const s=30,y=HL.touchY;touchBtns=[{k:'l',x:6,y,w:s,h:s,t:'◀'},{k:'r',x:6+s+4,y,w:s,h:s,t:'▶'},{k:'j',x:VW-s-8,y,w:s,h:s,t:'▲'}];
-  for(const b of touchBtns){box(b.x,b.y,b.w,b.h,touch[b.k]?'#05050cdd':'#05050c88');txt(b.t,b.x+b.w/2,b.y+b.h/2-5,COL.txt,14,'center')}}
+const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;const touch={l:false,r:false,j:false,d:false,a:false};let touchBtns=[];
+// Pavé gauche ◀ ▶ (▼ au-dessus pour creuser vers le bas), à droite ▲ saut et gros bouton d'action (vise tout seul).
+function touchLayout(){const s=clamp(Math.floor(Math.min(VW,VH)/7),36,52),g=6,big=Math.round(s*1.3);
+  const free=HL.left>8+2*s+g+6&&HL.right<VW-big-s-g-14,y=free?VH-s-8:HL.touchY-s-6;const ay=y-big+s;
+  return[{k:'l',x:8,y,w:s,h:s,t:'◀'},{k:'r',x:8+s+g,y,w:s,h:s,t:'▶'},{k:'d',x:8+Math.round((s+g)/2),y:y-s-g,w:s,h:s,t:'▼'},
+    {k:'a',x:VW-big-8,y:ay,w:big,h:big,t:''},{k:'j',x:VW-big-8-s-g,y:y,w:s,h:s,t:'▲'}]}
+function drawTouch(){touchBtns=touchLayout();const p=player,sel=p&&p.inv[p.sel];
+  for(const b of touchBtns){box(b.x,b.y,b.w,b.h,touch[b.k]?'#05050cdd':'#05050c88');
+    if(b.k==='a'){const ic=sel?ICON[sel.id]:null;if(ic)ctx.drawImage(ic,Math.round(b.x+b.w/2-12),Math.round(b.y+b.h/2-12),24,24)}
+    else txt(b.t,b.x+b.w/2,b.y+b.h/2-5,COL.txt,14,'center')}}
 const activeTouches=new Map();
-function touchUpdate(){touch.l=touch.r=touch.j=false;let worldTouch=null;
+function touchUpdate(){for(const k in touch)touch[k]=false;let worldTouch=null;
   for(const[,t]of activeTouches){let hit=false;for(const b of touchBtns)if(t.x>=b.x&&t.x<b.x+b.w&&t.y>=b.y&&t.y<b.y+b.h){touch[b.k]=true;hit=true}if(!hit&&!t.ui)worldTouch=t}
   if(worldTouch){mouse.x=worldTouch.x;mouse.y=worldTouch.y;mouse.l=true;mouse.inside=true}else mouse.l=false;updateMouseWorld()}
+// Visée automatique du bouton d'action : ennemi proche pour l'épée/l'arc, sinon le bloc devant (ou dessous avec ▼).
+function autoAim(it){const p=player,pcx=p.x+p.w/2,pcy=p.y+6;
+  if(it&&(it.tool==='sword'||it.tool==='bow')){const rg=it.tool==='bow'?220:40;let best=null,bd=rg;
+    for(const e of ents){if(!e.hp||e===p||e.type==='item'||!hostile(p,e))continue;const d=Math.hypot(e.x+e.w/2-pcx,e.y+e.h/2-pcy);if(d<bd){bd=d;best=e}}
+    if(best)return{x:best.x+best.w/2,y:best.y+best.h/2};return{x:pcx+p.dir*24,y:pcy}}
+  const ftx=Math.floor((pcx+p.dir*(p.w/2+4))/T),htx=Math.floor(pcx/T),hy=Math.floor((p.y+2)/T),fy=Math.floor((p.y+p.h-2)/T),below=Math.floor((p.y+p.h+2)/T);
+  const at=(tx,ty)=>({x:tx*T+8,y:ty*T+8});
+  if(it&&it.place!==undefined){const free=(tx,ty)=>{const c=getT(tx,ty);return c===AIR||c===PLANT||c===WATER};
+    if(touch.d)return at(htx,below);for(const ty of[fy,fy+1,hy])if(free(ftx,ty))return at(ftx,ty);return at(ftx,fy)}
+  const solid=(tx,ty)=>{const c=getT(tx,ty);return c!==AIR&&c!==WATER&&TD[c].hard!==Infinity};
+  if(touch.d)return at(htx,below);
+  for(const ty of[hy,fy])if(solid(ftx,ty))return at(ftx,ty);
+  if(solid(htx,hy-1))return at(htx,hy-1);return at(ftx,fy+1)}
 
 // =====================================================================
 //  ENTRÉES
