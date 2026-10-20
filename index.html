@@ -610,7 +610,7 @@ function tryPlace(tx,ty,tid,itemId){
 function hurt(e,dmg,src){
   if(e.hp<=0||e.dead)return;if(e.type==='player'){if(e.iframes>0||e.dead)return;e.iframes=.35;e.lastHurt=0;sfx.hurt();shake=Math.max(shake,4)}
   // le cœur résiste aux troupes (siège ~20 s au lieu de 8) : le temps de revenir le défendre
-  if(e.type==='core'&&src&&src.type!=='player')dmg*=.45;
+  if(e.type==='core'&&src&&src.type!=='player')dmg*=.45;e.hitT=time;
   dmg=Math.round(dmg);e.hp-=dmg;e.flash=.12;floatText(e.x+e.w/2,e.y-2,'-'+dmg,e.team===0?'#ff8a7a':'#ffe08a');
   if(src&&e.type!=='core'){const dir=Math.sign((e.x+e.w/2)-(src.x+(src.w||0)/2))||1;const kb=(src.type==='player'?120:src.kind==='golem'?150:30)*(e.kind==='golem'?.3:1);e.vx+=dir*kb;if(kb>60)e.vy=Math.min(e.vy,-110)}
   burst(e.x+e.w/2,e.y+e.h/2,e.type==='core'?(e.team?'#ff8a7a':'#8ac4ff'):'#e8364b',4,50,300,.4);
@@ -699,7 +699,10 @@ function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-
   if(gap<=u.range&&dy<(u.ranged?130:30)){meleeOrShoot(e,u,tgt);moveEnt(e,dt);return}
   // cible juste en dessous ou au-dessus : creuser vers le bas ou monter en pilier
   if(Math.abs(dx)<T*1.2&&!u.ranged){const vy=tgt.y+tgt.h-(e.y+e.h);
-    if(vy>T*.8){e.vx=(tgt.x+tgt.w/2-(e.x+e.w/2))*3;moveEnt(e,dt);e.wantMove=true;if(e.onGround){const o0=Math.floor(e.x/T),o1=Math.floor((e.x+e.w-.01)/T),fy=Math.floor((e.y+e.h-.01)/T);for(let x=o0;x<=o1;x++){const r=digStep(e,x,fy+1,dt,false);if(r!==1)break}}if(e.stuck>=3){e.ignore=tgt;e.ignoreT=time+10;e.stuck=1}return}
+    if(vy>T*.8){
+      // pas de spirale vers les profondeurs : au-delà de 3 blocs sous la surface, on lâche une cible non vitale
+      if(tgt.type!=='core'&&(e.y+e.h)/T>surf[clamp(Math.floor((e.x+e.w/2)/T),0,WW-1)]+3){e.ignore=tgt;e.ignoreT=time+15;return}
+      e.vx=(tgt.x+tgt.w/2-(e.x+e.w/2))*3;moveEnt(e,dt);e.wantMove=true;if(e.onGround){const o0=Math.floor(e.x/T),o1=Math.floor((e.x+e.w-.01)/T),fy=Math.floor((e.y+e.h-.01)/T);for(let x=o0;x<=o1;x++){const r=digStep(e,x,fy+1,dt,false);if(r!==1)break}}if(e.stuck>=3){e.ignore=tgt;e.ignoreT=time+10;e.stuck=1}return}
     if(vy<-T*.8)return climbUp(e,dt,tgt.x+tgt.w/2)}
   navigate(e,tgt.x+tgt.w/2,dt,e.stuck>=2?(tgt.y<e.y-20?'climb':'flat'):'auto');
   if(e.stuck>=3){e.ignore=tgt;e.ignoreT=time+10;e.stuck=1}}
@@ -719,7 +722,9 @@ function updateUnit(e,dt){
   if(e.kind==='miner'||e.kind==='champion')return updateGatherer(e,u,dt);
   const b=bases[e.team],home=b.core;
   // soin près de son cœur, repli quand on est gravement blessé
-  if(Math.abs(e.x-home.x)<130){e.hp=Math.min(e.maxhp,e.hp+dt*4);}
+  if(Math.abs(e.x-home.x)<130)e.hp=Math.min(e.maxhp,e.hp+dt*4);
+  // hors combat depuis 8 s : on récupère lentement où qu'on soit (sinon les blessés traversent toute la carte en boucle)
+  else if(time-(e.hitT||0)>8)e.hp=Math.min(e.maxhp,e.hp+dt*2.5);
   if(e.hp<e.maxhp*.28&&!e.retreat&&e.kind!=='golem')e.retreat=true;
   if(e.retreat){if(e.hp>e.maxhp*.85){e.retreat=false}else{const near=nearestHostile(e,26);if(near&&e.atk<=0)meleeOrShoot(e,u,near);const hx=home.x+11+(e.team===0?24:-24);if(Math.abs(hx-(e.x+e.w/2))>8)navigate(e,hx,dt,'auto');else{e.vx=0;moveEnt(e,dt)}return}}
   // l'archer recule si un combattant au corps à corps est trop près
@@ -835,7 +840,7 @@ function updateAI(dt){
   // 6. armée : on rassemble au point de ralliement puis on attaque en groupe (effectif plafonné : lisibilité et perfs)
   if(fighters.length<22+diff*8)recruit(1,counter());
   if(b.order==='defend'&&fighters.length>=ai.wave&&time>[300,210,120][diff]){b.order='attack';ai.sent=fighters.length;ai.lastWave=time;ai.wave=Math.min(28,ai.wave+2+diff);toast('L\'armée rouge marche sur ta base ('+fighters.length+' unités) !',4,'#ff9a8a')}
-  else if(b.order==='attack'&&fighters.length<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
+  else if(b.order==='attack'&&fighters.filter(e=>!e.retreat&&!e.raid).length<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
 function applyUpg(team,id){const b=bases[team];if(id==='core'){b.core.maxhp+=300;b.core.hp+=300}}
 function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw=b.tower;tw.cd-=dt;if(tw.cd>0)continue;const lv=b.upg.tower;
   const fake={x:tw.x,y:tw.y,w:0,h:0,team:b.team};const t=nearestHostile(fake,190+lv*20);if(!t){tw.cd=.3;continue}
