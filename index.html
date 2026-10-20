@@ -1104,16 +1104,17 @@ function drawHUD(){
   uiCore(cx0,cy0+3,COL.blue);uiCore(cx0+cw-7,cy0+3,COL.red);
   bar(cx0+11,cy0+5,cw/2-19,3,b0.core.hp/b0.core.maxhp,COL.blue);bar(cx0+cw/2+8,cy0+5,cw/2-19,3,b1.core.hp/b1.core.maxhp,COL.red);
   txt('·',cx0+cw/2,cy0+5,COL.dim,7,'center');txt('TOI · '+al+(al>1?' unités':' unité'),cx0,cy0+13,COL.blue,7);txt(en+(en>1?' unités':' unité')+' · ENNEMI',cx0+cw,cy0+13,COL.red,7,'right');
-  // Read-only enemy intel; keep the one-line strip inside the army bar's width.
+  // Read-only enemy intel; measure bitmap text and anchor the strip to the HUD margin.
   const intel=ai?.intel,waveVisible=intel&&['gather','march','defend'].includes(intel.phase),waveGap=waveVisible?6:0;
   if(waveVisible){const gathering=intel.phase==='gather',marching=intel.phase==='march';
     const pulse=Math.sin(time*6)>0,col=gathering?(intel.eta<=30?(pulse?'#ffbd62':'#ff8a54'):COL.red):marching?(intel.front<40&&pulse?'#ff9a8a':COL.red):COL.dim;
-    let label=gathering?'VAGUE ROUGE  '+intel.have+'/'+intel.need+'  ENV. '+intel.eta+' S':marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
-    if(uiWidth(label,7)>cw-13)label=gathering?'VAGUE '+intel.have+'/'+intel.need+'  ENV. '+intel.eta+' S':marching?'EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':label;
-    label=uiFit(label,cw-13,7);
-    const width=uiWidth(label,7)+13,x=cx0+cw-width,y=cy0+20;
+    let label=gathering?'VAGUE ROUGE  '+intel.have+'/'+intel.need+' · DANS '+intel.eta+' S':marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
+    const right=VW-8,padding=18,maxWidth=VW-16;
+    if(uiWidth(label,7)>maxWidth-padding)label=gathering?'VAGUE '+intel.have+'/'+intel.need+' · DANS '+intel.eta+' S':marching?'EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':label;
+    label=uiFit(label,maxWidth-padding,7);
+    const width=uiWidth(label,7)+padding,x=right-width,y=cy0+20;
     box(x,y,width,11,COL.panel,'#e5534b33');
-    txt(label,cx0+cw-2,y+2,col,7,'right');
+    txt(label,right-5,y+2,col,7,'right');
     if(marching)txt('←',x+2,y+2,col,7);
     else{ctx.fillStyle=col;ctx.fillRect(x+2,y+2,1,6);ctx.fillRect(x+3,y+2,4,3)}
     if(gathering)bar(x+2,y+8,width-4,2,intel.need>0?clamp(intel.have/intel.need,0,1):0,col);
@@ -1216,6 +1217,25 @@ function touchLayout(){const s=clamp(Math.floor(Math.min(VW,VH)/7),36,52),g=6,bi
   const free=HL.left>8+2*s+g+6&&HL.right<VW-big-s-g-14,y=free?VH-s-8:HL.touchY-s-6;const ay=y-big+s;
   return[{k:'l',x:8,y,w:s,h:s,t:'◀'},{k:'r',x:8+s+g,y,w:s,h:s,t:'▶'},{k:'d',x:8+Math.round((s+g)/2),y:y-s-g,w:s,h:s,t:'▼'},
     {k:'a',x:VW-big-8,y:ay,w:big,h:big,t:''},{k:'j',x:VW-big-8-s-g,y:y,w:s,h:s,t:'▲'}]}
+// Action-button-only sprites: cool highlights, one-pixel outline and stepped halo.
+const touchIconCache=new WeakMap();
+function touchIcon(ic,size){
+  let sizes=touchIconCache.get(ic);if(!sizes){sizes=new Map();touchIconCache.set(ic,sizes)}
+  if(sizes.has(size))return sizes.get(size);
+  const light=document.createElement('canvas');light.width=light.height=size;
+  const g=light.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(ic,0,0,size,size);
+  const pixels=g.getImageData(0,0,size,size),d=pixels.data;
+  for(let i=0;i<d.length;i+=4){const shade=(d[i]+d[i+1]+d[i+2])/765;
+    d[i]=Math.round(166+65*shade);d[i+1]=Math.round(211+35*shade);d[i+2]=255}
+  g.putImageData(pixels,0,0);
+  const result=document.createElement('canvas');result.width=result.height=size+6;
+  const r=result.getContext('2d');r.imageSmoothingEnabled=false;
+  for(const [distance,color]of [[2,'#9cdeff35'],[1,'#080c20']]){
+    const mask=document.createElement('canvas');mask.width=mask.height=size;
+    const m=mask.getContext('2d');m.drawImage(light,0,0);m.globalCompositeOperation='source-in';m.fillStyle=color;m.fillRect(0,0,size,size);
+    for(let dy=-distance;dy<=distance;dy++)for(let dx=-distance;dx<=distance;dx++)r.drawImage(mask,3+dx,3+dy)}
+  r.drawImage(light,3,3);sizes.set(size,result);return result;
+}
 function drawTouch(){touchBtns=touchLayout();const p=player,sel=p&&p.inv[p.sel];
   ctx.save();ctx.imageSmoothingEnabled=false;
   for(const b of touchBtns){const x=Math.round(b.x),y=Math.round(b.y),W=Math.round(b.w),H=Math.round(b.h),pressed=touch[b.k];
@@ -1227,7 +1247,7 @@ function drawTouch(){touchBtns=touchLayout();const p=player,sel=p&&p.inv[p.sel];
       if(row===0||row===H-1)ctx.fillRect(x+inset,y+row,width,1);
       else{ctx.fillRect(x+inset,y+row,1,1);ctx.fillRect(x+W-inset-1,y+row,1,1)}}
     if(action){const ic=sel?ICON[sel.id]:null,z=Math.max(1,Math.round(W*.45/16)),size=16*z;
-      if(ic){ctx.save();ctx.globalAlpha=1;ctx.filter='none';ctx.drawImage(ic,x+Math.floor((W-size)/2),y+Math.floor((H-size)/2),size,size);ctx.restore()}
+      if(ic){ctx.save();ctx.globalAlpha=1;ctx.filter='none';ctx.drawImage(touchIcon(ic,size),x+Math.floor((W-size)/2)-3,y+Math.floor((H-size)/2)-3);ctx.restore()}
       else{const z=Math.max(1,Math.floor(W/24)),ox=x+Math.floor((W-9*z)/2),oy=y+Math.floor((H-9*z)/2);
         ctx.fillStyle=pressed?'#ffffff':COL.txt;
         ctx.fillRect(ox+2*z,oy,5*z,z);ctx.fillRect(ox+z,oy+z,2*z,z);ctx.fillRect(ox+6*z,oy+z,2*z,z);
