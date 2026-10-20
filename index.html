@@ -1174,9 +1174,30 @@ function touchLayout(){const s=clamp(Math.floor(Math.min(VW,VH)/7),36,52),g=6,bi
   return[{k:'l',x:8,y,w:s,h:s,t:'◀'},{k:'r',x:8+s+g,y,w:s,h:s,t:'▶'},{k:'d',x:8+Math.round((s+g)/2),y:y-s-g,w:s,h:s,t:'▼'},
     {k:'a',x:VW-big-8,y:ay,w:big,h:big,t:''},{k:'j',x:VW-big-8-s-g,y:y,w:s,h:s,t:'▲'}]}
 function drawTouch(){touchBtns=touchLayout();const p=player,sel=p&&p.inv[p.sel];
-  for(const b of touchBtns){box(b.x,b.y,b.w,b.h,touch[b.k]?'#05050cdd':'#05050c88');
-    if(b.k==='a'){const ic=sel?ICON[sel.id]:null;if(ic)ctx.drawImage(ic,Math.round(b.x+b.w/2-12),Math.round(b.y+b.h/2-12),24,24)}
-    else txt(b.t,b.x+b.w/2,b.y+b.h/2-5,COL.txt,14,'center')}}
+  ctx.save();ctx.imageSmoothingEnabled=false;
+  for(const b of touchBtns){const x=Math.round(b.x),y=Math.round(b.y),W=Math.round(b.w),H=Math.round(b.h),pressed=touch[b.k];
+    const action=b.k==='a',cut=action?Math.round(W*.29):3,edge=pressed?COL.ok:COL.edge;
+    // Disjoint scanlines keep the translucent fill even at the stepped corners.
+    for(let row=0;row<H;row++){const inset=Math.max(0,cut-Math.min(row,H-1-row)),width=W-2*inset;
+      ctx.fillStyle=pressed?'#000000cc':'#00000070';ctx.fillRect(x+inset,y+row,width,1);
+      ctx.fillStyle=edge;
+      if(row===0||row===H-1)ctx.fillRect(x+inset,y+row,width,1);
+      else{ctx.fillRect(x+inset,y+row,1,1);ctx.fillRect(x+W-inset-1,y+row,1,1)}}
+    if(action){const ic=sel?ICON[sel.id]:null,z=Math.max(1,Math.round(W*.45/16)),size=16*z;
+      if(ic)ctx.drawImage(ic,x+Math.floor((W-size)/2),y+Math.floor((H-size)/2),size,size);
+      else{const z=Math.max(1,Math.floor(W/24)),ox=x+Math.floor((W-9*z)/2),oy=y+Math.floor((H-9*z)/2);
+        ctx.fillStyle=pressed?'#ffffff':COL.txt;
+        ctx.fillRect(ox+2*z,oy,5*z,z);ctx.fillRect(ox+z,oy+z,2*z,z);ctx.fillRect(ox+6*z,oy+z,2*z,z);
+        ctx.fillRect(ox+7*z,oy+2*z,z,2*z);
+        for(let i=0;i<6;i++)ctx.fillRect(ox+(6-i)*z,oy+(2+i)*z,z,2*z)}}
+    else{const n=Math.max(5,Math.floor(W*.32/2)*2+1),mid=Math.floor(n/2),stem=Math.max(1,Math.floor(n/6));
+      const ox=x+Math.floor((W-n)/2),oy=y+Math.floor((H-n)/2);
+      ctx.fillStyle=pressed?'#ffffff':COL.txt;
+      // Build an upward arrow, then map its pixels to the requested direction.
+      for(let v=0;v<n;v++)for(let u=0;u<n;u++)if(v<=mid?Math.abs(u-mid)<=v:Math.abs(u-mid)<=stem){
+        const px=b.k==='l'?v:b.k==='r'?n-1-v:u,py=b.k==='l'||b.k==='r'?u:b.k==='d'?n-1-v:v;
+        ctx.fillRect(ox+px,oy+py,1,1)}}}
+  ctx.restore()}
 const activeTouches=new Map();
 function touchUpdate(){for(const k in touch)touch[k]=false;let worldTouch=null;
   for(const[,t]of activeTouches){let hit=false;for(const b of touchBtns)if(t.x>=b.x&&t.x<b.x+b.w&&t.y>=b.y&&t.y<b.y+b.h){touch[b.k]=true;hit=true}if(!hit&&!t.ui)worldTouch=t}
