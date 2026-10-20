@@ -1131,7 +1131,8 @@ function drawHUD(){
   if(waveVisible){const gathering=intel.phase==='gather',marching=intel.phase==='march';
     const pulse=Math.sin(time*6)>0,col=gathering?(intel.eta<=30?(pulse?'#ffbd62':'#ff8a54'):COL.red):marching?(intel.front<40&&pulse?'#ff9a8a':COL.red):COL.dim;
     let label=gathering?'VAGUE ROUGE  '+intel.have+'/'+intel.need+' · DANS '+intel.eta+' S':marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
-    const right=VW-8,padding=18,maxWidth=narrow?VW-152:VW-16;
+    // barre des cœurs au centre (écran large) : le bandeau se cale dessous, sinon il recouvrirait la minicarte
+    const centered=!narrow&&midW>=150,right=centered?cx0+cw:VW-8,padding=18,maxWidth=centered?cw:narrow?VW-152:VW-16;
     if(uiWidth(label,7)>maxWidth-padding)label=gathering?'VAGUE '+intel.have+'/'+intel.need+' · DANS '+intel.eta+' S':marching?'EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':label;
     label=uiFit(label,maxWidth-padding,7);
     const width=uiWidth(label,7)+padding,x=right-width,y=cy0+20;
