@@ -691,7 +691,7 @@ function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-
   navigate(e,tgt.x+tgt.w/2,dt,e.stuck>=2?(tgt.y<e.y-20?'climb':'flat'):'auto');
   if(e.stuck>=3){e.ignore=tgt;e.ignoreT=time+10;e.stuck=1}}
 let armyMid=[null,null];
-function computeArmies(){for(const t of[0,1]){const xs=ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.retreat&&!e.raid&&e.stuck<1).map(e=>e.x).sort((a,b)=>a-b);if(xs.length<3){armyMid[t]=null;continue}const med=xs[Math.floor(xs.length/2)],fwd=t===0?1:-1;
+function computeArmies(){for(const t of[0,1]){const xs=ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.retreat&&!e.raid&&!e.strike&&e.stuck<1).map(e=>e.x).sort((a,b)=>a-b);if(xs.length<3){armyMid[t]=null;continue}const med=xs[Math.floor(xs.length/2)],fwd=t===0?1:-1;
     // arrière-garde : l'unité la plus en retard, sans compter celles restées très loin derrière (renforts tout juste recrutés)
     let rear=med;for(const x of xs)if((med-x)*fwd>0&&(med-x)*fwd<40*T&&(x-rear)*fwd<0)rear=x;armyMid[t]=rear}}
 function updateUnit(e,dt){
@@ -713,6 +713,8 @@ function updateUnit(e,dt){
       if(Math.abs(dx)<T*1.5&&dy<-T*2)return climbUp(e,dt,prey.x+prey.w/2);
       navigate(e,prey.x+prey.w/2,dt,e.stuck>=2?'climb':'auto');return}
     e.raid=false}
+  if(e.strike){const ec=bases[1-e.team].core;const near=pickTarget(e,u,u.ranged?90:34);const tg=Math.abs(ec.x-e.x)<110?ec:near;if(tg)return engage(e,u,tg,dt);
+    const dtx2=clamp(Math.floor((ec.x+11)/T),0,WW-1);if(Math.abs(ec.x+11-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx2]+1.5)return climbUp(e,dt,ec.x+11);navigate(e,ec.x+11,dt,e.stuck>=2?'climb':'auto');return}
   const follow=b.order==='follow'&&e.team===0&&!player.dead;
   const tgt=pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
   if(tgt)return engage(e,u,tgt,dt);
@@ -790,10 +792,15 @@ function updateAI(dt){
   if(cnt('miner')<wantMiners&&recruit(1,'miner'))return;
   // 3. améliorations quand la réserve déborde
   for(const u of UPG){const l=b.upg[u.id];if(l<3&&rnd()<.2){const c=upgCost(u,l);if(canPay(st,c)&&(st.stone>c.stone*2||ai.style==='eco')){pay(st,c);b.upg[u.id]++;applyUpg(1,u.id);return}}}
-  // 4. raid : 2 unités vont harceler les mineurs du joueur
+  // 4. contre-attaque : l'armée du joueur est loin de sa base, son cœur est dégarni
+  {const pc=bases[0].core.x,home=teamPow(0,pc,45*T),away=ents.filter(e=>e.type==='unit'&&e.team===0&&!e.dead&&e.kind!=='miner'&&Math.abs(e.x-pc)>90*T).length;
+   const reserve=fighters.filter(e=>!e.raid&&!e.strike&&!e.retreat);
+   if(away>=3&&home<1.2&&reserve.length>=3&&time-(ai.lastStrike||0)>150){const n=Math.min(reserve.length-1,2+diff);reserve.slice(0,n).forEach(e=>e.strike=true);ai.lastStrike=time;
+     toast('Contre-attaque ! Des unités rouges foncent vers ton cœur dégarni.',4,'#ff6a5a');shake=Math.max(shake,3)}}
+  // 5. raid : 2 unités vont harceler les mineurs du joueur
   const foeMiners=foe.filter(e=>e.kind==='miner'&&!e.dead).length;
   if(b.order==='defend'&&foeMiners>=2&&time-(ai.lastRaid||0)>90&&fighters.length>=3){const idle=fighters.filter(e=>!e.raid&&!e.retreat).slice(0,2);idle.forEach(e=>e.raid=true);ai.lastRaid=time;if(idle.length)toast('Des pillards rouges traquent tes mineurs !',3,'#ff9a8a')}
-  // 5. armée : on rassemble au point de ralliement puis on attaque en groupe
+  // 6. armée : on rassemble au point de ralliement puis on attaque en groupe
   recruit(1,counter());
   if(b.order==='defend'&&fighters.length>=ai.wave&&time>[300,210,120][diff]){b.order='attack';ai.sent=fighters.length;ai.lastWave=time;ai.wave=Math.min(28,ai.wave+2+diff);toast('L\'armée rouge marche sur ta base ('+fighters.length+' unités) !',4,'#ff9a8a')}
   else if(b.order==='attack'&&fighters.length<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
