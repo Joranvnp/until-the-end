@@ -792,6 +792,15 @@ function updateAI(dt){
   const fighters=mine.filter(e=>e.kind!=='miner'&&e.kind!=='champion');
   const coreX=b.core.x,threatPow=teamPow(0,coreX,70*T),myPow=teamPow(1,coreX,70*T);
   const foe=ents.filter(e=>e.type==='unit'&&e.team===0),fk=k=>foe.filter(e=>e.kind===k).length;
+  // renseignement pour le HUD : où en est la prochaine vague rouge
+  {const minT=[300,210,120][diff],pc=bases[0].core.x,n=fighters.length,I=ai.intel||(ai.intel={rate:.05,prev:n});
+   I.rate=I.rate*.85+Math.max(0,(n-I.prev)/2)*.15;I.prev=n;I.have=Math.min(n,ai.wave);I.need=ai.wave;
+   if(b.order==='attack'){const atk=fighters.filter(e=>!e.raid&&!e.retreat);I.phase='march';I.eta=0;I.alive=atk.length;I.sent=ai.sent;
+     I.front=atk.length?Math.round(Math.min(...atk.map(e=>Math.abs(e.x-pc)))/T):0}
+   else{I.phase=threatPow>0.5&&threatPow>myPow*.7?'defend':'gather';
+     I.eta=Math.round(Math.max(minT-time,(ai.wave-n)/Math.max(I.rate,.02),0));
+     if(I.eta<=25&&!I.warned&&I.phase==='gather'){I.warned=true;toast('L\'armée rouge se rassemble : attaque dans moins de 30 s !',4,'#ffb08a')}}
+   if(b.order==='attack')I.warned=false}
   const counter=()=>{if(fk('golem')>=2)return'warrior';if(fk('warrior')>fk('archer')*1.5+1)return'archer';if(rnd()<(ai.style==='rush'?.08:.18)&&st.gold>=2)return'golem';return rnd()<.6?'warrior':'archer'};
   const wantMiners=(ai.style==='eco'?4:ai.style==='rush'?2:3)+(diff>1?1:0);
   // 1. défense : on rappelle tout le monde si la base est menacée
@@ -1075,10 +1084,24 @@ function drawHUD(){
   uiCore(cx0,cy0+3,COL.blue);uiCore(cx0+cw-7,cy0+3,COL.red);
   bar(cx0+11,cy0+5,cw/2-19,3,b0.core.hp/b0.core.maxhp,COL.blue);bar(cx0+cw/2+8,cy0+5,cw/2-19,3,b1.core.hp/b1.core.maxhp,COL.red);
   txt('·',cx0+cw/2,cy0+5,COL.dim,7,'center');txt('TOI · '+al+(al>1?' unités':' unité'),cx0,cy0+13,COL.blue,7);txt(en+(en>1?' unités':' unité')+' · ENNEMI',cx0+cw,cy0+13,COL.red,7,'right');
+  // Read-only enemy intel; keep the one-line strip inside the army bar's width.
+  const intel=ai?.intel,waveVisible=intel&&['gather','march','defend'].includes(intel.phase),waveGap=waveVisible?6:0;
+  if(waveVisible){const gathering=intel.phase==='gather',marching=intel.phase==='march';
+    const pulse=Math.sin(time*6)>0,col=gathering?(intel.eta<=30?(pulse?'#ffbd62':'#ff8a54'):COL.red):marching?(intel.front<40&&pulse?'#ff9a8a':COL.red):COL.dim;
+    let label=gathering?'VAGUE ROUGE  '+intel.have+'/'+intel.need+'  ENV. '+intel.eta+' S':marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
+    if(uiWidth(label,7)>cw-13)label=gathering?'VAGUE '+intel.have+'/'+intel.need+'  ENV. '+intel.eta+' S':marching?'EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':label;
+    label=uiFit(label,cw-13,7);
+    const width=uiWidth(label,7)+13,x=cx0+cw-width,y=cy0+20;
+    box(x,y,width,11,COL.panel,'#e5534b33');
+    txt(label,cx0+cw-2,y+2,col,7,'right');
+    if(marching)txt('←',x+2,y+2,col,7);
+    else{ctx.fillStyle=col;ctx.fillRect(x+2,y+2,1,6);ctx.fillRect(x+3,y+2,4,3)}
+    if(gathering)bar(x+2,y+8,width-4,2,intel.need>0?clamp(intel.have/intel.need,0,1):0,col);
+  }
   // réserve de la base
   let ry;
-  if(narrow){ry=cy0+28;const cwd=(VW-16)/8;RES.forEach((k,i)=>{const x=8+i*cwd;ctx.drawImage(ICON[k],x,ry+3,10,10);txt(''+b0.storage[k],x+11,ry+5,COL.txt,7)});ry+=20}
-  else{ry=38;RES.forEach((k,i)=>{const x=8+(i%4)*27,y=ry+5+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y-2,10,10);txt(''+b0.storage[k],x+11,y,COL.txt,7)});ry=cy0+30}
+  if(narrow){ry=cy0+28+waveGap;const cwd=(VW-16)/8;RES.forEach((k,i)=>{const x=8+i*cwd;ctx.drawImage(ICON[k],x,ry+3,10,10);txt(''+b0.storage[k],x+11,ry+5,COL.txt,7)});ry+=20}
+  else{ry=38;RES.forEach((k,i)=>{const x=8+(i%4)*27,y=ry+5+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y-2,10,10);txt(''+b0.storage[k],x+11,y,COL.txt,7)});ry=cy0+30+waveGap}
   // Latest messages only, on small fading bands so the world stays visible.
   {const tw=narrow?VW-32:Math.max(160,Math.min(300,mx-heroW-24));const tx=narrow?VW/2:(midW>=150?heroW+12+midW/2+4:VW/2);let y=narrow?ry:Math.max(ry,cy0+30);
    for(const m of msgs.slice(-2)){ctx.globalAlpha=clamp(m.t,0,1)*.9;for(const l of wrapLines(m.s,tw,7)){const width=uiWidth(l,7);ctx.fillStyle='#05050cbb';ctx.fillRect(Math.round(tx-width/2)-4,y-2,width+8,9);txt(l,tx,y,COL.txt,7,'center');y+=10}y+=3;ctx.globalAlpha=1}}
@@ -1184,7 +1207,7 @@ function drawTouch(){touchBtns=touchLayout();const p=player,sel=p&&p.inv[p.sel];
       if(row===0||row===H-1)ctx.fillRect(x+inset,y+row,width,1);
       else{ctx.fillRect(x+inset,y+row,1,1);ctx.fillRect(x+W-inset-1,y+row,1,1)}}
     if(action){const ic=sel?ICON[sel.id]:null,z=Math.max(1,Math.round(W*.45/16)),size=16*z;
-      if(ic)ctx.drawImage(ic,x+Math.floor((W-size)/2),y+Math.floor((H-size)/2),size,size);
+      if(ic){ctx.save();ctx.globalAlpha=1;ctx.filter='none';ctx.drawImage(ic,x+Math.floor((W-size)/2),y+Math.floor((H-size)/2),size,size);ctx.restore()}
       else{const z=Math.max(1,Math.floor(W/24)),ox=x+Math.floor((W-9*z)/2),oy=y+Math.floor((H-9*z)/2);
         ctx.fillStyle=pressed?'#ffffff':COL.txt;
         ctx.fillRect(ox+2*z,oy,5*z,z);ctx.fillRect(ox+z,oy+z,2*z,z);ctx.fillRect(ox+6*z,oy+z,2*z,z);
