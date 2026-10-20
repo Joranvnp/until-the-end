@@ -723,7 +723,8 @@ function updateUnit(e,dt){
   const dtx=clamp(Math.floor(dest/T),0,WW-1);
   if(Math.abs(dest-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx]+1.5)return climbUp(e,dt,dest);
   if(b.order==='attack'&&!follow&&armyMid[e.team]!=null){const fwd=e.team===0?1:-1,ahead=(e.x-armyMid[e.team])*fwd,toCore=Math.abs(bases[1-e.team].core.x-e.x);
-    if(ahead>7*T&&toCore>28*T&&(e.waitT||0)<12){e.waitT=(e.waitT||0)+dt;e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}
+    // on attend l'arrière-garde 12 s au plus, puis on repart sans se ré-arrêter avant 25 s (sinon l'armée piétine indéfiniment)
+    if(ahead>7*T&&toCore>28*T&&time>(e.waitCool||0)){e.waitT=(e.waitT||0)+dt;if(e.waitT<12){e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}e.waitCool=time+25}
     e.waitT=0}
   if(navigate(e,dest,dt,e.stuck>=2?'climb':'auto'))e.wantMove=false}
 const ORE_VAL={[COAL]:2,[COPPER]:3,[IRON]:5,[SILVER]:7,[GOLD]:10,[DIAMOND]:14};
