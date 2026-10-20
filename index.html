@@ -609,6 +609,8 @@ function tryPlace(tx,ty,tid,itemId){
 // =====================================================================
 function hurt(e,dmg,src){
   if(e.hp<=0||e.dead)return;if(e.type==='player'){if(e.iframes>0||e.dead)return;e.iframes=.35;e.lastHurt=0;sfx.hurt();shake=Math.max(shake,4)}
+  // le cœur résiste aux troupes (siège ~20 s au lieu de 8) : le temps de revenir le défendre
+  if(e.type==='core'&&src&&src.type!=='player')dmg*=.45;
   dmg=Math.round(dmg);e.hp-=dmg;e.flash=.12;floatText(e.x+e.w/2,e.y-2,'-'+dmg,e.team===0?'#ff8a7a':'#ffe08a');
   if(src&&e.type!=='core'){const dir=Math.sign((e.x+e.w/2)-(src.x+(src.w||0)/2))||1;const kb=(src.type==='player'?120:src.kind==='golem'?150:30)*(e.kind==='golem'?.3:1);e.vx+=dir*kb;if(kb>60)e.vy=Math.min(e.vy,-110)}
   burst(e.x+e.w/2,e.y+e.h/2,e.type==='core'?(e.team?'#ff8a7a':'#8ac4ff'):'#e8364b',4,50,300,.4);
@@ -640,7 +642,9 @@ const POW={miner:.3,warrior:1,archer:.9,golem:3.2,champion:2.5};
 let tgtList=[];
 function buildTargets(){tgtList=ents.filter(o=>!o.dead&&o.hp&&o.type!=='item');tgtList.sort((a,b)=>a.x-b.x);
   // intrus : l'ennemi le plus proche de chaque cœur (rayon 26 blocs), même s'il arrive par un tunnel en contrebas
-  for(const t of[0,1]){const c=bases[t].core,cx=c.x+11;let best=null,bd=26*T;for(const o of tgtNear(cx,26*T)){if(o.type!=='unit'&&o.type!=='monster'||o.team===t)continue;const d=Math.abs(o.x+o.w/2-cx);if(d<bd){bd=d;best=o}}
+  for(const t of[0,1]){const c=bases[t].core,cx=c.x+11;let best=null,bd=26*T;for(const o of tgtNear(cx,26*T)){if(o.type!=='unit'&&o.type!=='monster'||o.team===t)continue;const d=Math.abs(o.x+o.w/2-cx),dy=o.y-c.y;
+    // pas de chasse au fond des grottes : seulement ce qui menace vraiment le cœur (à sa hauteur, monstres tout proches)
+    if(dy>10*T||dy<-8*T||o.type==='monster'&&d>10*T)continue;if(d<bd){bd=d;best=o}}
     if(best&&!intruder[t]&&t===0&&time-(intruderT||0)>20){intruderT=time;toast('Ton cœur est attaqué ! Tes défenseurs accourent.',3,'#ff9a8a')}intruder[t]=best}}
 let intruder=[null,null],intruderT=0;
 function* tgtNear(x,r){let lo=0,hi=tgtList.length;const a=x-r-32;while(lo<hi){const m=(lo+hi)>>1;if(tgtList[m].x<a)lo=m+1;else hi=m}
