@@ -636,11 +636,16 @@ const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed);
 const udmg=e=>UNITS[e.kind].dmg*(1+.25*bases[e.team].upg.dmg);
 const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*20*T;
 const POW={miner:.3,warrior:1,archer:.9,golem:3.2,champion:2.5};
-function nearestHostile(e,range){let best=null,bd=range;for(const o of ents){if(o.dead||!o.hp||o.type==='item'||!hostile(e,o))continue;
+// cibles potentielles triées par x, reconstruites à chaque image : les recherches ne parcourent que la tranche utile (perfs à 400 unités)
+let tgtList=[];
+function buildTargets(){tgtList=ents.filter(o=>!o.dead&&o.hp&&o.type!=='item');tgtList.sort((a,b)=>a.x-b.x)}
+function* tgtNear(x,r){let lo=0,hi=tgtList.length;const a=x-r-32;while(lo<hi){const m=(lo+hi)>>1;if(tgtList[m].x<a)lo=m+1;else hi=m}
+  for(let i=lo;i<tgtList.length;i++){const o=tgtList[i];if(o.x>x+r+8)break;yield o}}
+function nearestHostile(e,range){let best=null,bd=range;for(const o of tgtNear(e.x,range)){if(o.dead||!o.hp||!hostile(e,o))continue;
     const d=Math.hypot(o.x+o.w/2-(e.x+e.w/2),(o.y+o.h/2-(e.y+e.h/2))*1.6);if(d<bd){bd=d;best=o}}return best}
 // cible atteignable : on ignore ce qui est trop haut/bas pour la mêlée, et ce qu'on a renoncé à poursuivre
 function pickTarget(e,u,aggro){let best=null,bd=1e9;
-  for(const o of ents){if(o.dead||!o.hp||o.type==='item'||!hostile(e,o))continue;if(o===e.ignore&&time<e.ignoreT)continue;
+  for(const o of tgtNear(e.x,aggro)){if(o.dead||!o.hp||!hostile(e,o))continue;if(o===e.ignore&&time<e.ignoreT)continue;
     const dx=o.x+o.w/2-(e.x+e.w/2),dy=o.y+o.h/2-(e.y+e.h/2);if(Math.abs(dx)>aggro)continue;
     if((o.type==='core'?vgap(e,o):Math.abs(dy))>(u.ranged?130:52))continue;
     let d=Math.abs(dx)+Math.abs(dy)*1.5;if(o.type==='core')d-=(Math.abs(dx)<110?400:60);if(o.type==='monster')d+=40;
@@ -842,7 +847,7 @@ function update(dt){
   saveT-=dt;if(saveT<=0){saveT=20;saveGame()}
   checkObjectives();
   if(endT>0){endT-=dt;if(endT<=0){state=endState;return}}
-  updatePlayer(dt);computeArmies();
+  updatePlayer(dt);computeArmies();buildTargets();
   for(const e of ents){if(e.dead)continue;
     if(e.type==='unit')updateUnit(e,dt);else if(e.type==='monster')updateMonster(e,dt);
     else if(e.type==='item'){e.age+=dt;if(e.magnet){e.x+=e.vx*dt;e.y+=e.vy*dt;e.vx*=.9;e.vy*=.9}else{e.vx*=e.onGround?.8:1;moveEnt(e,dt,false)}if(e.age>240)e.dead=true}
