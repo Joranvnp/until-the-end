@@ -639,7 +639,7 @@ function nearestHostile(e,range){let best=null,bd=range;for(const o of ents){if(
 function pickTarget(e,u,aggro){let best=null,bd=1e9;
   for(const o of ents){if(o.dead||!o.hp||o.type==='item'||!hostile(e,o))continue;if(o===e.ignore&&time<e.ignoreT)continue;
     const dx=o.x+o.w/2-(e.x+e.w/2),dy=o.y+o.h/2-(e.y+e.h/2);if(Math.abs(dx)>aggro)continue;
-    if(Math.abs(dy)>(u.ranged?130:52))continue;
+    if((o.type==='core'?vgap(e,o):Math.abs(dy))>(u.ranged?130:52))continue;
     let d=Math.abs(dx)+Math.abs(dy)*1.5;if(o.type==='core')d-=(Math.abs(dx)<110?400:60);if(o.type==='monster')d+=40;
     if(d<bd){bd=d;best=o}}return best}
 function digStep(e,tx,ty,dt,collect){const id=getT(tx,ty),d=TD[id];if(!d.solid&&id!==LOG)return 1;if(d.hard===Infinity)return -1;
@@ -667,7 +667,9 @@ function climbUp(e,dt,cxT){const cx=e.x+e.w/2;e.vx=clamp((cxT-cx)*4,-uspd(e),usp
   for(let x=o0;x<=o1;x++)for(const y of[y0-1,y0-2]){const r=digStep(e,x,y,dt,e.kind==='miner'||e.kind==='champion');if(r===0)return;if(r<0){e.vy=-JUMP;return}}
   e.vy=-JUMP*.85;e.pillarY=fy;e.pillarX=Math.floor((e.x+e.w/2)/T)}
 function updatePillar(e){if(e.pillarY==null)return;
-  if(e.y+e.h<=e.pillarY*T-.5){const t=getT(e.pillarX,e.pillarY);if(flowable(t)||t===WATER){setT(e.pillarX,e.pillarY,DIRT)}e.pillarY=null}
+  if(e.y+e.h<=e.pillarY*T-.5){const t=getT(e.pillarX,e.pillarY);if(flowable(t)||t===WATER){setT(e.pillarX,e.pillarY,DIRT);
+      // les unités qui se trouvaient dans la case sont hissées dessus (sinon elles restent emmurées dans le pilier)
+      const px=e.pillarX*T,py=e.pillarY*T;for(const o of ents)if(o!==e&&(o.type==='unit'||o.type==='monster')&&!o.dead&&o.x<px+T&&o.x+o.w>px&&o.y<py+T&&o.y+o.h>py){const ny=py-o.h-.01;if(!rectSolid(o.x,ny,o.w,o.h)){o.y=ny;o.vy=Math.min(o.vy,0)}}}e.pillarY=null}
   else if(e.onGround&&e.vy===0)e.pillarY=null}
 function trackProgress(e,dt){e.progT+=dt;if(e.progT<2)return;const mv=Math.hypot(e.x-e.progX,e.y-e.progY);
   if(e.wantMove&&mv<10)e.stuck=Math.min(3,e.stuck+1);else if(mv>28)e.stuck=0;e.progX=e.x;e.progY=e.y;e.progT=0;e.wantMove=false}
@@ -675,7 +677,9 @@ function meleeOrShoot(e,u,tgt){e.vx=0;e.dir=Math.sign(tgt.x+tgt.w/2-(e.x+e.w/2))
   if(u.ranged){const sx=e.x+e.w/2,sy=e.y+6,tx=tgt.x+tgt.w/2,ty=tgt.y+tgt.h/2,dd=Math.abs(tx-sx),v=250,tt=dd/v;arrows.push({x:sx,y:sy,vx:Math.sign(tx-sx)*v,vy:(ty-sy)/Math.max(tt,.1)-150*tt,team:e.team,dmg:udmg(e),life:3,src:e});if(onScreen(e))sfx.bow()}
   else{hurt(tgt,udmg(e),e);if(e.kind==='golem')shake=Math.max(shake,onScreen(e)?2:0)}}
 const onScreen=e=>e.x>cam.x-20&&e.x<cam.x+VW+20&&e.y>cam.y-20&&e.y<cam.y+VH+20;
-function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-tgt.w/2-e.w/2,dy=Math.abs(tgt.y+tgt.h/2-(e.y+e.h/2));
+// écart vertical entre deux boîtes (0 si elles se chevauchent en hauteur) : le cœur est grand, le centre ne suffit pas
+const vgap=(a,b)=>Math.max(0,b.y-(a.y+a.h),a.y-(b.y+b.h));
+function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-tgt.w/2-e.w/2,dy=tgt.type==='core'?vgap(e,tgt)+10:Math.abs(tgt.y+tgt.h/2-(e.y+e.h/2));
   if(gap<=u.range&&dy<(u.ranged?130:30)){meleeOrShoot(e,u,tgt);moveEnt(e,dt);return}
   // cible juste en dessous ou au-dessus : creuser vers le bas ou monter en pilier
   if(Math.abs(dx)<T*1.2&&!u.ranged){const vy=tgt.y+tgt.h-(e.y+e.h);
@@ -691,6 +695,11 @@ function updateUnit(e,dt){
   const u=UNITS[e.kind];e.anim+=Math.abs(e.vx)*dt*.12;if(e.flash>0)e.flash-=dt;if(e.atk>0)e.atk-=dt;if(e.swing>0)e.swing-=dt;
   if(e.y>WH*T){e.dead=true;return}
   trackProgress(e,dt);updatePillar(e);
+  // emmurée (bloc posé sur elle) : on la remonte jusqu'à la première place libre
+  if(rectSolid(e.x,e.y,e.w,e.h)){for(let k=1;k<=3*T;k++)if(!rectSolid(e.x,e.y-k,e.w,e.h)){e.y-=k;e.vy=0;break}}
+  // unité perdue dans les grottes depuis trop longtemps : elle déserte (libère le combat et les perfs)
+  if(e.stuck>=3)e.lostT=(e.lostT||0)+dt;else e.lostT=Math.max(0,(e.lostT||0)-dt*2);
+  if(e.lostT>45&&e.kind!=='champion'&&(e.y+e.h)/T>surf[clamp(Math.floor((e.x+e.w/2)/T),0,WW-1)]+4){e.dead=true;burst(e.x+e.w/2,e.y+e.h/2,'#c9c0d8',8,50,200,.6);return}
   if(e.kind==='miner'||e.kind==='champion')return updateGatherer(e,u,dt);
   const b=bases[e.team],home=b.core;
   // soin près de son cœur, repli quand on est gravement blessé
@@ -719,7 +728,9 @@ function updateUnit(e,dt){
     // on attend l'arrière-garde 12 s au plus, puis on repart sans se ré-arrêter avant 25 s (sinon l'armée piétine indéfiniment)
     if(ahead>7*T&&toCore>28*T&&time>(e.waitCool||0)){e.waitT=(e.waitT||0)+dt;if(e.waitT<12){e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}e.waitCool=time+25}
     e.waitT=0}
-  if(navigate(e,dest,dt,e.stuck>=2?'climb':'auto'))e.wantMove=false}
+  if(navigate(e,dest,dt,e.stuck>=2?'climb':'auto')){e.wantMove=false;
+    // arrivée au pied du cœur adverse mais en contrebas (fosse creusée dessous) : on remonte en pilier
+    const ec=bases[1-e.team].core;if(!follow&&b.order==='attack'&&e.y>ec.y+ec.h-4&&Math.abs(ec.x+11-(e.x+e.w/2))<3*T)climbUp(e,dt,dest)}}
 const ORE_VAL={[COAL]:2,[COPPER]:3,[IRON]:5,[SILVER]:7,[GOLD]:10,[DIAMOND]:14};
 function findOre(e,far){const b=bases[e.team],home=Math.floor((b.core.x+11)/T),dir=e.team===0?1:-1,champ=e.kind==='champion';let best=null,bs=-1;
   for(let i=0;i<700;i++){const x=clamp(home+dir*RI(5,champ||far?150:70),2,WW-3),y=RI(surf[x]+1,Math.min(WH-4,surf[x]+(champ||far?34:20)));const t=getT(x,y),v=ORE_VAL[t];if(!v)continue;
@@ -794,8 +805,8 @@ function updateAI(dt){
   // 5. raid : 2 unités vont harceler les mineurs du joueur
   const foeMiners=foe.filter(e=>e.kind==='miner'&&!e.dead).length;
   if(b.order==='defend'&&foeMiners>=2&&time-(ai.lastRaid||0)>90&&fighters.length>=3){const idle=fighters.filter(e=>!e.raid&&!e.retreat).slice(0,2);idle.forEach(e=>e.raid=true);ai.lastRaid=time;if(idle.length)toast('Des pillards rouges traquent tes mineurs !',3,'#ff9a8a')}
-  // 6. armée : on rassemble au point de ralliement puis on attaque en groupe
-  recruit(1,counter());
+  // 6. armée : on rassemble au point de ralliement puis on attaque en groupe (effectif plafonné : lisibilité et perfs)
+  if(fighters.length<22+diff*8)recruit(1,counter());
   if(b.order==='defend'&&fighters.length>=ai.wave&&time>[300,210,120][diff]){b.order='attack';ai.sent=fighters.length;ai.lastWave=time;ai.wave=Math.min(28,ai.wave+2+diff);toast('L\'armée rouge marche sur ta base ('+fighters.length+' unités) !',4,'#ff9a8a')}
   else if(b.order==='attack'&&fighters.length<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
 function applyUpg(team,id){const b=bases[team];if(id==='core'){b.core.maxhp+=300;b.core.hp+=300}}
