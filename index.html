@@ -638,7 +638,11 @@ const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*20*T;
 const POW={miner:.3,warrior:1,archer:.9,golem:3.2,champion:2.5};
 // cibles potentielles triées par x, reconstruites à chaque image : les recherches ne parcourent que la tranche utile (perfs à 400 unités)
 let tgtList=[];
-function buildTargets(){tgtList=ents.filter(o=>!o.dead&&o.hp&&o.type!=='item');tgtList.sort((a,b)=>a.x-b.x)}
+function buildTargets(){tgtList=ents.filter(o=>!o.dead&&o.hp&&o.type!=='item');tgtList.sort((a,b)=>a.x-b.x);
+  // intrus : l'ennemi le plus proche de chaque cœur (rayon 26 blocs), même s'il arrive par un tunnel en contrebas
+  for(const t of[0,1]){const c=bases[t].core,cx=c.x+11;let best=null,bd=26*T;for(const o of tgtNear(cx,26*T)){if(o.type!=='unit'&&o.type!=='monster'||o.team===t)continue;const d=Math.abs(o.x+o.w/2-cx);if(d<bd){bd=d;best=o}}
+    if(best&&!intruder[t]&&t===0&&time-(intruderT||0)>20){intruderT=time;toast('Ton cœur est attaqué ! Tes défenseurs accourent.',3,'#ff9a8a')}intruder[t]=best}}
+let intruder=[null,null],intruderT=0;
 function* tgtNear(x,r){let lo=0,hi=tgtList.length;const a=x-r-32;while(lo<hi){const m=(lo+hi)>>1;if(tgtList[m].x<a)lo=m+1;else hi=m}
   for(let i=lo;i<tgtList.length;i++){const o=tgtList[i];if(o.x>x+r+8)break;yield o}}
 function nearestHostile(e,range){let best=null,bd=range;for(const o of tgtNear(e.x,range)){if(o.dead||!o.hp||!hostile(e,o))continue;
@@ -728,6 +732,8 @@ function updateUnit(e,dt){
   const follow=b.order==='follow'&&e.team===0&&!player.dead;
   const tgt=pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
   if(tgt)return engage(e,u,tgt,dt);
+  // en défense, on court intercepter tout intrus qui approche du cœur
+  const intr=intruder[e.team];if(b.order==='defend'&&intr&&!intr.dead&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
   const dest=follow?player.x+player.w/2-player.dir*20+e.offs*36:b.order==='defend'?rallyX(e.team)+e.offs*30:bases[1-e.team].core.x+11+e.offs*6;
   if(follow){if(Math.abs(dest-(e.x+e.w/2))<10){e.vx=0;moveEnt(e,dt);return}if(player.y<e.y-3*T&&Math.abs(dest-(e.x+e.w/2))<T*2)return climbUp(e,dt,dest)}
   const dtx=clamp(Math.floor(dest/T),0,WW-1);
