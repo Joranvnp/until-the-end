@@ -1804,16 +1804,18 @@ function toggleOrder(){const b=bases[0];b.order=b.order==='attack'?'defend':b.or
   toast({attack:'Tes troupes partent à l\'assaut du cœur rouge.',defend:'Tes troupes se regroupent devant ta base.',follow:'Tes troupes t\'escortent.'}[b.order],2.5,'#9fd0ff');sfx.place()}
 function togglePanel(n){panel=panel===n?null:n;cursorItem=null;panelT=0;sfx.place()}
 const panelY=(H,y)=>HL.barTop&&HL.barTop-H-3>=2?Math.max(2,Math.min(y,HL.barTop-H-3)):y;
-function drawBasePanel(){const b=bases[0],W=262,H=221,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-6);panelRect={x,y,w:W,h:H};
+function drawBasePanel(){const b=bases[0],RW=262,
+  // paysage bas (téléphone couché) : recrues à gauche, améliorations à droite, pour ne pas couvrir la barre d'objets
+  wide=VW>=RW*2+8&&(HL.barTop||VH)-4<221,W=wide?RW*2:RW,H=wide?132:221,ux=wide?x0=>x0+RW-4:x0=>x0,uy=wide?32:141,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-6);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Ta base',x+8,y+6,COL.txt,10,'left');button(x+W-18,y+4,14,12,'×',()=>togglePanel('base'));
   txt('Recruter',x+8,y+22,COL.dim,7);
-  Object.entries(UNITS).filter(([,u])=>!u.hero).forEach(([k,u],i)=>{const yy=y+32+i*24;box(x+6,yy,W-12,22,COL.panel2,'#e8ecff18');
+  Object.entries(UNITS).filter(([,u])=>!u.hero).forEach(([k,u],i)=>{const yy=y+32+i*24;box(x+6,yy,RW-12,22,COL.panel2,'#e8ecff18');
     const img=SPR[k+'0'].R.idle[0];ctx.drawImage(img,x+9,yy+(k==='golem'?-3:-2));txt(u.n,x+30,yy+3,COL.txt,8);
     // effectif actuel de ce type, pour savoir quoi recruter sans compter à l'écran
     const own=ents.filter(e=>e.type==='unit'&&e.team===0&&e.kind===k&&!e.dead).length;if(own)txt('×'+own,x+34+uiWidth(u.n,8),yy+3,'#9fd0ff',8);txt(uiFit(u.d,101,6),x+30,yy+12,COL.dim,6);
-    costLine(u.cost,x+136,yy+7,b.storage);const go=()=>{if(recruit(0,k))toast(u.n+' recruté !',2,'#9fd0ff')},ok=canPay(b.storage,u.cost);cardHit(x+6,yy,W-12,22,go,ok);button(x+W-48,yy+4,40,14,'Recruter',go,ok)});
-  txt('Améliorations',x+8,y+132,COL.dim,7);if(UPG.some(u=>bases[1].upg[u.id]))txt('★ rouge = niveau ennemi',x+W-8,y+133,'#ff8a7a',6,'right');
-  UPG.forEach((u,i)=>{const xx=x+6+(i%2)*126,yy=y+141+Math.floor(i/2)*25,l=b.upg[u.id],c=upgCost(u,l),le=bases[1].upg[u.id];box(xx,yy,123,23,COL.panel2,le>l?'#ff6a5a55':'#e8ecff18');if(u.gen&&l){ctx.fillStyle='#7dff9a55';ctx.fillRect(xx+1,yy+21,Math.round(121*Math.min(1,(b.genT&&b.genT[u.id]||0)/genT(u,l))),1)}if(le)txt(le+'★',xx+119,yy+3,'#ff8a7a',6,'right');
+    costLine(u.cost,x+136,yy+7,b.storage);const go=()=>{if(recruit(0,k))toast(u.n+' recruté !',2,'#9fd0ff')},ok=canPay(b.storage,u.cost);cardHit(x+6,yy,RW-12,22,go,ok);button(x+RW-48,yy+4,40,14,'Recruter',go,ok)});
+  const X=ux(x);txt('Améliorations',X+8,y+uy-9,COL.dim,7);if(UPG.some(u=>bases[1].upg[u.id]))txt('★ rouge = niveau ennemi',X+RW-8,y+uy-8,'#ff8a7a',6,'right');
+  UPG.forEach((u,i)=>{const xx=X+6+(i%2)*126,yy=y+uy+Math.floor(i/2)*25,l=b.upg[u.id],c=upgCost(u,l),le=bases[1].upg[u.id];box(xx,yy,123,23,COL.panel2,le>l?'#ff6a5a55':'#e8ecff18');if(u.gen&&l){ctx.fillStyle='#7dff9a55';ctx.fillRect(xx+1,yy+21,Math.round(121*Math.min(1,(b.genT&&b.genT[u.id]||0)/genT(u,l))),1)}if(le)txt(le+'★',xx+119,yy+3,'#ff8a7a',6,'right');
     txt(u.n+' '+'★'.repeat(l)+'☆'.repeat(3-l),xx+4,yy+3,l>=3?COL.gold:COL.txt,7);if(l<3){costLine(c,xx+4,yy+13,b.storage);txt(uiFit(u.s,44,6),xx+92,yy+14,COL.dim,6,'right');const go=()=>{if(canPay(b.storage,c)){pay(b.storage,c);b.upg[u.id]++;applyUpg(0,u.id);sfx.buy();toast(u.n+' : niveau '+b.upg[u.id],2,COL.gold)}},ok=canPay(b.storage,c);cardHit(xx,yy,123,23,go,ok);button(xx+95,yy+10,25,11,'+',go,ok)}else{txt('max',xx+4,yy+13,COL.gold,7);txt(u.s,xx+119,yy+14,COL.dim,6,'right')}});
   const nearB=Math.abs(player.x-b.core.x)<90;button(x+W-108,y+4,86,12,'Déposer pierre/bois',()=>{let n=0;for(const k of['stone','wood']){const c=countItem(k);takeItem(k,c);b.storage[k]+=c;n+=c}toast(n?('Déposé : '+n):'Rien à déposer.',2,'#9fd0ff');if(n)sfx.buy()},nearB);
 }
