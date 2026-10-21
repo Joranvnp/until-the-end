@@ -1142,12 +1142,17 @@ const UI_GLYPHS={
  '0':['111','101','101','101','111'],'1':['010','110','010','010','111'],'2':['110','001','010','100','111'],'3':['110','001','010','001','110'],'4':['101','101','111','001','001'],'5':['111','100','110','001','110'],'6':['011','100','111','101','111'],'7':['111','001','010','010','010'],'8':['111','101','111','101','111'],'9':['111','101','111','001','110'],
  ' ':['00','00','00','00','00'],'.':['0','0','0','0','1'],',':['00','00','00','01','10'],':':['0','1','0','1','0'],"'":['1','1','0','0','0'],'-':['000','000','111','000','000'],'/':['001','001','010','100','100'],'+':['000','010','111','010','000'],'×':['000','101','010','101','000'],'·':['0','0','1','0','0'],'!':['1','1','1','0','1'],'?':['110','001','010','000','010'],'(':['01','10','10','10','01'],')':['10','01','01','01','10'],'…':['00000','00000','00000','00000','10101'],'★':['00100','11111','01110','11111','10001'],'☆':['00100','11011','10001','01010','10001'],'◇':['00100','01010','10001','01010','00100'],'←':['00100','01000','11111','01000','00100'],'→':['00100','00010','11111','00010','00100'],'↑':['010','111','010','010','010'],'◀':['001','011','111','011','001'],'▶':['100','110','111','110','100'],'▲':['00100','01110','11111','00000','00000'],'▼':['00000','00000','11111','01110','00100'],'=':['000','111','000','111','000']
 };
-function uiLetters(s){return String(s).replace(/œ/g,'oe').replace(/Œ/g,'OE').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase()}
+// Accent rows sit above the unchanged five-pixel body; panel lines are at least nine pixels apart.
+const UI_ACCENTS={É:['001','010'],È:['100','010'],Ê:['010','101'],Ë:['101','000'],À:['100','010'],Â:['010','101'],Ô:['010','101'],Î:['010','101'],Ï:['101','000'],Ù:['100','010'],Û:['010','101']};
+for(const [c,rows]of Object.entries(UI_ACCENTS))UI_GLYPHS[c]=[...rows,...UI_GLYPHS[c.normalize('NFD')[0]]];
+UI_GLYPHS['Ç']=[...UI_GLYPHS.C,'001','010'];
+UI_GLYPHS['Œ']=['01111','10100','10110','10100','01111'];
+function uiLetters(s){return [...String(s).toUpperCase().normalize('NFC')].map(c=>UI_GLYPHS[c]?c:c.normalize('NFD').replace(/[\u0300-\u036f]/g,'')).join('')}
 function uiScale(size){return Math.max(1,Math.floor(size/7))}
 function uiWidth(s,size=8){const z=uiScale(size);return Math.max(0,[...uiLetters(s)].reduce((n,c)=>n+(UI_GLYPHS[c]||UI_GLYPHS['?'])[0].length+1,0)-1)*z}
 function uiFit(s,width,size=8){if(uiWidth(s,size)<=width)return s;let t=String(s);while(t&&uiWidth(t+'…',size)>width)t=t.slice(0,-1);return t+'…'}
 function txt(s,x,y,col=COL.txt,size=8,align='left',font=UIF){const z=uiScale(size),width=uiWidth(s,size);x=Math.round(x-(align==='center'?width/2:align==='right'?width:0));y=Math.round(y);ctx.fillStyle=col;
-  for(const c of uiLetters(s)){const glyph=UI_GLYPHS[c]||UI_GLYPHS['?'];for(let j=0;j<glyph.length;j++)for(let i=0;i<glyph[j].length;i++)if(glyph[j][i]==='1')ctx.fillRect(x+i*z,y+j*z,z,z);x+=(glyph[0].length+1)*z}}
+  for(const c of uiLetters(s)){const glyph=UI_GLYPHS[c]||UI_GLYPHS['?'];for(let j=0;j<glyph.length;j++)for(let i=0;i<glyph[j].length;i++)if(glyph[j][i]==='1')ctx.fillRect(x+i*z,y+(j-(UI_ACCENTS[c]?2:0))*z,z,z);x+=(glyph[0].length+1)*z}}
 function box(x,y,wd,ht,fill=COL.panel,edge=COL.edge){x=Math.round(x);y=Math.round(y);wd=Math.round(wd);ht=Math.round(ht);
   ctx.fillStyle=fill;ctx.fillRect(x+1,y,wd-2,ht);ctx.fillRect(x,y+1,1,ht-2);ctx.fillRect(x+wd-1,y+1,1,ht-2);
   ctx.fillStyle=edge;ctx.fillRect(x+1,y,wd-2,1);ctx.fillRect(x+1,y+ht-1,wd-2,1);ctx.fillRect(x,y+1,1,ht-2);ctx.fillRect(x+wd-1,y+1,1,ht-2)}
