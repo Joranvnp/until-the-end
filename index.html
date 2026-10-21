@@ -416,7 +416,7 @@ function newGame(d){
   bases=[0,1].map(t=>{const coreTx=t===0?19:WW-20;const core={type:'core',team:t,x:coreTx*T-3,y:BASE_GY*T-34,w:22,h:34,hp:0,maxhp:0,flash:0,anim:0};
     core.maxhp=core.hp=Math.round(1600*(t===1?DIFFS[d].core:1));
     const b={team:t,order:t===0?'attack':'defend',core,storage:{wood:20,stone:20,coal:0,copper:6,iron:0,silver:0,gold:0,diamond:0},upg:{core:0,speed:0,dmg:0,tower:0},
-      castleX:(t===0?4:WW-16)*T-8,tower:{x:t===0?4*T+13:(WW-16)*T+8+142,y:BASE_GY*T-128,cd:2}};
+      castleX:(t===0?4:WW-16)*T-8,tower:{x:t===0?(4*T-8)+155:(WW-16)*T-8+21,y:BASE_GY*T-128,cd:2}};
     ents.push(core);return b});
   player={type:'player',team:0,x:22*T,y:BASE_GY*T-24,w:10,h:22,vx:0,vy:0,hp:100,maxhp:100,dir:1,onGround:false,anim:0,flash:0,
     inv:new Array(36).fill(null),sel:0,swing:0,swingDir:1,useCd:0,dead:false,respawn:0,iframes:0,stepOff:0,coyote:0,jumpBuf:0};
@@ -638,7 +638,7 @@ function recruit(team,kind,free){const b=bases[team],u=UNITS[kind];if(!free&&!ca
   ents.push(e);if(team===0&&!free){stats.recruited++;stats.rk=stats.rk||{};stats.rk[kind]=(stats.rk[kind]||0)+1;sfx.buy()}return e}
 const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed);
 const udmg=e=>UNITS[e.kind].dmg*(1+.25*bases[e.team].upg.dmg);
-const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*20*T;
+const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*8*T;
 const POW={miner:.3,warrior:1,archer:.9,golem:3.2,champion:2.5};
 // cibles potentielles triées par x, reconstruites à chaque image : les recherches ne parcourent que la tranche utile (perfs à 400 unités)
 let tgtList=[];
@@ -872,9 +872,11 @@ function updateAI(dt){
   else if(b.order==='attack'&&fighters.filter(e=>!e.retreat&&!e.raid).length<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
 function applyUpg(team,id){const b=bases[team];if(id==='core'){b.core.maxhp+=300;b.core.hp+=300}}
 function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw=b.tower;tw.cd-=dt;if(tw.cd>0)continue;const lv=b.upg.tower;
-  const fake={x:tw.x,y:tw.y,w:0,h:0,team:b.team};const t=nearestHostile(fake,190+lv*20);if(!t){tw.cd=.3;continue}
-  tw.cd=1.6/(1+.35*lv);const tx=t.x+t.w/2,ty=t.y+t.h/2,dx=tx-tw.x,v=300,tt=Math.abs(dx)/v;
-  arrows.push({x:tw.x,y:tw.y,vx:Math.sign(dx)*v,vy:(ty-tw.y)/Math.max(tt,.1)-150*tt,team:b.team,dmg:9+5*lv,life:3,src:fake});}}
+  const fake={x:tw.x,y:tw.y,w:0,h:0,team:b.team},rng=220+lv*18;let t=null,bd=rng;
+  for(const o of ents){if(o.dead||!o.hp||o.type==='item'||o.team===b.team)continue;const d=Math.hypot(o.x+o.w/2-tw.x,o.y+o.h/2-tw.y);if(d<bd){bd=d;t=o}}
+  if(!t){tw.cd=.3;continue}
+  tw.cd=1.8/(1+.25*lv);const tx=t.x+t.w/2,ty=t.y+t.h/2,dx=tx-tw.x,v=300,tt=Math.abs(dx)/v;
+  arrows.push({x:tw.x,y:tw.y,vx:Math.sign(dx)*v,vy:(ty-tw.y)/Math.max(tt,.1)-150*tt,team:b.team,dmg:7+4*lv,life:3,src:fake});}}
 function updateArrows(dt){for(const a of arrows){a.vy+=300*dt;a.x+=a.vx*dt;a.y+=a.vy*dt;a.life-=dt;
   if(a.stuck)continue;
   if(solidAt(Math.floor(a.x/T),Math.floor(a.y/T))){a.stuck=true;a.life=Math.min(a.life,1.2);continue}
