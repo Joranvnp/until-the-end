@@ -581,9 +581,14 @@ function updatePlayer(dt){
   const inReach=Math.hypot(tx*T+8-pcx,ty*T+8-pcy)<T*5.5;hoverTile=inReach&&(mouse.inside||touch.a)?{tx,ty}:null;
   const sel=p.inv[p.sel],it=sel&&IT[sel.id];
   let mineWith=null;
+  // tactile : un seul gros bouton -> si un ennemi est au contact alors qu'on tient la pioche ou un bloc,
+  // on frappe avec la meilleure épée du sac (ou à mains nues) au lieu de creuser
+  let melee=it&&it.tool==='sword'?it:null,foeX=null;
+  if(touch.a&&!mouse.l&&!melee&&!(it&&(it.tool==='bow'||it.use==='heal'))){
+    const foe=ents.find(e=>e.hp&&e!==p&&e.type!=='item'&&hostile(p,e)&&Math.abs(e.y+e.h/2-pcy)<26&&Math.abs(e.x+e.w/2-pcx)<30);
+    if(foe){foeX=foe.x+foe.w/2;melee={dmg:6};for(const s of p.inv){const d=s&&IT[s.id];if(d&&d.tool==='sword'&&d.dmg>melee.dmg)melee=d}}}
   if(useL&&!blocked){
-    if(it&&it.tool==='pick')mineWith=sel.id;
-    else if(it&&it.tool==='sword'){if(p.swing<=0){p.swing=.32;p.swingDir=wx<pcx?-1:1;p.dir=p.swingDir;sfx.sword();
+    if(melee){const it=melee;if(p.swing<=0){p.swing=.32;p.swingDir=(foeX??wx)<pcx?-1:1;p.dir=p.swingDir;sfx.sword();
         for(const e of ents){if(!e.hp||e===p||!hostile(p,e)||e.type==='item')continue;const ex=e.x+e.w/2,ey=e.y+e.h/2;if(Math.abs(ey-pcy)<26&&(ex-pcx)*p.swingDir>-8&&Math.abs(ex-pcx)<30)hurt(e,it.dmg*(1+(p.critBuff||0)),p)}}}
     else if(it&&it.tool==='bow'){if(p.useCd<=0){p.useCd=.45;const a=Math.atan2(wy-pcy,wx-pcx);arrows.push({x:pcx,y:pcy,vx:Math.cos(a)*340,vy:Math.sin(a)*340,team:0,dmg:it.dmg,life:3,src:p});sfx.bow();p.dir=wx<pcx?-1:1}}
     else if(it&&it.use==='heal'){if(p.useCd<=0&&p.hp<p.maxhp){p.useCd=.6;p.hp=Math.min(p.maxhp,p.hp+50);takeItem('potion',1);floatText(pcx,p.y-6,'+50','#7dff9a');sfx.buy();burst(pcx,pcy,'#ff7d9a',12,50,-50,.8)}}
