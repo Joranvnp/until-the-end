@@ -424,7 +424,7 @@ function newGame(d){
   addItem('pick1',1);addItem('sword1',1);addItem('torch',12);addItem('plank',20);
   ents.push(player);
   ai=newAI();endT=0;
-  cam.x=player.x-VW/2;cam.y=player.y-VH/2;
+  cam.x=player.x-VW/2;cam.y=player.y-VH*camFY();
   computeLight();state='play';
   toast('Protège ton cœur bleu. Détruis le cœur rouge, à l\'autre bout du monde.',6);
   toast('Mine du minerai, rapporte-le à ta base et recrute des troupes '+(isTouch?'(bouton Base).':'(touche B).'),8);
@@ -447,7 +447,7 @@ function loadGame(){let d;try{d=JSON.parse(localStorage.getItem(SAVE_KEY))}catch
   d.bases.forEach((s,i)=>{const b=bases[i];b.storage=s.st;b.upg=s.up;b.order=s.o;b.core.hp=s.hp;b.core.maxhp=s.mh});
   ents=ents.filter(e=>e.type!=='unit');ai.style=d.ai.style;ai.wave=d.ai.wave;ai.sent=d.ai.sent;ai.champT=d.ai.champT;ai.champ=null;
   for(const u of d.units){const e=recruit(u.t,u.k,true);Object.assign(e,{x:u.x,y:u.y,hp:u.hp,maxhp:u.mh,carry:u.c||{},carryN:u.n||0,state:u.s||'seek'});if(u.k==='champion')ai.champ=e}
-  cam.x=player.x-VW/2;cam.y=player.y-VH/2;computeLight();toast('Partie reprise.',2.5,COL.gold);return true}
+  cam.x=player.x-VW/2;cam.y=player.y-VH*camFY();computeLight();toast('Partie reprise.',2.5,COL.gold);return true}
 let saveT=20;
 addEventListener('pagehide',saveGame);document.addEventListener('visibilitychange',()=>{if(document.hidden)saveGame()});
 // ---------- objectifs (guide pas à pas) ----------
@@ -700,6 +700,9 @@ function trackProgress(e,dt){e.progT+=dt;if(e.progT<2)return;const mv=Math.hypot
 function meleeOrShoot(e,u,tgt){e.vx=0;e.dir=Math.sign(tgt.x+tgt.w/2-(e.x+e.w/2))||e.dir;if(e.atk>0)return;e.atk=u.cd;e.swing=.25;
   if(u.ranged){const sx=e.x+e.w/2,sy=e.y+6,tx=tgt.x+tgt.w/2,ty=tgt.y+tgt.h/2,dd=Math.abs(tx-sx),v=250,tt=dd/v;arrows.push({x:sx,y:sy,vx:Math.sign(tx-sx)*v,vy:(ty-sy)/Math.max(tt,.1)-150*tt,team:e.team,dmg:udmg(e),life:3,src:e});if(onScreen(e))sfx.bow()}
   else{hurt(tgt,udmg(e),e);if(e.kind==='golem')shake=Math.max(shake,onScreen(e)?2:0)}}
+// écran en hauteur (portrait) : HUD en haut, commandes tactiles en bas, le ciel au-dessus est vide
+// -> le joueur est placé à 36 % de la hauteur, on voit plus de sous-sol
+const camFY=()=>VH>VW*1.2?.36:.5;
 const onScreen=e=>e.x>cam.x-20&&e.x<cam.x+VW+20&&e.y>cam.y-20&&e.y<cam.y+VH+20;
 // écart vertical entre deux boîtes (0 si elles se chevauchent en hauteur) : le cœur est grand, le centre ne suffit pas
 const vgap=(a,b)=>Math.max(0,b.y-(a.y+a.h),a.y-(b.y+b.h));
@@ -946,7 +949,7 @@ function update(dt){
   // lucioles la nuit, braises des torches
   if(daylight()<.3&&rnd()<dt*4){const x=cam.x+R(0,VW),tx=Math.floor(x/T);if(tx>0&&tx<WW){const y=(surf[tx]-R(1,5))*T;parts.push({x,y,vx:R(-8,8),vy:R(-6,6),g:0,life:R(2,4),max:4,col:'#d8ff7a',size:1,glow:1,fly:1})}}
   // caméra
-  const p=player,tx=p.x+p.w/2-VW/2+p.dir*20,ty=p.y+p.h/2-VH/2-10;cam.x=lerp(cam.x,tx,1-Math.pow(.002,dt));cam.y=lerp(cam.y,ty,1-Math.pow(.002,dt));
+  const p=player,tx=p.x+p.w/2-VW/2+p.dir*20,ty=p.y+p.h/2-VH*camFY()-10;cam.x=lerp(cam.x,tx,1-Math.pow(.002,dt));cam.y=lerp(cam.y,ty,1-Math.pow(.002,dt));
   cam.x=clamp(cam.x,0,WW*T-VW);cam.y=clamp(cam.y,-40,WH*T-VH);
   if(shake>0)shake=Math.max(0,shake-dt*20);
   if(lightDirty&&performance.now()-lastLight>120){computeLight();lastLight=performance.now()}
