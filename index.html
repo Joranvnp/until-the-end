@@ -856,7 +856,7 @@ function updateAI(dt){
    if(b.order==='attack'){const atk=fighters.filter(e=>!e.raid&&!e.retreat);I.phase='march';I.eta=0;I.alive=atk.length;I.sent=ai.sent;
      I.front=atk.length?Math.round(Math.min(...atk.map(e=>Math.abs(e.x-pc)))/T):0}
    else{I.phase=threatPow>0.5&&threatPow>myPow*.7?'defend':'gather';
-     I.eta=Math.round(Math.max(minT-time,(ai.wave-n)/Math.max(I.rate,.02),0));
+     I.eta=Math.round(Math.max(minT-time,(ai.wave-n)/Math.max(I.rate,.02),0));if(ai.wait)I.eta=Math.max(1,Math.round(90-(time-ai.holdT)));
      if(I.eta<=25&&!I.warned&&I.phase==='gather'){I.warned=true;toast('L\'armée rouge se rassemble : attaque dans moins de 30 s !',4,'#ffb08a')}}
    if(b.order==='attack')I.warned=false}
   const counter=()=>{if(fk('golem')>=2)return'warrior';if(fk('warrior')>fk('archer')*1.5+1)return'archer';if(rnd()<(ai.style==='rush'?.08:.18)&&st.gold>=2)return'golem';return rnd()<.6?'warrior':'archer'};
@@ -879,7 +879,15 @@ function updateAI(dt){
   if(b.order==='defend'&&foeMiners>=2&&time-(ai.lastRaid||0)>90&&fighters.length>=3){const idle=fighters.filter(e=>!e.raid&&!e.retreat).slice(0,2);idle.forEach(e=>e.raid=true);ai.lastRaid=time;if(idle.length)toast('Des pillards rouges traquent tes mineurs !',3,'#ff9a8a')}
   // 6. armée : on rassemble au point de ralliement puis on attaque en groupe (effectif plafonné : lisibilité et perfs)
   if(fighters.length<22+diff*8)recruit(1,counter());
-  if(b.order==='defend'&&fighters.length>=ai.wave&&time>[300,210,120][diff]){b.order='attack';ai.sent=fighters.length;ai.lastWave=time;ai.wave=Math.min(28,ai.wave+2+diff);toast('L\'armée rouge marche sur ta base ('+fighters.length+' unités) !',4,'#ff9a8a')}
+  // avant de lancer la vague, on jauge la défense adverse (unités au cœur, joueur, tour) : trop forte, on grossit encore
+  // l'armée, au plus 90 s ou jusqu'au plafond d'effectif, puis on attaque quand même pour ne jamais rester passif
+  const ready=b.order==='defend'&&fighters.length>=ai.wave&&time>[300,210,120][diff];
+  if(ready){const pc=bases[0].core.x,guard=teamPow(0,pc,45*T)+1.5+bases[0].upg.tower*.8,mine2=fighters.reduce((a,e)=>a+POW[e.kind]*e.hp/e.maxhp,0);
+    ai.holdT=ai.holdT||time;const capped=fighters.length>=22+diff*8;
+    if(mine2<guard*1.25&&!capped&&time-ai.holdT<90){if(!ai.holdMsg){ai.holdMsg=true;toast('L\'armée rouge hésite devant ta défense et se renforce.',3,'#9fd0ff')}ai.wait=true}
+    else ai.wait=false}
+  else{ai.holdT=0;ai.holdMsg=false;ai.wait=false}
+  if(ready&&!ai.wait){b.order='attack';ai.holdT=0;ai.holdMsg=false;ai.sent=fighters.length;ai.lastWave=time;ai.wave=Math.min(28,ai.wave+2+diff);toast('L\'armée rouge marche sur ta base ('+fighters.length+' unités) !',4,'#ff9a8a')}
   else if(b.order==='attack'&&fighters.filter(e=>!e.retreat&&!e.raid).length<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
 function applyUpg(team,id){const b=bases[team];if(id==='core'){b.core.maxhp+=300;b.core.hp+=300}}
 function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw=b.tower;tw.cd-=dt;if(tw.cd>0)continue;const lv=b.upg.tower;
