@@ -1787,18 +1787,18 @@ function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0
   const units=['Mineur : creuse et rapporte le minerai. Fuit les pillards vers la tour.','Guerrier : mêlée solide. Archer : tire de loin, recule au contact.','Golem : colosse lent qui brise tout, idéal contre le cœur.','Tour de guet : tire sur les ennemis proches de ton cœur. Améliore-la à la base.','',
     'Défense : tes troupes tiennent une ligne devant le cœur, sous la tour. 3 d\'entre elles chassent les pillards.','Assaut : l\'armée marche groupée vers le cœur rouge.','Suivre : tes troupes t\'escortent partout.','Blessées, les unités rentrent se soigner à la base.'];
   const lines=pauseHelp?(pauseHelp===2?units:[...goal,'',...help]).flatMap(l=>l?wrapLines(l,W-16,7):['']):[];
-  const H=pauseHelp?30+lines.length*10+24:174,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
+  const PB=menuBH(5,64),H=pauseHelp?30+lines.length*10+24:24+5*(PB+4)+40,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   box(x,y,W,H);txt(pauseHelp===2?'Unités et ordres':pauseHelp?'Aide':'Pause',x+W/2,y+7,COL.txt,10,'center');
   if(pauseHelp){lines.forEach((l,i)=>txt(l,x+8,y+24+i*10,COL.txt,7));
     button(x+W/2-78,y+H-20,76,15,pauseHelp===2?'← Commandes':'Unités →',()=>{pauseHelp=pauseHelp===2?1:2;sfx.place()});button(x+W/2+2,y+H-20,76,15,'Retour',()=>{pauseHelp=false})}
   else{const bw=W-24,bx=x+12;
-    button(bx,y+24,bw,18,'Reprendre',()=>{paused=false});
-    button(bx,y+46,bw,18,'Réglages',()=>{menuPanel='set';panelT=0;sfx.place()});
-    button(bx,y+68,bw,18,'Aide et commandes',()=>{pauseHelp=1});
-    button(bx,y+90,bw,18,'Succès '+Object.keys(PROF.ach).length+'/'+ACH.length,()=>{menuPanel='ach';panelT=0;sfx.place()});
-    button(bx,y+112,bw,18,'Sauvegarder et quitter',()=>{saveGame();paused=false;panel=null;state='title'});
-    txt(daily?'Défi du jour : '+daily.mod.n:surv?'Siège · vague '+(stats.waves+1):'Difficulté '+DIFFS[diff].n,x+W/2,y+138,daily?COL.gold:COL.dim,6,'center');
-    txt('Partie sauvegardée toutes les 20 s',x+W/2,y+152,COL.dim,6,'center')}}
+    button(bx,y+24,bw,PB,'Reprendre',()=>{paused=false});
+    button(bx,y+24+(PB+4),bw,PB,'Réglages',()=>{menuPanel='set';panelT=0;sfx.place()});
+    button(bx,y+24+2*(PB+4),bw,PB,'Aide et commandes',()=>{pauseHelp=1});
+    button(bx,y+24+3*(PB+4),bw,PB,'Succès '+Object.keys(PROF.ach).length+'/'+ACH.length,()=>{menuPanel='ach';panelT=0;sfx.place()});
+    button(bx,y+24+4*(PB+4),bw,PB,'Sauvegarder et quitter',()=>{saveGame();paused=false;panel=null;state='title'});
+    txt(daily?'Défi du jour : '+daily.mod.n:surv?'Siège · vague '+(stats.waves+1):'Difficulté '+DIFFS[diff].n,x+W/2,y+H-36,daily?COL.gold:COL.dim,6,'center');
+    txt('Partie sauvegardée toutes les 20 s',x+W/2,y+H-22,COL.dim,6,'center')}}
 const ORDERS={attack:'Assaut',defend:'Défense',follow:'Suivre'};
 function toggleOrder(){const b=bases[0];b.order=b.order==='attack'?'defend':b.order==='defend'?'follow':'attack';
   toast({attack:'Tes troupes partent à l\'assaut du cœur rouge.',defend:'Tes troupes se regroupent devant ta base.',follow:'Tes troupes t\'escortent.'}[b.order],2.5,'#9fd0ff');sfx.place()}
@@ -1875,10 +1875,12 @@ function drawTitle(){
 // panneaux Réglages / Succès, partagés par l'écran titre et le menu pause
 function drawMenuPanel(close){if(menuPanel==='set')return drawSettings(close);if(menuPanel==='quest')return drawQuestPanel(close);if(menuPanel==='relic')return drawRelicPanel(close);return drawAchPanel(close)}
 function panelAnim(x,y,W,H){const k=1-Math.pow(1-panelT,3);if(k>=1)return false;ctx.save();ctx.globalAlpha=k;const cx=x+W/2,cy=y+H/2,z=.9+.1*k;ctx.translate(cx,cy+(1-k)*8);ctx.scale(z,z);ctx.translate(-cx,-cy);return true}
-function drawSettings(close){const S2=PROF.set,W=Math.min(VW-16,220),rows=[['sound','Son'],['music','Musique'],['vib','Vibrations'],['shake','Secousses de l\'écran'],['crt','Effet rétro (lignes)'],['lefty','Commandes'],['en','Langue / Language']],H=30+rows.length*22+26,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
+function drawSettings(close){const S2=PROF.set,W=Math.min(VW-16,220),rows=[['sound','Son'],['music','Musique'],['vib','Vibrations'],['shake','Secousses de l\'écran'],['crt','Effet rétro (lignes)'],['lefty','Commandes'],['en','Langue / Language']],RB=menuBH(rows.length,60),H=30+rows.length*(RB+4)+26+(RB-18),x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   const an=panelAnim(x,y,W,H);box(x,y,W,H);txt('Réglages',x+W/2,y+8,COL.txt,10,'center');
-  rows.forEach(([k,l],i)=>{const on=S2[k];button(x+10,y+26+i*22,W-20,18,l+' : '+(k==='lefty'?(on?'gaucher':'droitier'):k==='en'?(on?'English':'français'):on?'oui':'non'),()=>{S2[k]=!S2[k];if(k==='sound'){muted=!S2.sound;if(!muted)audioInit()}if(k==='vib'&&S2.vib)buzz(30);saveProf();sfx.click()},true,on)});
-  button(x+W/2-40,y+H-22,80,16,'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
+  rows.forEach(([k,l],i)=>{const on=S2[k];button(x+10,y+26+i*(RB+4),W-20,RB,l+' : '+(k==='lefty'?(on?'gaucher':'droitier'):k==='en'?(on?'English':'français'):on?'oui':'non'),()=>{S2[k]=!S2[k];if(k==='sound'){muted=!S2.sound;if(!muted)audioInit()}if(k==='vib'&&S2.vib)buzz(30);saveProf();sfx.click()},true,on)});
+  button(x+W/2-40,y+H-22-(RB-18),80,16+(RB-18),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
+// hauteur des boutons de menu : plus hauts au doigt quand l'écran a la place (n boutons + marge fixe)
+const menuBH=(n,fix)=>isTouch?clamp(Math.floor((VH-fix)/n)-4,18,28):18;
 function drawAchPanel(close){const two=VW>=380,cols=two?2:1,rowsN=Math.ceil(ACH.length/cols),RH=Math.min(20,Math.floor((VH-70)/rowsN)),W=Math.min(VW-12,two?400:240),H=48+rowsN*RH+20,x=Math.round(VW/2-W/2),y=Math.max(2,Math.round(VH/2-H/2));
   const an=panelAnim(x,y,W,H);box(x,y,W,H);const na=Object.keys(PROF.ach).length;txt('Succès '+na+'/'+ACH.length,x+W/2,y+7,COL.gold,10,'center');
   const rec=[0,1,2].map(i=>PROF.rec[i]?DIFFS[i].n+' '+fmtT(PROF.rec[i]):null).filter(Boolean);
