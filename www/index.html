@@ -1695,12 +1695,13 @@ function drawHUD(cx=cam.x,cy=cam.y){
     const cnt=intel.have>=intel.need?intel.need+' PRÊTE':intel.have+'/'+intel.need;
     let label=gathering?(intel.danger?'! ':'')+'VAGUE ROUGE  '+cnt+' · DANS '+intel.eta+' S':marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
     // barre des cœurs au centre (écran large) : le bandeau se cale dessous, sinon il recouvrirait la minicarte
-    const centered=!narrow&&midW>=150,right=centered?cx0+cw:VW-8,padding=18,maxWidth=centered?cw:narrow?VW-152:VW-16;
+    const centered=!narrow&&midW>=150,right=centered?cx0+cw:VW-8,padding=18,maxWidth=centered?cw:VW-16;
+    // portrait : le bandeau prend sa propre ligne sous la réserve (à côté, il n'avait que 40 px et devenait illisible)
     if(uiWidth(label,7)>maxWidth-padding)label=gathering?(intel.danger?'! ':'')+'VAGUE '+cnt+' · DANS '+intel.eta+' S':marching?'EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':label;
     // encore trop large (portrait) : version télégraphique plutôt qu'un texte coupé
     if(uiWidth(label,7)>maxWidth-padding)label=gathering?(intel.danger?'! ':'')+cnt+' · '+intel.eta+' S':marching?'MARCHE · '+intel.front+' CASES':label;
     label=uiFit(label,maxWidth-padding,7);
-    const width=uiWidth(label,7)+padding,x=right-width,y=cy0+20;
+    const width=uiWidth(label,7)+padding,x=right-width,y=narrow?cy0+44:cy0+20;
     box(x,y,width,11,COL.panel,'#e5534b33');
     txt(label,right-5,y+2,col,7,'right');
     // toucher / cliquer le bandeau : la vague expliquée en clair
@@ -1718,7 +1719,7 @@ function drawHUD(cx=cam.x,cy=cam.y){
   let tipAt=null,hotTip=null;
   for(const k of RES){const v=b0.storage[k];if(resPrev[k]!==undefined&&v>resPrev[k])resPop[k]=time;resPrev[k]=v}
   const rc=k=>time-(resPop[k]||-9)<.6?(Math.sin(time*20)>0?COL.gold:'#ffffff'):COL.txt,rb=k=>time-(resPop[k]||-9)<.25?-1:0;
-  if(narrow){ry=cy0+21;RES.forEach((k,i)=>{const x=8+(i%4)*32,y=ry+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y+rb(k),10,10);txt(uiFit(''+b0.storage[k],20,7),x+11,y+2,rc(k),7);resCell(k,x,y,31)});ry+=24}
+  if(narrow){ry=cy0+21;RES.forEach((k,i)=>{const x=8+(i%4)*32,y=ry+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y+rb(k),10,10);txt(uiFit(''+b0.storage[k],20,7),x+11,y+2,rc(k),7);resCell(k,x,y,31)});ry+=24+(waveVisible?14:0)}
   else{ry=38;RES.forEach((k,i)=>{const x=8+(i%4)*27,y=ry+5+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y-2+rb(k),10,10);txt(''+b0.storage[k],x+11,y,rc(k),7);resCell(k,x,y-2,26)});ry=cy0+30+waveGap}
   let hudBottom=Math.max(62,my+mh+2,cy0+31,ry);
   // Latest messages only, on small fading bands so the world stays visible.
