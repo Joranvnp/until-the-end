@@ -1201,11 +1201,12 @@ function drawBasePanel(){const b=bases[0],W=262,H=196,x=Math.round(VW/2-W/2),y=M
   const nearB=Math.abs(player.x-b.core.x)<90;button(x+W-108,y+4,86,12,'Déposer pierre/bois',()=>{let n=0;for(const k of['stone','wood']){const c=countItem(k);takeItem(k,c);b.storage[k]+=c;n+=c}toast(n?('Déposé : '+n):'Rien à déposer.',2,'#9fd0ff');if(n)sfx.buy()},nearB);
 }
 function drawCraftPanel(){const W=250,rows=RECIPES.length,H=30+rows*17,x=Math.round(VW/2-W/2),y=Math.max(30,Math.round(VH/2-H/2)-6);panelRect={x,y,w:W,h:H};
-  box(x,y,W,H);txt('Forge',x+8,y+6,COL.txt,10);txt('ingrédients pris dans ton sac',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('craft'));
-  const inv={};for(const s of player.inv)if(s)inv[s.id]=(inv[s.id]||0)+s.n;
+  box(x,y,W,H);txt('Forge',x+8,y+6,COL.txt,10);txt('sac puis réserve de la base',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('craft'));
+  // le minerai est déposé tout seul à la base : la forge puise dans le sac puis dans la réserve
+  const inv={},st=bases[0].storage;for(const s of player.inv)if(s)inv[s.id]=(inv[s.id]||0)+s.n;for(const k of RES)inv[k]=(inv[k]||0)+(st[k]||0);
   RECIPES.forEach((r,i)=>{const yy=y+22+i*17,ok=canPay(inv,r.inp);box(x+6,yy,W-12,15,ok?COL.panel2:'#05050c','#e8ecff18');ctx.drawImage(ICON[r.out],x+8,yy,14,14);
     txt(IT[r.out].n+(r.n>1?' ×'+r.n:''),x+25,yy+4,ok?COL.txt:COL.dim,7);costLine(r.inp,x+120,yy+4,inv);
-    button(x+W-46,yy+2,38,11,'Créer',()=>{for(const[k,v]of Object.entries(r.inp))takeItem(k,v);const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();toast('Fabriqué : '+IT[r.out].n,2,COL.gold)},ok)})}
+    button(x+W-46,yy+2,38,11,'Créer',()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();toast('Fabriqué : '+IT[r.out].n,2,COL.gold)},ok)})}
 function drawInvPanel(){const sw=20,W=9*sw+12,H=4*sw+34,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2)-10;panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Sac',x+8,y+6,COL.txt,10);txt('clique pour déplacer',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('inv'));
   for(let i=0;i<36;i++){const r=i<9?3:Math.floor((i-9)/9),c=i%9,xx=x+6+c*sw,yy=y+22+r*sw+(i<9?6:0),s=player.inv[i];
