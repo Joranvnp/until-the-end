@@ -52,7 +52,7 @@
 - [ ] Nouveaux biomes (désert, glace profonde) et boss de lune de sang
 
 ### Innovation (ce qui différencie le jeu)
-- [ ] Héros à débloquer avec un pouvoir chacun (mineur, archer, bâtisseur)
+- [x] Héros à débloquer avec un pouvoir chacun (mineur, archer, bâtisseur)
 - [x] Reliques : 8 bonus permanents (coffres, champion rouge, Siège toutes les 5 vagues), niveau 1 à 3 par doublon, 2 emplacements (3 après 10 victoires)
 - [x] Partage du résultat (temps, défi du jour) en une touche
 
