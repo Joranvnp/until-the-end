@@ -203,6 +203,57 @@ function makeWall(kind,v){return pixTile((x,y)=>{
 
 function buildTextures(){
   for(let id=1;id<TD.length;id++){TEX[id]=[];for(let v=0;v<4;v++)TEX[id].push(makeTex(id,v))}
+  // Cache exposed/buried terrain separately: bury the host rock, not its ore.
+  SPR.buried={};SPR.oreGlint={};
+  const minerals=[COAL,COPPER,IRON,SILVER,GOLD,DIAMOND];
+  const terrain=[DIRT,GRASS,STONE,DEEP,...minerals];
+  for(const id of terrain){SPR.buried[id]=[];
+    for(let v=0;v<4;v++){
+      const earthy=id===DIRT||id===GRASS,deep=id===DEEP||id===GOLD||id===DIAMOND;
+      const host=pixTile((x,y)=>{
+        if(earthy){
+          const seam=(y+((x+v*3)>>2)%3)%7;
+          if(seam===0&&((x+v*5)%11)<8)return '#624538';
+          if((x*7+y*11+v*13)%29<2)return '#8a6446';
+          return seam===1?'#251c20':'#392b29';
+        }
+        // Broken, offset facets instead of a luminous square around every tile.
+        const fault=(x+Math.floor(y/3)+v*5)%13;
+        if(fault===0&&y>2&&y<14)return deep?'#21182f':'#141c2b';
+        if((y+v*3)%11===3&&x>2&&x<12)return deep?'#56406f':'#435369';
+        if((x*3+y*7+v*11)%43===0)return deep?'#674d81':'#596980';
+        return deep?'#271d3b':'#293345';
+      },id*97+v);
+      for(let buried=0;buried<2;buried++){
+        const c=mk(16,16),q=c.getContext('2d'),P=pen(q);q.drawImage(host,0,0);
+        if(buried){q.fillStyle='rgba(6,6,15,.48)';q.fillRect(0,0,16,16)}
+        if(id===GRASS){P(0,0,16,1,'#63ebca');for(let x=v;x<16;x+=4)P(x,1,1,1,'#236f72')}
+        if(minerals.includes(id)){
+          const p=id===COAL?['#161922','#657180','#b1bdc7']:ORE[id];
+          // Two irregular three-tone nuggets, large enough to read at native scale.
+          for(const [cx,cy] of [[5+v%2,5],[11-v%2,11]]){
+            for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){
+              const inside=id===DIAMOND?Math.abs(dx)*2+Math.abs(dy)<=5:
+                id===SILVER?Math.abs(dx)<=2&&Math.abs(dy)<=3&&(Math.abs(dx)+Math.abs(dy)<5):
+                id===IRON?Math.abs(dx)<=3&&Math.abs(dy)<=2&&Math.abs(dx)+Math.abs(dy)<5:
+                Math.abs(dx)+Math.abs(dy)<=4&&!(dx===-3&&dy===1);
+              if(inside)P(cx+dx,cy+dy,1,1,dx+dy<-1?p[2]:dx>1||dy>1?p[0]:p[1]);
+            }
+          }
+        }
+        if(buried)SPR.buried[id].push(c);else TEX[id][v]=c;
+      }
+    }
+  }
+  // Tiny cached glints; sparse phases animate without blur, gradients or allocations.
+  for(const id of [SILVER,GOLD,DIAMOND]){
+    SPR.oreGlint[id]=[];
+    for(let v=0;v<4;v++){
+      const c=mk(16,16),P=pen(c.getContext('2d')),x=4+v%2;
+      P(x,3,1,3,ORE[id][1]);P(x-1,4,3,1,ORE[id][1]);P(x,4,1,1,ORE[id][2]);
+      SPR.oreGlint[id].push(c);
+    }
+  }
   for(let k=1;k<=3;k++){WALLTEX[k]=[];for(let v=0;v<4;v++)WALLTEX[k].push(makeWall(k,v))}
   const paths=[[[8,3],[8,4],[7,5],[7,6],[8,7],[8,8]],[[8,8],[9,9],[10,9],[11,10],[11,11],[12,12]],[[8,8],[6,9],[5,9],[4,10],[3,10],[2,11]],[[7,6],[10,5],[11,4],[12,4],[13,3]],[[5,9],[5,12],[4,13],[4,14]],[[10,9],[13,8],[14,7]]];
   SPR.crack=[];for(let st=0;st<4;st++){const c=mk(16,16),P=pen(c.getContext('2d'));for(const path of paths.slice(0,st+3))for(const[x,y]of path)P(x,y,1,1,INK);SPR.crack.push(c)}
@@ -1024,9 +1075,11 @@ function drawWorld(g,cx,cy){
     if(t===VINE){g.drawImage(TEX[VINE][h],px+Math.round(Math.sin(time*1.3+x*.7+y*.4)*1),py);continue}
     if(t===CPLANT||t===MUSH){g.drawImage(TEX[t][h],px,py);continue}
     const interior=d.solid&&TD[getT(x-1,y)].solid&&TD[getT(x+1,y)].solid&&TD[getT(x,y-1)].solid&&TD[getT(x,y+1)].solid;
-    g.drawImage(TEX[t][h],px,py);
-    if(interior){g.fillStyle='rgba(6,6,15,.75)';g.fillRect(px,py,T,T)}
-    else if(d.solid&&!TD[getT(x,y-1)].solid){g.fillStyle=t===GRASS?'#63ebca':t===DEEP?'#7960ce':'#5a7cff';g.fillRect(px,py,T,1);
+    const buried=interior&&SPR.buried[t];
+    g.drawImage(buried?buried[h]:TEX[t][h],px,py);
+    if(interior&&!buried){g.fillStyle='rgba(6,6,15,.75)';g.fillRect(px,py,T,T)}
+    if(SPR.oreGlint[t]&&((Math.floor(time*3)+x*7+y*11)&15)===0)g.drawImage(SPR.oreGlint[t][h],px,py);
+    if(!interior&&d.solid&&!TD[getT(x,y-1)].solid){g.fillStyle=t===GRASS?'#63ebca':t===DIRT?'#967052':t===DEEP?'#7960ce':'#667d9c';g.fillRect(px,py,T,1);
       if(t===GRASS){g.drawImage(TEX[(x%7===0)?PLANT:CPLANT][x&3],px,py-T)}}}
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(fg[idx(x,y)]!==WATER)continue;const px=x*T+ox,py=y*T+oy;
     if(getT(x,y-1)!==WATER){const o=Math.round(Math.sin(time*2.2+x*.8)*1.3+Math.sin(time*1.3-x*.35));g.fillStyle='#050812';g.fillRect(px,py+3+o,T,T-3-o);
