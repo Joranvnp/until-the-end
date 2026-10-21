@@ -1287,7 +1287,9 @@ function drawBasePanel(){const b=bases[0],W=262,H=196,x=Math.round(VW/2-W/2),y=p
   box(x,y,W,H);txt('Ta base',x+8,y+6,COL.txt,10,'left',UIF);button(x+W-18,y+4,14,12,'×',()=>togglePanel('base'));
   txt('Recruter',x+8,y+22,COL.dim,7);
   Object.entries(UNITS).filter(([,u])=>!u.hero).forEach(([k,u],i)=>{const yy=y+32+i*24;box(x+6,yy,W-12,22,COL.panel2,'#e8ecff18');
-    const img=SPR[k+'0'].R.idle[0];ctx.drawImage(img,x+9,yy+(k==='golem'?-3:-2));txt(u.n,x+30,yy+3,COL.txt,8);txt(uiFit(u.d,101,6),x+30,yy+12,COL.dim,6);
+    const img=SPR[k+'0'].R.idle[0];ctx.drawImage(img,x+9,yy+(k==='golem'?-3:-2));txt(u.n,x+30,yy+3,COL.txt,8);
+    // effectif actuel de ce type, pour savoir quoi recruter sans compter à l'écran
+    const own=ents.filter(e=>e.type==='unit'&&e.team===0&&e.kind===k&&!e.dead).length;if(own)txt('×'+own,x+34+uiWidth(u.n,8),yy+3,'#9fd0ff',8);txt(uiFit(u.d,101,6),x+30,yy+12,COL.dim,6);
     costLine(u.cost,x+136,yy+7,b.storage);button(x+W-48,yy+4,40,14,'Recruter',()=>{if(recruit(0,k))toast(u.n+' recruté !',2,'#9fd0ff')},canPay(b.storage,u.cost))});
   txt('Améliorations',x+8,y+132,COL.dim,7);
   UPG.forEach((u,i)=>{const xx=x+6+(i%2)*126,yy=y+141+Math.floor(i/2)*25,l=b.upg[u.id],c=upgCost(u,l);box(xx,yy,123,23,COL.panel2,'#e8ecff18');
