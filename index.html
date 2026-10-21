@@ -760,9 +760,16 @@ function updateUnit(e,dt){
     // arrivée au pied du cœur adverse mais en contrebas (fosse creusée dessous) : on remonte en pilier
     const ec=bases[1-e.team].core;if(!follow&&b.order==='attack'&&e.y>ec.y+ec.h-4&&Math.abs(ec.x+11-(e.x+e.w/2))<3*T)climbUp(e,dt,dest)}}
 const ORE_VAL={[COAL]:2,[COPPER]:3,[IRON]:5,[SILVER]:7,[GOLD]:10,[DIAMOND]:14};
+// minerai inaccessible par le haut : une tuile indestructible (sol du château, socle) bouche la colonne
+function sealedFromAbove(x,y){for(let yy=Math.max(0,surf[x]-1);yy<y;yy++)if(TD[getT(x,yy)].hard===Infinity)return true;return false}
 function findOre(e,far){const b=bases[e.team],home=Math.floor((b.core.x+11)/T),dir=e.team===0?1:-1,champ=e.kind==='champion';let best=null,bs=-1;
+  // le champion vide d'abord le filon où il se trouve (balayage local) au lieu de traverser la carte à chaque cible perdue
+  if(champ){const ex=Math.floor((e.x+e.w/2)/T),ey=Math.floor((e.y+e.h/2)/T);
+    for(let y=Math.max(1,ey-14);y<=Math.min(WH-4,ey+14);y++)for(let x=Math.max(2,ex-22);x<=Math.min(WW-3,ex+22);x++){const v=ORE_VAL[getT(x,y)];if(!v)continue;
+      if(y<surf[x]||sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;const sc=v/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+4);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
+    if(best)return best}
   for(let i=0;i<700;i++){const x=clamp(home+dir*RI(5,champ||far?150:70),2,WW-3),y=RI(surf[x]+1,Math.min(WH-4,surf[x]+(champ||far?34:20)));const t=getT(x,y),v=ORE_VAL[t];if(!v)continue;
-    if(!champ&&TD[t].tier>2)continue;
+    if(!champ&&TD[t].tier>2)continue;if(sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;
     const d=Math.abs(x-home)*(champ?.35:1)+Math.abs(y-surf[clamp(x,0,WW-1)])*1.6;const sc=v/(d+12);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
   return best}
 // descendre d'une marche : creuser la colonne devant (hauteur du corps + une case dessous), avancer, tomber d'un bloc
@@ -779,7 +786,11 @@ function updateGatherer(e,u,dt){
   const thr=e.kind==='champion'?pickTarget(e,u,e.state==='home'?60:120):nearestHostile(e,18);
   if(thr){if(e.kind==='champion')return engage(e,u,thr,dt);if(e.atk<=0)meleeOrShoot(e,u,thr)}
   if(e.state==='seek'){
-    if(!e.tgt||!ORE_VAL[getT(e.tgt.tx,e.tgt.ty)]||e.stuck>=3){e.tgt=findOre(e)||findOre(e,true);e.stuck=0;if(!e.tgt){e.state='home';return}}
+    // cible bloquée ou poursuivie plus de 20 s : on la met de côté pour ne pas y revenir en boucle
+    if(e.tgt&&(e.stuck>=3||time-(e.tgtT||0)>20)){(e.bad=e.bad||new Set()).add(e.tgt.tx+','+e.tgt.ty);if(e.bad.size>40)e.bad=new Set();e.tgt=null}
+    if(!e.tgt||!ORE_VAL[getT(e.tgt.tx,e.tgt.ty)]){e.tgt=findOre(e)||findOre(e,true);e.stuck=0;if(!e.tgt){e.state='home';return}
+      // le chrono suit la tuile visée : reprendre la même cible ne le remet pas à zéro
+      const key=e.tgt.tx+','+e.tgt.ty;if(key!==e.tgtKey){e.tgtKey=key;e.tgtT=time}}
     const{tx,ty}=e.tgt,cx=e.x+e.w/2,cy=e.y+e.h/2,ex=Math.floor(cx/T),fy=Math.floor((e.y+e.h-1)/T);
     if(Math.abs(tx-ex)<=1&&ty<fy-1&&Math.hypot(tx*T+8-cx,ty*T+8-cy)>=T*2.2)return climbUp(e,dt,tx*T+8);
     if(Math.hypot(tx*T+8-cx,ty*T+8-cy)<T*2.2){e.vx=0;moveEnt(e,dt);e.dir=tx*T+8>cx?1:-1;const r=digStep(e,tx,ty,dt,true);if(r!==0)e.tgt=null;if(e.carryN>=cap||(e.junk||0)>=40)e.state='home';return}
@@ -787,7 +798,7 @@ function updateGatherer(e,u,dt){
     // Trop à pic : on s'écarte d'abord pour avoir autant de recul horizontal que de profondeur.
     const h=Math.abs(tx-ex),v=ty-fy;
     if(v>=1&&h<=v+1){if(e.stairT!==e.tgt&&h>=Math.max(1,v-1))e.stairT=e.tgt;
-      if(e.stairT===e.tgt){if(stairDown(e,dt,Math.sign(tx-ex)||e.dir)<0)e.tgt=null}
+      if(e.stairT===e.tgt){if(stairDown(e,dt,Math.sign(tx-ex)||e.dir)<0){(e.bad=e.bad||new Set()).add(e.tgtKey);e.tgt=null}}
       else{const side=Math.sign(ex-tx)||(e.offs<0?-1:1);navigate(e,(tx+side*(v+1))*T+8,dt,'flat')}
       if(e.carryN>=cap||(e.junk||0)>=40)e.state='home';return}
     navigate(e,tx*T+8,dt,ty<fy-1||e.stuck>=2?'climb':'flat');if(e.carryN>=cap||(e.junk||0)>=40)e.state='home';return}
