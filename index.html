@@ -892,7 +892,9 @@ function updateAI(dt){
 function applyUpg(team,id){const b=bases[team];if(id==='core'){b.core.maxhp+=300;b.core.hp+=300}}
 function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw=b.tower;tw.cd-=dt;if(tw.cd>0)continue;const lv=b.upg.tower;
   const fake={x:tw.x,y:tw.y,w:0,h:0,team:b.team},rng=220+lv*18;let t=null,bd=rng;
-  for(const o of ents){if(o.dead||!o.hp||o.type==='item'||o.team===b.team)continue;const d=Math.hypot(o.x+o.w/2-tw.x,o.y+o.h/2-tw.y);if(d<bd){bd=d;t=o}}
+  // priorité : ce qui tire de loin ou frappe déjà le cœur, puis le plus proche (les archers fondent sous la tour au lieu des colosses)
+  let bs=-1;for(const o of ents){if(o.dead||!o.hp||o.type==='item'||o.team===b.team)continue;const d=Math.hypot(o.x+o.w/2-tw.x,o.y+o.h/2-tw.y);if(d>=rng)continue;
+    const sc=(o.type==='unit'&&UNITS[o.kind].ranged?2:1)*(Math.abs(o.x+o.w/2-b.core.x-11)<3*T?1.6:1)*(o.kind==='golem'?.6:1)/(1+d/rng);if(sc>bs){bs=sc;bd=d;t=o}}
   if(!t){tw.cd=.3;continue}
   tw.cd=1.8/(1+.25*lv);const tx=t.x+t.w/2,ty=t.y+t.h/2,dx=tx-tw.x,v=300,tt=Math.abs(dx)/v;
   arrows.push({x:tw.x,y:tw.y,vx:Math.sign(dx)*v,vy:(ty-tw.y)/Math.max(tt,.1)-150*tt,team:b.team,dmg:7+4*lv,life:3,src:fake});}}
