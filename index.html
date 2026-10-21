@@ -642,7 +642,7 @@ function recruit(team,kind,free){const b=bases[team],u=UNITS[kind];if(!free&&!ca
   const e={type:'unit',kind,team,x:sx,y:BASE_GY*T-(u.big?26:22),w:u.big?16:8,h:u.big?24:20,vx:0,vy:0,hp:u.hp,maxhp:u.hp,dir:team===0?1:-1,onGround:false,atk:0,flash:0,anim:0,digT:0,stepOff:0,
     carry:{},carryN:0,state:'seek',tgt:null,offs:R(-1,1),progX:sx,progY:0,progT:0,stuck:0,swing:0,ignore:null,ignoreT:0,wantMove:false};
   ents.push(e);if(team===0&&!free){stats.recruited++;stats.rk=stats.rk||{};stats.rk[kind]=(stats.rk[kind]||0)+1;sfx.buy()}return e}
-const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed);
+const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed)*(e.boost||1);
 const udmg=e=>UNITS[e.kind].dmg*(1+.25*bases[e.team].upg.dmg);
 const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*8*T;
 const POW={miner:.3,warrior:1,archer:.9,golem:3.2,champion:2.5};
@@ -740,7 +740,7 @@ function computeArmies(){for(const t of[0,1]){const xs=ents.filter(e=>e.type==='
 function retreatSpot(e,home){const hx=home.x+11+(e.team===0?24:-24),cx=e.x+e.w/2,d=hx-cx;
   return Math.abs(d)<=18*T?hx:clamp(cx+Math.sign(d)*18*T,T,(WW-1)*T)}
 function updateUnit(e,dt){
-  const u=UNITS[e.kind];e.anim+=Math.abs(e.vx)*dt*.12;if(e.flash>0)e.flash-=dt;if(e.atk>0)e.atk-=dt;if(e.swing>0)e.swing-=dt;
+  const u=UNITS[e.kind];e.boost=1;e.anim+=Math.abs(e.vx)*dt*.12;if(e.flash>0)e.flash-=dt;if(e.atk>0)e.atk-=dt;if(e.swing>0)e.swing-=dt;
   if(e.y>WH*T){e.dead=true;return}
   trackProgress(e,dt);updatePillar(e);
   // emmurée (bloc posé sur elle) : on la remonte jusqu'à la première place libre
@@ -775,6 +775,8 @@ function updateUnit(e,dt){
   const follow=b.order==='follow'&&e.team===0&&!player.dead;
   const tgt=pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
   if(tgt)return engage(e,u,tgt,dt);
+  // escorte distancée : elle sprinte pour rattraper le joueur (il court 2× plus vite qu'une unité)
+  e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-6)/10,1,2.2):1;
   // en défense, on court intercepter tout intrus qui approche du cœur
   if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else return engage(e,u,e.hunt,dt)}
   const intr=intruder[e.team];if(b.order==='defend'&&intr&&!intr.dead&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
