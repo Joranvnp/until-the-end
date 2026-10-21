@@ -592,6 +592,21 @@ const OBJ=[
 ];
 function checkObjectives(){const o=OBJ[stats.obj];if(!o||!o.ok())return;const b=bases[0];for(const[k,v]of Object.entries(o.rw))b.storage[k]+=v;
   const rw=Object.entries(o.rw).map(([k,v])=>'+'+v+' '+IT[k].n.toLowerCase()).join(', ');stats.obj++;toast('Objectif accompli !'+(rw?' Récompense : '+rw:''),4,COL.gold);sfx.buy()}
+// cible de l'objectif en cours, pour la flèche du guide : {x,y,kind} en pixels monde, ou null si rien à montrer
+let objTgt=null,objTgtT=0;
+function nearestOre(id,r=40){const px=Math.floor((player.x+player.w/2)/T),py=Math.floor((player.y+player.h/2)/T);let best=null,bd=1e9;
+  for(let y=Math.max(1,py-r);y<=Math.min(WH-2,py+r);y++)for(let x=Math.max(1,px-r);x<=Math.min(WW-2,px+r);x++){if(getT(x,y)!==id)continue;const d=(x-px)**2+(y-py)**2;if(d<bd){bd=d;best={x:x*T+T/2,y:y*T+T/2}}}
+  return best}
+function objTarget(){const b=bases[0].core,home={x:b.x+b.w/2,y:b.y+b.h/2,kind:'base'},near=t=>Math.hypot(t.x-player.x,t.y-player.y)<5*T;
+  switch(stats.obj){
+    case 0:return null; // n'importe quel bloc fait l'affaire
+    case 2:{if(countItem('copper')+bases[0].storage.copper>=12)return near(home)?null:home;const o=nearestOre(COPPER);return o&&{...o,kind:'ore'}}
+    case 6:{let best=null,bd=1e9;for(const e of ents)if(e.team===1&&e.type==='unit'&&!e.dead){const d=Math.abs(e.x-player.x)+Math.abs(e.y-player.y);if(d<bd){bd=d;best=e}}
+      return best?{x:best.x+best.w/2,y:best.y,kind:'enemy'}:null}
+    case 7:{const c=bases[1].core;return{x:c.x+c.w/2,y:c.y+c.h/2,kind:'enemy'}}
+    default:return stats.obj<OBJ.length&&!near(home)?home:null}}
+function updateObjTarget(dt){if(daily||surv||stats.obj>=OBJ.length||player.dead){objTgt=null;return}objTgtT-=dt;
+  if(objTgtT<=0||stats.obj===6){objTgtT=.5;objTgt=objTarget()}}
 // ---------- inventaire ----------
 const maxStack=id=>IT[id].tool?1:99;
 function addItem(id,n){
@@ -1151,7 +1166,7 @@ function update(dt){
   if(hitStop>0){hitStop-=dt;return}
   time+=dt;updateWorldFx(dt);updateBombs(dt);
   saveT-=dt;if(saveT<=0){saveT=20;saveGame()}
-  checkObjectives();
+  checkObjectives();updateObjTarget(dt);
   if(endT>0){endT-=dt;if(endT<=0){state=endState;return}}
   updatePlayer(dt);computeArmies();buildTargets();
   for(const e of ents){if(e.dead)continue;
@@ -1343,7 +1358,7 @@ function drawGlows(g,cx,cy){g.save();g.globalCompositeOperation='lighter';
   for(const b of bases){const c=SPR['castle'+b.team],bx=b.castleX-cx,by=BASE_GY*T-c.height+1-cy;
     if(bx>VW+60||bx+c.width<-60)continue;
     if(!b.core.dead){for(const[x,y]of c.wins)halo(g,bx+x+4,by+y+6,'#ffbd62',18,.45);
-      halo(g,b.core.x-cx+11,b.core.y-cy+16,b.team?'#e5534b':'#4f9df5',38,.65)}
+      halo(g,b.core.x-cx+11,b.core.y-cy+16,b.team?'#e5534b':'#4f9df5',38+2*Math.sin(time*2+b.team),.6+.08*Math.sin(time*2+b.team))}
     for(const dx of[-12,188]){const x=Math.round(bx+dx),y=Math.round(by+95);g.globalAlpha=1;g.globalCompositeOperation='source-over';g.fillStyle='#404667';g.fillRect(x,y-65,1,65);g.drawImage(TEX[TORCH][0],x-8,y-4);g.globalCompositeOperation='lighter';halo(g,x,y+4,'#ffce78',40,.8)}}
   const x0=Math.max(0,Math.floor(cx/T)),x1=Math.min(WW-1,Math.floor((cx+VW)/T)+1),y0=Math.max(0,Math.floor(cy/T)),y1=Math.min(WH-1,Math.floor((cy+VH)/T)+1);
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const t=fg[idx(x,y)],X=x*T-cx+8,Y=y*T-cy+8;
@@ -1412,7 +1427,7 @@ function render(){
   if(PROF.set.crt)drawCRT();
   ctx.setTransform(S,0,0,S,0,0);
   uiHits=[];
-  if(state==='play')drawHUD();else if(state==='title')drawTitle();else drawEnd();
+  if(state==='play')drawHUD(cx,cy);else if(state==='title')drawTitle();else drawEnd();
   if(pressFx){const k=(performance.now()-pressFx.t)/180;if(k>=1)pressFx=null;else{ctx.globalAlpha=(1-k)*.45;ctx.fillStyle='#ffffff';ctx.fillRect(Math.round(pressFx.x)+1,Math.round(pressFx.y)+1,Math.round(pressFx.w)-2,Math.round(pressFx.h)-2);ctx.globalAlpha=1}}
   drawConfetti();drawAch();
   if(fade>0){ctx.fillStyle=`rgba(5,5,12,${clamp(fade,0,1)})`;ctx.fillRect(0,0,VW,VH)}
@@ -1462,7 +1477,45 @@ let HL={touchY:0},resPrev={},resPop={},selPrev=0,selT=0,pressFx=null;
 // HUD adaptatif : disposition « large » (ordinateur, paysage) ou « étroite » (téléphone en portrait)
 const HEART=['.XX.XX.','XXXXXXX','XXXXXXX','.XXXXX.','..XXX..','...X...'];
 function heart(x,y,f){for(let j=0;j<6;j++)for(let i=0;i<7;i++)if(HEART[j][i]==='X'){const full=i<7*f;ctx.fillStyle=full?(j===1&&i<3&&i>0?'#ffc2dc':'#ff6fae'):'#2a2346';ctx.fillRect(x+i,y+j,1,1)}}
-function drawHUD(){
+// Rotate the arrow's pixel mask, then snap each output pixel to the UI grid.
+function drawObjPointer(cx,cy,hudBottom,bottom){
+  if(!objTgt||state!=='play'||panel||paused||menuPanel)return;
+  const col=objTgt.kind==='base'?COL.blue:objTgt.kind==='ore'?ORE[COPPER][1]:COL.red;
+  const sx=objTgt.x-cx,sy=objTgt.y-cy,pulse=.75+.2*Math.sin(time*3);
+  const left=14,right=VW-14,top=Math.max(14,hudBottom+14);
+  let floor=Math.min(VH-14,HL.barTop-14,bottom-14);
+  if(isTouch)for(const b of touchBtns)floor=Math.min(floor,b.y-14);
+  if(floor<=top)return;
+  ctx.save();
+  // HUD-covered targets use the edge guide too, so the marker stays readable.
+  if(sx>=left&&sx<=right&&sy>=top+16&&sy<=floor){
+    const x=Math.round(sx),y=Math.round(sy-12+Math.sin(time*2.5)*2);
+    halo(ctx,x,y,col,12,.45*pulse);ctx.globalAlpha=1;
+    ctx.fillStyle=COL.panel2;ctx.fillRect(x-4,y-2,9,3);ctx.fillRect(x-3,y+1,7,2);ctx.fillRect(x-1,y+3,3,2);
+    ctx.fillStyle=col;ctx.fillRect(x-3,y-1,2,2);ctx.fillRect(x+2,y-1,2,2);ctx.fillRect(x-1,y+1,3,2);ctx.fillRect(x,y+3,1,1);
+  }else{
+    const mx=(left+right)/2,my=(top+floor)/2,dx=sx-mx,dy=sy-my;
+    const k=Math.min(dx?((right-left)/2)/Math.abs(dx):Infinity,dy?((floor-top)/2)/Math.abs(dy):Infinity);
+    const x=Math.round(mx+dx*k),y=Math.round(my+dy*k),angle=Math.atan2(dy,dx),c=Math.cos(angle),s=Math.sin(angle);
+    halo(ctx,x,y,col,14,.55*pulse);ctx.globalAlpha=pulse;
+    // A right-facing arrow, inverse-rasterized without antialiased canvas rotation.
+    for(let j=-5;j<=5;j++)for(let i=-5;i<=5;i++){
+      const u=Math.round(i*c+j*s),v=Math.round(-i*s+j*c);
+      if((u>=-4&&u<=0&&Math.abs(v)<=1)||(u>=0&&u<=4&&Math.abs(v)<=4-u)){
+        ctx.fillStyle=COL.panel2;ctx.fillRect(x+i-1,y+j-1,3,3)}}
+    ctx.fillStyle=col;
+    for(let j=-5;j<=5;j++)for(let i=-5;i<=5;i++){
+      const u=Math.round(i*c+j*s),v=Math.round(-i*s+j*c);
+      if((u>=-4&&u<=0&&Math.abs(v)<=1)||(u>=0&&u<=4&&Math.abs(v)<=4-u))ctx.fillRect(x+i,y+j,1,1)}
+    ctx.globalAlpha=1;
+    const label=''+Math.round(Math.hypot(objTgt.x-player.x-player.w/2,objTgt.y-player.y-player.h/2)/T);
+    const lx=clamp(x-c*17,14+uiWidth(label,7)/2,VW-14-uiWidth(label,7)/2),ly=clamp(y-s*17-2,top,floor-5);
+    ctx.fillStyle=COL.panel;ctx.fillRect(Math.round(lx-uiWidth(label,7)/2)-2,Math.round(ly)-2,uiWidth(label,7)+4,9);
+    txt(label,lx,ly,col,7,'center');
+  }
+  ctx.restore();
+}
+function drawHUD(cx=cam.x,cy=cam.y){
   const p=player,b0=bases[0],b1=bases[1],narrow=VW<430;if(p.sel!==selPrev){selPrev=p.sel;selT=time;sfx.click()}
   const al=ents.filter(e=>e.type==='unit'&&e.team===0&&!e.dead).length,en=ents.filter(e=>e.type==='unit'&&e.team===1&&!e.dead).length;
   // héros
@@ -1512,9 +1565,10 @@ function drawHUD(){
   const rc=k=>time-(resPop[k]||-9)<.6?(Math.sin(time*20)>0?COL.gold:'#ffffff'):COL.txt,rb=k=>time-(resPop[k]||-9)<.25?-1:0;
   if(narrow){ry=cy0+21;RES.forEach((k,i)=>{const x=8+(i%4)*32,y=ry+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y+rb(k),10,10);txt(uiFit(''+b0.storage[k],20,7),x+11,y+2,rc(k),7);resCell(k,x,y,31)});ry+=24}
   else{ry=38;RES.forEach((k,i)=>{const x=8+(i%4)*27,y=ry+5+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y-2+rb(k),10,10);txt(''+b0.storage[k],x+11,y,rc(k),7);resCell(k,x,y-2,26)});ry=cy0+30+waveGap}
+  let hudBottom=Math.max(62,my+mh+2,cy0+31,ry);
   // Latest messages only, on small fading bands so the world stays visible.
   {const tw=narrow?VW-32:Math.max(160,Math.min(300,mx-heroW-24));const tx=narrow?VW/2:(midW>=150?heroW+12+midW/2+4:VW/2);let y=narrow?ry:Math.max(ry,cy0+30),linesLeft=narrow?2:Infinity;
-   for(const m of msgs.slice(-2)){ctx.globalAlpha=clamp(m.t,0,1)*.9;const sl=Math.round(Math.max(0,1-(m.d-m.t)*6)*-8);y+=sl;const lines=wrapLines(m.s,tw,7);for(let i=0;i<lines.length&&linesLeft>0;i++,linesLeft--){const l=narrow?uiFit(linesLeft===1?lines.slice(i).join(' '):lines[i],tw,7):lines[i],width=uiWidth(l,7);ctx.fillStyle='#05050cbb';ctx.fillRect(Math.round(tx-width/2)-4,y-2,width+8,9);txt(l,tx,y,COL.txt,7,'center');y+=10}y+=3;ctx.globalAlpha=1}}
+   for(const m of msgs.slice(-2)){ctx.globalAlpha=clamp(m.t,0,1)*.9;const sl=Math.round(Math.max(0,1-(m.d-m.t)*6)*-8);y+=sl;const lines=wrapLines(m.s,tw,7);for(let i=0;i<lines.length&&linesLeft>0;i++,linesLeft--){const l=narrow?uiFit(linesLeft===1?lines.slice(i).join(' '):lines[i],tw,7):lines[i],width=uiWidth(l,7);ctx.fillStyle='#05050cbb';ctx.fillRect(Math.round(tx-width/2)-4,y-2,width+8,9);txt(l,tx,y,COL.txt,7,'center');y+=10}y+=3;ctx.globalAlpha=1}hudBottom=Math.max(hudBottom,y)}
   if(tipAt){const l=IT[tipAt.k].n+' : '+b0.storage[tipAt.k]+' en réserve',w=uiWidth(l,7)+8,x=clamp(tipAt.x-2,2,VW-w-2);box(x,tipAt.y,w,11,'rgba(5,5,12,.95)','#ffffff');txt(l,x+4,tipAt.y+2,COL.txt,7)}
   // bas de l'écran : barre d'objets + commandes (sur la même ligne si la place le permet)
   const sw=Math.min(isTouch?24:20,Math.floor((VW-8)/9)),hy=VH-sw-4,hx=Math.round(VW/2-(9*sw)/2);
@@ -1534,6 +1588,7 @@ function drawHUD(){
     ctx.fillStyle='#05050ccc';ctx.fillRect(ox,oy,ow,11);txt('◇',ox+3,oy+3,COL.gold,7);txt(label,ox+12,oy+3,COL.txt,7);top=oy-3}
   HL.touchY=top;
   if(isTouch)drawTouch();
+  drawObjPointer(cx,cy,hudBottom,top);
   panelRect=null;if(panel){const k=1-Math.pow(1-panelT,3);ctx.save();if(k<1){ctx.globalAlpha=k;ctx.translate(0,Math.round((1-k)*14))}
     if(panel==='base')drawBasePanel();else if(panel==='craft')drawCraftPanel();else if(panel==='inv')drawInvPanel();ctx.restore();
     if(craftFx>0&&panelRect){ctx.globalAlpha=craftFx*1.2;ctx.strokeStyle=COL.gold;ctx.strokeRect(panelRect.x-.5-craftFx*6,panelRect.y-.5-craftFx*6,panelRect.w+craftFx*12,panelRect.h+craftFx*12);ctx.globalAlpha=1}}
@@ -1772,5 +1827,5 @@ else if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))naviga
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;try{update(dt);render()}catch(err){console.error(err)}requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
-window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,set paused(v){paused=v}},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
+window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,set paused(v){paused=v}},get objTgt(){return objTgt},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
 </script>
