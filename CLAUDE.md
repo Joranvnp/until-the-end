@@ -1,0 +1,26 @@
+# Until The End — version web
+
+Jeu 2D pixel art façon Terraria, refait en un seul fichier `index.html` (HTML + JavaScript, aucune dépendance, aucun build).
+Inspiré du projet LÖVE2D d'origine (`3 - Projets/until-the-end` sur Google Drive) et de son document `UNTIL_THE_END_Reference_Complète.md`.
+
+## Lancer
+Ouvrir `index.html` dans un navigateur. Pour les tests headless : `npx playwright` avec Chromium.
+
+## Priorités de l'auteur
+1. Fonctionnalités et interface : tout lisible et utilisable sur téléphone (portrait/paysage), tablette et ordinateur.
+2. Intelligence artificielle : IA adverse (commandant, champion rouge, vagues, raids) et IA des unités (déplacement, minage, combat, ordres Assaut/Défense/Suivre).
+3. Graphismes ensuite (direction : ambiance façon Animal Well, lumière colorée, brume, grottes vivantes).
+
+## Repères dans le code (sections `// ====` de index.html)
+- GÉNÉRATION DES TEXTURES PIXEL ART : tuiles, personnages, château, canopées, tout est dessiné par code.
+- MONDE : génération (montagne centrale, grottes, filons, eau, lianes, champignons), éclairage BFS coloré.
+- ÉTAT DU JEU : newGame, sauvegarde/chargement (localStorage, clé `ute-save-v1`), objectifs (OBJ).
+- JOUEUR, COMBAT, UNITÉS (navigate, climbUp/pilier, digStep, engage, cohésion d'armée computeArmies).
+- IA ADVERSE : updateAI (styles eco/rush/équilibre, défense, raids, vagues groupées, retraite), champion.
+- RENDU : couches monde/lumière (multiply) + halo, atmosphère.
+- INTERFACE : HUD adaptatif (drawHUD, mode large/étroit), panneaux Base/Forge/Sac, menu pause, contrôles tactiles.
+
+## Tests utilisés
+- Simulation accélérée : `__game.newGame(1)` puis `__game.step(n)` (exposé sur window pour les tests).
+- Vérifier : aucune erreur console, une partie AFK se termine en défaite, une grosse armée finit par gagner,
+  captures à 1366x768, 390x844 (mobile portrait), 844x390 (paysage), 1024x768 (tablette).
