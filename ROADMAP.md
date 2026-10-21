@@ -54,7 +54,7 @@
 ### Innovation (ce qui différencie le jeu)
 - [ ] Héros à débloquer avec un pouvoir chacun (mineur, archer, bâtisseur)
 - [ ] Reliques : bonus permanents trouvés dans les coffres, à combiner entre les parties
-- [ ] Partage du résultat (temps, défi du jour) en une touche
+- [x] Partage du résultat (temps, défi du jour) en une touche
 
 ### Play Store
 - [ ] Brancher `main` sur la version fusionnée (le workflow Android construit l'APK/AAB depuis `main`)
