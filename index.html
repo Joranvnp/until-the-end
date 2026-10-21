@@ -667,8 +667,10 @@ function nearestHostile(e,range){let best=null,bd=range;for(const o of tgtNear(e
 // cible atteignable : on ignore ce qui est trop haut/bas pour la mêlée, et ce qu'on a renoncé à poursuivre
 function pickTarget(e,u,aggro){let best=null,bd=1e9;
   for(const o of tgtNear(e.x,aggro)){if(o.dead||!o.hp||!hostile(e,o))continue;if(o===e.ignore&&time<e.ignoreT)continue;
+    if(time<(e.blindT||0)&&o.type!=='core'&&Math.hypot(o.x-e.x,o.y-e.y)>40)continue;
     const dx=o.x+o.w/2-(e.x+e.w/2),dy=o.y+o.h/2-(e.y+e.h/2);if(Math.abs(dx)>aggro)continue;
-    if((o.type==='core'?vgap(e,o):Math.abs(dy))>(u.ranged?130:52))continue;
+    // le cœur se tire presque à niveau : depuis une grotte en dessous, la flèche finit dans le sol du château
+    if(o.type==='core'?vgap(e,o)>(u.ranged?40:52):Math.abs(dy)>(u.ranged?130:52))continue;
     let d=Math.abs(dx)+Math.abs(dy)*1.5;if(o.type==='core')d-=(Math.abs(dx)<110?400:60);if(o.type==='monster')d+=40;
     if(d<bd){bd=d;best=o}}return best}
 function digStep(e,tx,ty,dt,collect){const id=getT(tx,ty),d=TD[id];if(!d.solid&&id!==LOG)return 1;if(d.hard===Infinity)return -1;
@@ -703,7 +705,10 @@ function updatePillar(e){if(e.pillarY==null)return;
 function trackProgress(e,dt){e.progT+=dt;if(e.progT<2)return;const mv=Math.hypot(e.x-e.progX,e.y-e.progY);
   if(e.wantMove&&mv<10)e.stuck=Math.min(3,e.stuck+1);else if(mv>28)e.stuck=0;e.progX=e.x;e.progY=e.y;e.progT=0;e.wantMove=false}
 function meleeOrShoot(e,u,tgt){e.vx=0;e.dir=Math.sign(tgt.x+tgt.w/2-(e.x+e.w/2))||e.dir;if(e.atk>0)return;e.atk=u.cd;e.swing=.25;
-  if(u.ranged){const sx=e.x+e.w/2,sy=e.y+6,tx=tgt.x+tgt.w/2,ty=tgt.y+tgt.h/2,dd=Math.abs(tx-sx),v=250,tt=dd/v;arrows.push({x:sx,y:sy,vx:Math.sign(tx-sx)*v,vy:(ty-sy)/Math.max(tt,.1)-150*tt,team:e.team,dmg:udmg(e),life:3,src:e});if(onScreen(e))sfx.bow()}
+  // archer qui tire dans la roche (cibles derrière un mur, ex. armée coincée sous le cœur adverse) : 12 s sans viser au loin, il reprend sa marche
+  if(u.ranged&&(e.miss||0)>=4&&tgt.type!=='core'){e.miss=0;e.atk=0;e.blindT=time+12;return}
+  if(u.ranged){const sx=e.x+e.w/2,sy=e.y+6,tx=tgt.x+tgt.w/2,ty=tgt.y+tgt.h/2,dd=Math.abs(tx-sx),v=250,tt=dd/v;// cœur derrière les murs du château (archer posé sur le toit, au ras d'un créneau) : tir en cloche qui passe par-dessus la maçonnerie
+    const lob=tgt.type==='core'&&(e.miss||0)>=2;arrows.push({x:sx,y:sy,vx:Math.sign(tx-sx)*v,vy:(ty-sy)/Math.max(tt,.1)-150*tt,team:e.team,dmg:udmg(e),life:3,src:e,lob:lob?tgt:null});if(onScreen(e))sfx.bow()}
   else{hurt(tgt,udmg(e),e);if(e.kind==='golem')shake=Math.max(shake,onScreen(e)?2:0)}}
 // écran en hauteur (portrait) : HUD en haut, commandes tactiles en bas, le ciel au-dessus est vide
 // -> le joueur est placé à 36 % de la hauteur, on voit plus de sous-sol
@@ -712,7 +717,7 @@ const onScreen=e=>e.x>cam.x-20&&e.x<cam.x+VW+20&&e.y>cam.y-20&&e.y<cam.y+VH+20;
 // écart vertical entre deux boîtes (0 si elles se chevauchent en hauteur) : le cœur est grand, le centre ne suffit pas
 const vgap=(a,b)=>Math.max(0,b.y-(a.y+a.h),a.y-(b.y+b.h));
 function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-tgt.w/2-e.w/2,dy=tgt.type==='core'?vgap(e,tgt)+10:Math.abs(tgt.y+tgt.h/2-(e.y+e.h/2));
-  if(gap<=u.range&&dy<(u.ranged?130:30)){meleeOrShoot(e,u,tgt);
+  if(gap<=u.range&&dy<(u.ranged?(tgt.type==='core'?50:130):30)){meleeOrShoot(e,u,tgt);
     // mêlée : chacun garde sa place dans la portée (offs), pour qu'une troupe ne s'empile pas sur un seul pixel
     if(!u.ranged){const g=(e.offs+1)/2*(u.range-2)-gap;if(Math.abs(g)>1.5)e.vx=-Math.sign(dx)*Math.sign(g)*uspd(e)*.5}
     moveEnt(e,dt);return}
@@ -926,9 +931,10 @@ function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw
   arrows.push({x:tw.x,y:tw.y,vx:Math.sign(dx)*v,vy:(ty-tw.y)/Math.max(tt,.1)-150*tt,team:b.team,dmg:7+4*lv,life:3,src:fake});}}
 function updateArrows(dt){for(const a of arrows){a.vy+=300*dt;a.x+=a.vx*dt;a.y+=a.vy*dt;a.life-=dt;
   if(a.stuck)continue;
-  if(solidAt(Math.floor(a.x/T),Math.floor(a.y/T))){a.stuck=true;a.life=Math.min(a.life,1.2);continue}
+  if(a.lob&&!a.lob.dead&&a.x>a.lob.x-1&&a.x<a.lob.x+a.lob.w+1&&a.y>a.lob.y-1&&a.y<a.lob.y+a.lob.h+1){hurt(a.lob,a.dmg,a.src);if(a.src)a.src.miss=0;a.life=0;continue}
+  if(!a.lob&&solidAt(Math.floor(a.x/T),Math.floor(a.y/T))){a.stuck=true;a.life=Math.min(a.life,1.2);if(a.src&&a.src.type==='unit')a.src.miss=(a.src.miss||0)+1;continue}
   for(const e of ents){if(e.dead||!e.hp||e.type==='item'||e.team===a.team)continue;
-    if(a.x>e.x-1&&a.x<e.x+e.w+1&&a.y>e.y-1&&a.y<e.y+e.h+1){hurt(e,a.dmg,a.src);a.life=0;break}}}
+    if(a.x>e.x-1&&a.x<e.x+e.w+1&&a.y>e.y-1&&a.y<e.y+e.h+1){hurt(e,a.dmg,a.src);if(a.src)a.src.miss=0;a.life=0;break}}}
   arrows=arrows.filter(a=>a.life>0)}
 // =====================================================================
 //  BOUCLE DE MISE À JOUR
