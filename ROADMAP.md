@@ -47,7 +47,7 @@
 - [ ] Tutoriel guidé des 3 premières minutes (objectifs pas à pas avec flèche) — décisif pour la rétention
 - [x] Mode Siège : vagues infinies de plus en plus fortes, score et record (succès « Inébranlable »)
 - [x] Traduction anglaise (langue auto selon le téléphone + réglage)
-- [ ] Manette (Gamepad API) et clavier Bluetooth
+- [x] Manette (Gamepad API) et clavier Bluetooth
 - [ ] Récompense quotidienne et quêtes (3 objectifs par jour)
 - [ ] Nouveaux biomes (désert, glace profonde) et boss de lune de sang
 
