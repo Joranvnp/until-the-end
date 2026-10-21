@@ -37,7 +37,7 @@
 - [x] PWA (manifeste + service worker) : installable et jouable hors ligne depuis le navigateur
 - [x] Politique de confidentialité, fiche Play Store, guide de publication
 
-## Version 1.2 — en cours (rendre le jeu addictif et prêt pour le Play Store)
+## Version 1.2.0 (versionCode 3) — rendre le jeu addictif et prêt pour le Play Store
 ### Graphismes et animations (Codex)
 - [ ] Animations manquantes : marche/minage/attaque des unités, cycle de marche du joueur, coups de pioche, chute des arbres, ouverture des coffres
 - [ ] Monstres animés (respiration, attaque, mort), projectiles et impacts plus lisibles
@@ -49,7 +49,8 @@
 - [x] Traduction anglaise (langue auto selon le téléphone + réglage)
 - [x] Manette (Gamepad API) et clavier Bluetooth
 - [x] Récompense quotidienne et quêtes (3 objectifs par jour)
-- [ ] Nouveaux biomes (désert, glace profonde) et boss de lune de sang
+- [x] Boss de lune de sang : l'Ogre de sang (casse les murs, frappe de zone, repart à l'aube)
+- [ ] Nouveaux biomes (désert, glace profonde)
 
 ### Innovation (ce qui différencie le jeu)
 - [x] Héros à débloquer avec un pouvoir chacun (mineur, archer, bâtisseur)

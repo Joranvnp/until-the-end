@@ -30,3 +30,10 @@ En face, une vraie intelligence adverse : le commandant rouge choisit sa straté
 - `icone-512.png` — icône 512 × 512
 - `banniere-1024x500.png` — image de présentation
 - `capture-*.png` — captures téléphone 1080 × 1920 (4 minimum conseillées)
+
+## Notes de version 1.2.0
+- Héros à débloquer avec un pouvoir chacun (Mineuse, Archer, Bâtisseur)
+- Boss de la lune de sang : l'Ogre de sang
+- Quêtes du jour et récompense quotidienne, reliques à combiner
+- Mode Siège, traduction anglaise, manette, prise en main guidée
+- Boutons tactiles plus lisibles
