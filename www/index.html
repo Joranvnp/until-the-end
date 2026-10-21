@@ -1848,20 +1848,23 @@ function logo(cx,y,size){const z=uiScale(size),L=uiLetters('UNTIL THE END');let 
 function drawTitle(){
   ctx.fillStyle='rgba(5,5,12,.55)';ctx.fillRect(0,0,VW,VH);
   if(menuPanel)return drawMenuPanel(()=>{menuPanel=null});
-  const tsz=VW<360?21:28,ty=Math.max(14,Math.round(VH*(VH>VW*1.2?.2:.1)));logo(VW/2,ty,tsz);
+  const tsz=VW<360?21:28,ty=Math.max(14,Math.round(VH*(VH>VW*1.2?.25:.1)));logo(VW/2,ty,tsz);
   txt('Mine. Forge. Détruis leur cœur.',VW/2,ty+uiScale(tsz)*5+9,COL.dim,7,'center');
-  const bw=Math.min(210,VW-24),bx=Math.round(VW/2-bw/2);let y=ty+uiScale(tsz)*5+24,k=0;
-  const sv=hasSave();if(sv){button(bx-slideIn(k++),y,bw,20,'Continuer la partie',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)},true,true);y+=24}
+  const bw=Math.min(210,VW-24),bx=Math.round(VW/2-bw/2),y0=ty+uiScale(tsz)*5+24,
+    // tactile : boutons plus hauts tant que la hauteur le permet ; portrait : menu centré sous le logo
+    BH=isTouch?clamp(Math.floor((VH-y0-64)/6)-4,20,30):20,SH=isTouch?BH-4:18,blk=4*(BH+4)+(SH+4)*2+12+40;
+  let y=VH>VW*1.2?Math.max(y0,Math.round(y0+(VH-y0-blk)/4)):y0,k=0;
+  const sv=hasSave();if(sv){button(bx-slideIn(k++),y,bw,BH,'Continuer la partie',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)},true,true);y+=BH+4}
   const D=dailyInfo(),done=PROF.daily.won===D.key;
-  button(bx+slideIn(k++),y,bw,20,(done?'★ ':'')+'Défi du jour : '+D.mod.n,()=>{audioInit();newGame(1,D)},true,!sv&&false);y+=24;
-  const g3=Math.floor((bw-8)/3);DIFFS.forEach((d,i)=>button(bx+i*(g3+4)-slideIn(k),y,g3,20,d.n,()=>{audioInit();newGame(i)},true,i===1&&!sv));k++;y+=24;
-  button(bx+slideIn(k++),y,bw,20,'Mode Siège : vagues infinies'+(PROF.rec.surv?' · record '+PROF.rec.surv:''),()=>{audioInit();newGame(1,null,true)},true);y+=24;
+  button(bx+slideIn(k++),y,bw,BH,(done?'★ ':'')+'Défi du jour : '+D.mod.n,()=>{audioInit();newGame(1,D)},true,!sv&&false);y+=BH+4;
+  const g3=Math.floor((bw-8)/3);DIFFS.forEach((d,i)=>button(bx+i*(g3+4)-slideIn(k),y,g3,BH,d.n,()=>{audioInit();newGame(i)},true,i===1&&!sv));k++;y+=BH+4;
+  button(bx+slideIn(k++),y,bw,BH,'Mode Siège : vagues infinies'+(PROF.rec.surv?' · record '+PROF.rec.surv:''),()=>{audioInit();newGame(1,null,true)},true);y+=BH+4;
   const g3b=Math.floor((bw-8)/3),na=Object.keys(PROF.ach).length,nr=Object.keys(PROF.relics).length;
-  const sl='Succès '+na+'/'+ACH.length;button(bx+slideIn(k),y,g3b,18,uiWidth(tr(sl))<=g3b-4?sl:'★ '+na+'/'+ACH.length,()=>{menuPanel='ach';panelT=0;sfx.place()});
-  button(bx+g3b+4+slideIn(k),y,g3b,18,'Reliques '+nr+'/'+RELICS.length,()=>{menuPanel='relic';panelT=0;sfx.place()});
-  button(bx+2*(g3b+4)+slideIn(k),y,g3b,18,'Réglages',()=>{menuPanel='set';panelT=0;sfx.place()});y+=24;
-  {const q=questsToday(),nd=q.list.filter(e=>e.done).length,rw=q.login!==dayKey();const hw=Math.floor((bw-4)/2);button(bx+slideIn(k),y,hw,18,'Quêtes '+nd+'/3'+(rw?' · !':''),()=>{menuPanel='quest';panelT=0;sfx.place()},true,rw);
-    button(bx+hw+4+slideIn(k++),y,hw,18,'Héros : '+heroDef(PROF.hero).n,()=>{nextHero();sfx.place()},true);y+=22}
+  const sl='Succès '+na+'/'+ACH.length;button(bx+slideIn(k),y,g3b,SH,uiWidth(tr(sl))<=g3b-4?sl:'★ '+na+'/'+ACH.length,()=>{menuPanel='ach';panelT=0;sfx.place()});
+  button(bx+g3b+4+slideIn(k),y,g3b,SH,'Reliques '+nr+'/'+RELICS.length,()=>{menuPanel='relic';panelT=0;sfx.place()});
+  button(bx+2*(g3b+4)+slideIn(k),y,g3b,SH,'Réglages',()=>{menuPanel='set';panelT=0;sfx.place()});y+=SH+4;
+  {const q=questsToday(),nd=q.list.filter(e=>e.done).length,rw=q.login!==dayKey();const hw=Math.floor((bw-4)/2);button(bx+slideIn(k),y,hw,SH,'Quêtes '+nd+'/3'+(rw?' · !':''),()=>{menuPanel='quest';panelT=0;sfx.place()},true,rw);
+    button(bx+hw+4+slideIn(k++),y,hw,SH,'Héros : '+heroDef(PROF.hero).n,()=>{nextHero();sfx.place()},true);y+=SH+4}
   const st=PROF.daily.streak&&PROF.daily.last>=dayKey(new Date(Date.now()-864e5))?PROF.daily.streak:0;
   txt(uiFit(D.mod.d+(st?' · Série : '+st+' jour'+(st>1?'s':''):''),bw,7),VW/2,y,done?COL.gold:'#ffd27a',7,'center');y+=12;
   const lines=isTouch?['← → Marcher   ▲ Sauter','Gros bouton : miner, frapper, lancer','Base · Forge · Sac : commandes du bas']:
