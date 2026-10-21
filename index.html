@@ -779,9 +779,14 @@ function findOre(e,far){const b=bases[e.team],home=Math.floor((b.core.x+11)/T),d
     for(let y=Math.max(1,ey-14);y<=Math.min(WH-4,ey+14);y++)for(let x=Math.max(2,ex-22);x<=Math.min(WW-3,ex+22);x++){const v=ORE_VAL[getT(x,y)];if(!v)continue;
       if(y<surf[x]||sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;const sc=v/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+4);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
     if(best)return best}
+  // suivre le filon : un minerai à portée de pioche (rayon 4 blocs) passe avant tout, il ne coûte presque aucun creusage
+  if(!far&&!champ){const ex=Math.floor((e.x+e.w/2)/T),ey=Math.floor((e.y+e.h/2)/T);for(let y=ey-3;y<=ey+4;y++)for(let x=ex-4;x<=ex+4;x++){const t=getT(x,y),v=ORE_VAL[t];if(!v||TD[t].tier>2||y<surf[x]||e.bad?.has(x+','+y))continue;
+    const sc=v/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+2);if(sc>bs){bs=sc;best={tx:x,ty:y}}}if(best)return best}
   for(let i=0;i<700;i++){const x=clamp(home+dir*RI(5,champ||far?150:70),2,WW-3),y=RI(surf[x]+1,Math.min(WH-4,surf[x]+(champ||far?34:20)));const t=getT(x,y),v=ORE_VAL[t];if(!v)continue;
     if(!champ&&TD[t].tier>2)continue;if(sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;
-    const d=Math.abs(x-home)*(champ?.35:1)+Math.abs(y-surf[clamp(x,0,WW-1)])*1.6;const sc=v/(d+12);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
+    // coût depuis la position du mineur : un minerai à pic sous lui demande un long escalier (on descend d'un bloc par bloc de côté)
+    const mx=Math.floor((e.x+e.w/2)/T),my=Math.floor((e.y+e.h-1)/T),steep=Math.max(0,(y-my)-Math.abs(x-mx));
+    const d=Math.abs(x-home)*(champ?.35:1)*.6+Math.abs(x-mx)*.4+Math.abs(y-surf[clamp(x,0,WW-1)])*1.6+steep*3;const sc=v/(d+12);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
   return best}
 // descendre d'une marche : creuser la colonne devant (hauteur du corps + une case dessous), avancer, tomber d'un bloc
 function stairDown(e,dt,dir){e.dir=dir;e.wantMove=true;e.vx=dir*uspd(e)*.8;moveEnt(e,dt);if(!e.onGround)return 1;
@@ -812,8 +817,14 @@ function updateGatherer(e,u,dt){
     // minerai plus bas : descendre en escalier (une marche par bloc), jamais un puits vertical sous ses pieds.
     // Trop à pic : on s'écarte d'abord pour avoir autant de recul horizontal que de profondeur.
     const h=Math.abs(tx-ex),v=ty-fy;
-    if(v>=1&&h<=v+1){if(e.stairT!==e.tgt&&h>=Math.max(1,v-1))e.stairT=e.tgt;
-      if(e.stairT===e.tgt){if(stairDown(e,dt,Math.sign(tx-ex)||e.dir)<0){(e.bad=e.bad||new Set()).add(e.tgtKey);e.tgt=null}}
+    if(v>=1&&h<=v+1){const key=tx*4096+ty;if(e.stairT!==e.tgt&&h>=Math.max(1,v-1)){e.stairT=e.tgt;e.stairD=Math.sign(tx-ex)}
+      // arrivé à l'aplomb du minerai sans l'atteindre (pente naturelle plus douce que l'escalier) : on note l'échec pour ne pas repartir en boucle
+      if(e.stairT===e.tgt&&Math.sign(tx-ex)!==e.stairD){e.stairT=null;e.stairFail=key}
+      if(e.stairT===e.tgt){if(stairDown(e,dt,e.stairD)<0){(e.bad=e.bad||new Set()).add(e.tgtKey);e.tgt=null}}
+      // escalier raté : lacet, on redescend en s'éloignant jusqu'à avoir le recul, puis l'escalier repart vers le minerai
+      else if(e.stairFail===key&&v>3){if(stairDown(e,dt,Math.sign(ex-tx)||-e.stairD)<0)e.tgt=null}
+      // presque dessus et peu profond : un seul bloc à creuser sous soi
+      else if(v<=3&&h<=1){e.vx=(tx*T+8-cx)*3;moveEnt(e,dt);e.wantMove=true;if(e.onGround){const o0=Math.floor(e.x/T),o1=Math.floor((e.x+e.w-.01)/T);for(let x=o0;x<=o1;x++){const r=digStep(e,x,fy+1,dt,true);if(r<0){e.tgt=null;break}if(r===0)break}}}
       else{const side=Math.sign(ex-tx)||(e.offs<0?-1:1);navigate(e,(tx+side*(v+1))*T+8,dt,'flat')}
       if(e.carryN>=cap||(e.junk||0)>=40)e.state='home';return}
     navigate(e,tx*T+8,dt,ty<fy-1||e.stuck>=2?'climb':'flat');if(e.carryN>=cap||(e.junk||0)>=40)e.state='home';return}
