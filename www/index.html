@@ -1972,7 +1972,10 @@ function autoAim(it){const p=player,pcx=p.x+p.w/2,pcy=p.y+6;
 // =====================================================================
 function updateMouseWorld(){mouse.wx=mouse.x+cam.x;mouse.wy=mouse.y+cam.y}
 function toLocal(ev){const r=cv.getBoundingClientRect(),d=cv.width/r.width;return{x:(ev.clientX-r.left)*d/S,y:(ev.clientY-r.top)*d/S}}
-function uiClick(x,y){for(let i=uiHits.length-1;i>=0;i--){const h=uiHits[i];if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h){pressFx={...h,t:performance.now()};h.fn();return true}}return false}
+// au doigt, un appui qui frôle un bouton (à tol px près) l'active quand même : les petits boutons des panneaux restent faciles à toucher
+function uiHitAt(x,y,tol=0){for(let i=uiHits.length-1;i>=0;i--){const h=uiHits[i];if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h)return h}
+  let best=null,bd=tol;for(const h of uiHits){const d=Math.hypot(Math.max(h.x-x,0,x-(h.x+h.w)),Math.max(h.y-y,0,y-(h.y+h.h)));if(d<=bd){bd=d;best=h}}return best}
+function uiClick(x,y,tol=0){const h=uiHitAt(x,y,tol);if(!h)return false;pressFx={...h,t:performance.now()};h.fn();return true}
 cv.addEventListener('mousemove',ev=>{const p=toLocal(ev);mouse.x=p.x;mouse.y=p.y;mouse.inside=true;updateMouseWorld()});
 cv.addEventListener('mouseleave',()=>{mouse.inside=false;mouse.l=mouse.r=false});
 cv.addEventListener('mousedown',ev=>{audioInit();cv.focus();const p=toLocal(ev);mouse.x=p.x;mouse.y=p.y;mouse.inside=true;updateMouseWorld();
@@ -1992,7 +1995,7 @@ addEventListener('keydown',ev=>{keys[ev.code]=true;audioInit();
 addEventListener('keyup',ev=>{keys[ev.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;mouse.l=mouse.r=false;if(state==='play')paused=true});
 cv.addEventListener('touchstart',ev=>{ev.preventDefault();audioInit();for(const t of ev.changedTouches){const p=toLocal(t);const ui=state!=='play'||uiHits.some(h=>p.x>=h.x&&p.x<h.x+h.w&&p.y>=h.y&&p.y<h.y+h.h)||(panel&&panelRect&&p.x>=panelRect.x&&p.x<panelRect.x+panelRect.w&&p.y>=panelRect.y&&p.y<panelRect.y+panelRect.h);
-  if(ui){mouse.x=p.x;mouse.y=p.y;uiClick(p.x,p.y)}activeTouches.set(t.identifier,{...p,ui})}if(state==='play')touchUpdate()},{passive:false});
+  if(ui){mouse.x=p.x;mouse.y=p.y;uiClick(p.x,p.y,state!=='play'||paused||panel?Math.round(10*(window.devicePixelRatio||1)/S):0)}activeTouches.set(t.identifier,{...p,ui})}if(state==='play')touchUpdate()},{passive:false});
 cv.addEventListener('touchmove',ev=>{ev.preventDefault();for(const t of ev.changedTouches){const a=activeTouches.get(t.identifier);if(a){const p=toLocal(t);a.x=p.x;a.y=p.y}}if(state==='play')touchUpdate()},{passive:false});
 const tEnd=ev=>{for(const t of ev.changedTouches)activeTouches.delete(t.identifier);if(state==='play')touchUpdate()};cv.addEventListener('touchend',tEnd);cv.addEventListener('touchcancel',tEnd);
 
