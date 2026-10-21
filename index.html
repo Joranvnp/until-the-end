@@ -857,8 +857,11 @@ function updateAI(dt){
      I.front=atk.length?Math.round(Math.min(...atk.map(e=>Math.abs(e.x-pc)))/T):0}
    else{I.phase=threatPow>0.5&&threatPow>myPow*.7?'defend':'gather';
      I.eta=Math.round(Math.max(minT-time,(ai.wave-n)/Math.max(I.rate,.02),0));if(ai.wait)I.eta=Math.max(1,Math.round(90-(time-ai.holdT)));
-     if(I.eta<=25&&!I.warned&&I.phase==='gather'){I.warned=true;toast('L\'armée rouge se rassemble : attaque dans moins de 30 s !',4,'#ffb08a')}}
-   if(b.order==='attack')I.warned=false}
+     if(I.eta<=25&&!I.warned&&I.phase==='gather'){I.warned=true;toast('L\'armée rouge se rassemble : attaque dans moins de 30 s !',4,'#ffb08a')}
+     // la vague prévue écrase-t-elle ta défense ? on le dit à temps (une fois par vague) avec quoi faire
+     const guard=teamPow(0,pc,45*T)+1.5+bases[0].upg.tower*.8,red=fighters.reduce((a,e)=>a+POW[e.kind],0)*Math.max(1,ai.wave/Math.max(1,n));I.danger=red>guard*1.3;
+     if(I.danger&&I.eta<=75&&!I.dangerSaid&&I.phase==='gather'){I.dangerSaid=true;toast('La vague rouge ('+ai.wave+' unités) dépasse ta défense : recrute des troupes ou améliore la tour (Base).',5,'#ff9a8a')}}
+   if(b.order==='attack'){I.warned=false;I.dangerSaid=false}}
   const counter=()=>{if(fk('golem')>=2)return'warrior';if(fk('warrior')>fk('archer')*1.5+1)return'archer';if(rnd()<(ai.style==='rush'?.08:.18)&&st.gold>=2)return'golem';return rnd()<.6?'warrior':'archer'};
   const wantMiners=(ai.style==='eco'?4:ai.style==='rush'?2:3)+(diff>1?1:0);
   // 1. défense : on rappelle tout le monde si la base est menacée
@@ -1164,10 +1167,10 @@ function drawHUD(){
   const intel=ai?.intel,waveVisible=intel&&['gather','march','defend'].includes(intel.phase),waveGap=waveVisible?6:0;
   if(waveVisible){const gathering=intel.phase==='gather',marching=intel.phase==='march';
     const pulse=Math.sin(time*6)>0,col=gathering?(intel.eta<=30?(pulse?'#ffbd62':'#ff8a54'):COL.red):marching?(intel.front<40&&pulse?'#ff9a8a':COL.red):COL.dim;
-    let label=gathering?'VAGUE ROUGE  '+intel.have+'/'+intel.need+' · DANS '+intel.eta+' S':marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
+    let label=gathering?(intel.danger?'! ':'')+'VAGUE ROUGE  '+intel.have+'/'+intel.need+' · DANS '+intel.eta+' S':marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
     // barre des cœurs au centre (écran large) : le bandeau se cale dessous, sinon il recouvrirait la minicarte
     const centered=!narrow&&midW>=150,right=centered?cx0+cw:VW-8,padding=18,maxWidth=centered?cw:narrow?VW-152:VW-16;
-    if(uiWidth(label,7)>maxWidth-padding)label=gathering?'VAGUE '+intel.have+'/'+intel.need+' · DANS '+intel.eta+' S':marching?'EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':label;
+    if(uiWidth(label,7)>maxWidth-padding)label=gathering?(intel.danger?'! ':'')+'VAGUE '+intel.have+'/'+intel.need+' · DANS '+intel.eta+' S':marching?'EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':label;
     label=uiFit(label,maxWidth-padding,7);
     const width=uiWidth(label,7)+padding,x=right-width,y=cy0+20;
     box(x,y,width,11,COL.panel,'#e5534b33');
