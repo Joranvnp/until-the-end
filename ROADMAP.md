@@ -44,7 +44,7 @@
 - [ ] Interface : icônes d'objets redessinées, transitions de panneaux, retour visuel sur chaque bouton tactile
 
 ### Fonctionnalités
-- [ ] Tutoriel guidé des 3 premières minutes (objectifs pas à pas avec flèche) — décisif pour la rétention
+- [x] Tutoriel guidé de la première partie : marcher, sauter, miner avec boutons tactiles en surbrillance, puis bouton Base mis en avant ; première vague repoussée de 2 min
 - [x] Mode Siège : vagues infinies de plus en plus fortes, score et record (succès « Inébranlable »)
 - [x] Traduction anglaise (langue auto selon le téléphone + réglage)
 - [x] Manette (Gamepad API) et clavier Bluetooth
