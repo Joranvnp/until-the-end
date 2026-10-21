@@ -1213,14 +1213,18 @@ function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0
     ['Flèches à l\'écran : marcher. ▲ : sauter, nager vers le haut.','Gros bouton : utiliser l\'objet, vise tout seul. ▼ + bouton : creuser dessous.','Toucher le monde : utiliser l\'objet à cet endroit précis.','Barre du bas : choisir un objet. Base : recruter et améliorer.','Forge : fabriquer outils et armes. Ordre : Assaut, Défense ou Suivre.']:
     ['Q D ou ← → : marcher. Z, Espace ou ↑ : sauter, nager.','Clic gauche : utiliser l\'objet. Clic droit : miner. Molette : objet.','B : base · C : forge · E : sac · R : ordre · M : son · Échap : menu.'];
   const goal=['But : détruire le cœur rouge à l\'autre bout du monde.','Ton minerai est déposé tout seul à ta base. Les mineurs en rapportent aussi.','La nuit, slimes et zombies sortent. Le champion rouge pille la montagne.'];
-  const lines=pauseHelp?[...goal,'',...help].flatMap(l=>l?wrapLines(l,W-16,7):['']):[];
+  // 2e page : ce que fait chaque unité et chaque ordre (la base n'affiche qu'une ligne par unité)
+  const units=['Mineur : creuse et rapporte le minerai. Fuit les pillards vers la tour.','Guerrier : mêlée solide. Archer : tire de loin, recule au contact.','Golem : colosse lent qui brise tout, idéal contre le cœur.','Tour de guet : tire sur les ennemis proches de ton cœur. Améliore-la à la base.','',
+    'Défense : tes troupes tiennent une ligne devant le cœur, sous la tour. 3 d\'entre elles chassent les pillards.','Assaut : l\'armée marche groupée vers le cœur rouge.','Suivre : tes troupes t\'escortent partout.','Blessées, les unités rentrent se soigner à la base.'];
+  const lines=pauseHelp?(pauseHelp===2?units:[...goal,'',...help]).flatMap(l=>l?wrapLines(l,W-16,7):['']):[];
   const H=pauseHelp?30+lines.length*10+24:130,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
-  box(x,y,W,H);txt(pauseHelp?'Aide':'Pause',x+W/2,y+7,COL.txt,10,'center');
-  if(pauseHelp){lines.forEach((l,i)=>txt(l,x+8,y+24+i*10,COL.txt,7));button(x+W/2-35,y+H-20,70,15,'Retour',()=>{pauseHelp=false})}
+  box(x,y,W,H);txt(pauseHelp===2?'Unités et ordres':pauseHelp?'Aide':'Pause',x+W/2,y+7,COL.txt,10,'center');
+  if(pauseHelp){lines.forEach((l,i)=>txt(l,x+8,y+24+i*10,COL.txt,7));
+    button(x+W/2-78,y+H-20,76,15,pauseHelp===2?'← Commandes':'Unités →',()=>{pauseHelp=pauseHelp===2?1:2;sfx.place()});button(x+W/2+2,y+H-20,76,15,'Retour',()=>{pauseHelp=false})}
   else{const bw=W-24,bx=x+12;
     button(bx,y+24,bw,18,'Reprendre',()=>{paused=false});
     button(bx,y+46,bw,18,muted?'Son : coupé':'Son : activé',()=>{muted=!muted;if(!muted){audioInit();sfx.place()}});
-    button(bx,y+68,bw,18,'Aide et commandes',()=>{pauseHelp=true});
+    button(bx,y+68,bw,18,'Aide et commandes',()=>{pauseHelp=1});
     button(bx,y+90,bw,18,'Sauvegarder et quitter',()=>{saveGame();paused=false;panel=null;state='title'});
     txt('Partie sauvegardée toutes les 20 s',x+W/2,y+114,COL.dim,6,'center')}}
 const ORDERS={attack:'Assaut',defend:'Défense',follow:'Suivre'};
