@@ -759,6 +759,10 @@ function updateUnit(e,dt){
   if(follow){if(Math.abs(dest-(e.x+e.w/2))<10){e.vx=0;moveEnt(e,dt);return}if(player.y<e.y-3*T&&Math.abs(dest-(e.x+e.w/2))<T*2)return climbUp(e,dt,dest)}
   const dtx=clamp(Math.floor(dest/T),0,WW-1);
   if(Math.abs(dest-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx]+1.5)return climbUp(e,dt,dest);
+  // armée en marche tombée dans une grotte : elle remonte vers la surface au lieu de traverser la carte sous terre
+  // (sinon les deux armées se croisent à 50 blocs d'écart sans jamais se battre et chacune rase un cœur sans défense)
+  if(b.order==='attack'&&!follow){const col=clamp(Math.floor((e.x+e.w/2)/T),0,WW-1),fwd=e.team===0?1:-1;
+    if((e.y+e.h)/T>surf[col]+6&&Math.abs(bases[1-e.team].core.x-e.x)>30*T)return climbUp(e,dt,e.x+e.w/2+fwd*T*1.5)}
   if(b.order==='attack'&&!follow&&armyMid[e.team]!=null){const fwd=e.team===0?1:-1,ahead=(e.x-armyMid[e.team])*fwd,toCore=Math.abs(bases[1-e.team].core.x-e.x);
     // on attend l'arrière-garde 12 s au plus, puis on repart sans se ré-arrêter avant 25 s (sinon l'armée piétine indéfiniment)
     if(ahead>7*T&&toCore>28*T&&time>(e.waitCool||0)){e.waitT=(e.waitT||0)+dt;if(e.waitT<12){e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}e.waitCool=time+25}
