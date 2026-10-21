@@ -922,7 +922,9 @@ function recruit(team,kind,free){const b=bases[team],u=UNITS[kind];if(!free&&!ca
   ents.push(e);if(team===0&&!free){stats.recruited++;qAdd('recruit');if(kind==='golem')unlock('golem');if(ents.filter(o=>o.type==='unit'&&o.team===0&&!o.dead).length>=10)unlock('army10');stats.rk=stats.rk||{};stats.rk[kind]=(stats.rk[kind]||0)+1;sfx.buy()}return e}
 const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed+(e.team===0?relV('drum')/100:0))*(e.boost||1);
 const udmg=e=>UNITS[e.kind].dmg*(1+.25*bases[e.team].upg.dmg);
-const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*8*T;
+const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*5*T;
+// zone couverte par la tour : les défenseurs n'en sortent pas pour chasser
+const underTower=(b,o)=>Math.abs(o.x+o.w/2-b.tower.x)<250+b.upg.tower*18;
 const POW={miner:.3,warrior:1,archer:.9,golem:3.2,champion:2.5};
 // cibles potentielles triées par x, reconstruites à chaque image : les recherches ne parcourent que la tranche utile (perfs à 400 unités)
 let tgtList=[];
@@ -1058,13 +1060,15 @@ function updateUnit(e,dt){
   if(e.strike){const ec=bases[1-e.team].core;const near=pickTarget(e,u,u.ranged?90:34);const tg=Math.abs(ec.x-e.x)<110?ec:near;if(tg)return engage(e,u,tg,dt);
     const dtx2=clamp(Math.floor((ec.x+11)/T),0,WW-1);if(Math.abs(ec.x+11-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx2]+1.5)return climbUp(e,dt,ec.x+11);navigate(e,ec.x+11,dt,e.stuck>=2?'climb':'auto');return}
   const follow=b.order==='follow'&&e.team===0&&!player.dead;
-  const tgt=pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
+  let tgt=pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
+  // en défense on tient sous la tour : pas de poursuite au-delà de sa portée (sauf si on est soi-même au contact)
+  if(tgt&&b.order==='defend'&&!underTower(b,tgt)&&Math.hypot(tgt.x-e.x,tgt.y-e.y)>40)tgt=null;
   if(tgt)return engage(e,u,tgt,dt);
   // escorte distancée : elle sprinte pour rattraper le joueur (il court 2× plus vite qu'une unité)
   e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-6)/10,1,2.2):1;
   // en défense, on court intercepter tout intrus qui approche du cœur
   if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else return engage(e,u,e.hunt,dt)}
-  const intr=intruder[e.team];if(b.order==='defend'&&intr&&!intr.dead&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
+  const intr=intruder[e.team];if(b.order==='defend'&&intr&&!intr.dead&&underTower(b,intr)&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
   const dest=follow?player.x+player.w/2-player.dir*20+e.offs*36:b.order==='defend'?rallyX(e.team)+e.offs*30:bases[1-e.team].core.x+11+e.offs*6;
   if(follow){if(Math.abs(dest-(e.x+e.w/2))<10){e.vx=0;moveEnt(e,dt);return}if(player.y<e.y-3*T&&Math.abs(dest-(e.x+e.w/2))<T*2)return climbUp(e,dt,dest)}
   const dtx=clamp(Math.floor(dest/T),0,WW-1);
