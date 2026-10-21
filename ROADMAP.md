@@ -53,7 +53,7 @@
 
 ### Innovation (ce qui différencie le jeu)
 - [ ] Héros à débloquer avec un pouvoir chacun (mineur, archer, bâtisseur)
-- [ ] Reliques : bonus permanents trouvés dans les coffres, à combiner entre les parties
+- [x] Reliques : 8 bonus permanents (coffres, champion rouge, Siège toutes les 5 vagues), niveau 1 à 3 par doublon, 2 emplacements (3 après 10 victoires)
 - [x] Partage du résultat (temps, défi du jour) en une touche
 
 ### Play Store
