@@ -1,6 +1,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Until The End</title>
+<meta name="theme-color" content="#0b0a16">
+<meta name="description" content="Jeu pixel art de stratégie et de minage : mine, forge, recrute ton armée et détruis le cœur ennemi.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
 /* Plein écran, une seule toile pixelisée. Palette nocturne indigo + or. */
 :root{--bg:#0b0a16;color-scheme:dark}
@@ -1629,8 +1635,15 @@ const tEnd=ev=>{for(const t of ev.changedTouches)activeTouches.delete(t.identifi
 // =====================================================================
 buildTextures();buildSprites();buildBackdrops();genWorld(4242);
 bases=[0,1].map(t=>({team:t,core:{x:(t===0?19:WW-20)*T-3,y:BASE_GY*T-34,w:22,h:34,dead:false},castleX:(t===0?4:WW-16)*T-8}));computeLight();
+// ---------- intégration Android (Capacitor) : bouton retour, pause en arrière-plan ----------
+const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+if(NATIVE){const App=window.Capacitor.Plugins.App;
+  if(App){App.addListener('backButton',()=>{if(menuPanel)menuPanel=null;else if(state==='play'){if(panel)panel=null;else if(paused&&pauseHelp)pauseHelp=false;else paused=!paused}else if(state==='title')App.exitApp();else state='title'});
+    App.addListener('pause',()=>{saveGame();if(state==='play')paused=true;if(AC)AC.suspend()});App.addListener('resume',()=>{if(AC)AC.resume()})}}
+// version web : mise en cache hors ligne (installable comme une appli)
+else if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;try{update(dt);render()}catch(err){console.error(err)}requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
-window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,set paused(v){paused=v}},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
+window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,set paused(v){paused=v}},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
 </script>

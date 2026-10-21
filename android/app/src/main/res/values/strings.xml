@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Until The End</string>
+    <string name="title_activity_main">Until The End</string>
+    <string name="package_name">com.joranvnp.untiltheend</string>
+    <string name="custom_url_scheme">com.joranvnp.untiltheend</string>
+</resources>

@@ -1,0 +1,18 @@
+{
+  "name": "Until The End",
+  "short_name": "Until The End",
+  "description": "Mine, forge, recrute ton armée et détruis le cœur ennemi.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0b0a16",
+  "theme_color": "#0b0a16",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
