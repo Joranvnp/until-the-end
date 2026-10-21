@@ -648,8 +648,13 @@ function buildTargets(){tgtList=ents.filter(o=>!o.dead&&o.hp&&o.type!=='item');t
   for(const t of[0,1]){const c=bases[t].core,cx=c.x+11;let best=null,bd=26*T;for(const o of tgtNear(cx,26*T)){if(o.type!=='unit'&&o.type!=='monster'||o.team===t)continue;const d=Math.abs(o.x+o.w/2-cx),dy=o.y-c.y;
     // pas de chasse au fond des grottes : seulement ce qui menace vraiment le cœur (à sa hauteur, monstres tout proches)
     if(dy>10*T||dy<-8*T||o.type==='monster'&&d>10*T)continue;if(d<bd){bd=d;best=o}}
-    if(best&&!intruder[t]&&t===0&&time-(intruderT||0)>20){intruderT=time;toast('Ton cœur est attaqué ! Tes défenseurs accourent.',3,'#ff9a8a')}intruder[t]=best}}
-let intruder=[null,null],intruderT=0;
+    if(best&&!intruder[t]&&t===0&&time-(intruderT||0)>20){intruderT=time;toast('Ton cœur est attaqué ! Tes défenseurs accourent.',3,'#ff9a8a')}intruder[t]=best;
+    // pillards qui chassent nos mineurs (à moins de 90 blocs du cœur) : les 3 défenseurs les plus proches partent les intercepter
+    const rd=ents.filter(o=>!o.dead&&o.raid&&o.team!==t&&Math.abs(o.x-cx)<90*T).sort((a,c)=>Math.abs(a.x-cx)-Math.abs(c.x-cx))[0];
+    if(rd&&(!raider[t]||raider[t].dead)){if(t===0)toast('Des pillards attaquent tes mineurs : 3 défenseurs partent les intercepter.',3,'#ff9a8a');
+      ents.filter(o=>!o.dead&&o.type==='unit'&&o.team===t&&o.kind!=='miner'&&o.kind!=='champion'&&!o.retreat&&!o.raid&&!o.strike).sort((a,c)=>Math.abs(a.x-rd.x)-Math.abs(c.x-rd.x)).slice(0,3).forEach(o=>o.hunt=rd)}
+    raider[t]=rd||null}}
+let intruder=[null,null],intruderT=0,raider=[null,null];
 function* tgtNear(x,r){let lo=0,hi=tgtList.length;const a=x-r-32;while(lo<hi){const m=(lo+hi)>>1;if(tgtList[m].x<a)lo=m+1;else hi=m}
   for(let i=lo;i<tgtList.length;i++){const o=tgtList[i];if(o.x>x+r+8)break;yield o}}
 function nearestHostile(e,range){let best=null,bd=range;for(const o of tgtNear(e.x,range)){if(o.dead||!o.hp||!hostile(e,o))continue;
@@ -748,6 +753,7 @@ function updateUnit(e,dt){
   const tgt=pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
   if(tgt)return engage(e,u,tgt,dt);
   // en défense, on court intercepter tout intrus qui approche du cœur
+  if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else return engage(e,u,e.hunt,dt)}
   const intr=intruder[e.team];if(b.order==='defend'&&intr&&!intr.dead&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
   const dest=follow?player.x+player.w/2-player.dir*20+e.offs*36:b.order==='defend'?rallyX(e.team)+e.offs*30:bases[1-e.team].core.x+11+e.offs*6;
   if(follow){if(Math.abs(dest-(e.x+e.w/2))<10){e.vx=0;moveEnt(e,dt);return}if(player.y<e.y-3*T&&Math.abs(dest-(e.x+e.w/2))<T*2)return climbUp(e,dt,dest)}
@@ -785,7 +791,11 @@ function updateGatherer(e,u,dt){
     if(e.hp<e.maxhp*.25&&e.state!=='heal'){e.state='heal';if(onScreen(e)||Math.abs(player.x-e.x)<400)toast('Le champion rouge bat en retraite pour se soigner !',2.5,'#ffd27a')}
     if(e.state==='heal'){if(e.hp>e.maxhp*.9){e.state='seek'}else{const hx=core.x+11-24;if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');return}}}
   const thr=e.kind==='champion'?pickTarget(e,u,e.state==='home'?60:120):nearestHostile(e,18);
-  if(thr){if(e.kind==='champion')return engage(e,u,thr,dt);if(e.atk<=0)meleeOrShoot(e,u,thr)}
+  // mineur menacé par un combattant : il lâche le filon et file se mettre à l'abri sous la tour, puis attend que ça se calme
+  if(e.kind==='miner'){const foe=nearestHostile(e,7*T);if(foe&&(foe.type==='monster'||foe.kind!=='miner')&&(foe.raid||foe.type==='monster'||e.hp<e.maxhp*.7)){if(time>(e.fleeT||0)&&e.team===0&&onScreen(e))floatText(e.x+e.w/2,e.y-6,'!','#ff9a8a');e.fleeT=time+6;e.state='home';e.tgt=null}}
+  const fleeing=e.kind==='miner'&&time<(e.fleeT||0);
+  if(thr&&!fleeing){if(e.kind==='champion')return engage(e,u,thr,dt);if(e.atk<=0)meleeOrShoot(e,u,thr)}
+  if(e.state==='seek'&&fleeing){const hx=core.x+11+(e.team===0?16:-16);if(Math.abs(hx-(e.x+e.w/2))>10)navigate(e,hx,dt,'climb');else{e.vx=0;moveEnt(e,dt)}return}
   if(e.state==='seek'){
     // cible bloquée ou poursuivie plus de 20 s : on la met de côté pour ne pas y revenir en boucle
     if(e.tgt&&(e.stuck>=3||time-(e.tgtT||0)>20)){(e.bad=e.bad||new Set()).add(e.tgt.tx+','+e.tgt.ty);if(e.bad.size>40)e.bad=new Set();e.tgt=null}
