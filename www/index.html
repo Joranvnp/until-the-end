@@ -991,8 +991,14 @@ const camFY=()=>VH>VW*1.2?.36:.5;
 const onScreen=e=>e.x>cam.x-20&&e.x<cam.x+VW+20&&e.y>cam.y-20&&e.y<cam.y+VH+20;
 // écart vertical entre deux boîtes (0 si elles se chevauchent en hauteur) : le cœur est grand, le centre ne suffit pas
 const vgap=(a,b)=>Math.max(0,b.y-(a.y+a.h),a.y-(b.y+b.h));
+// tir d'archer : on rejoue la trajectoire de la flèche (même formule que meleeOrShoot) ; si une colline ou un mur l'arrête,
+// l'archer se rapproche au lieu de gaspiller ses flèches dans la terre (résultat gardé une demi-seconde)
+function clearShot(e,tgt){if(e.csT>time&&e.csTgt===tgt)return e.csOk;
+  const sx=e.x+e.w/2,sy=e.y+6,tx=tgt.x+tgt.w/2,ty=tgt.y+tgt.h/2,v=250,tt=Math.max(Math.abs(tx-sx)/v,.1),vx=Math.sign(tx-sx)*v;let x=sx,y=sy,vy=(ty-sy)/tt-150*tt,ok=true;
+  for(let t=0;t<tt;t+=1/30){vy+=300/30;x+=vx/30;y+=vy/30;if(solidAt(Math.floor(x/T),Math.floor(y/T))){ok=false;break}}
+  e.csT=time+.5;e.csTgt=tgt;e.csOk=ok;return ok}
 function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-tgt.w/2-e.w/2,dy=tgt.type==='core'?vgap(e,tgt)+10:Math.abs(tgt.y+tgt.h/2-(e.y+e.h/2));
-  if(gap<=u.range&&dy<(u.ranged?(tgt.type==='core'?50:130):30)){meleeOrShoot(e,u,tgt);
+  if(gap<=u.range&&dy<(u.ranged?(tgt.type==='core'?50:130):30)&&(!u.ranged||tgt.type==='core'||clearShot(e,tgt))){meleeOrShoot(e,u,tgt);
     // mêlée : chacun garde sa place dans la portée (offs), pour qu'une troupe ne s'empile pas sur un seul pixel
     if(!u.ranged){const g=(e.offs+1)/2*(u.range-2)-gap;if(Math.abs(g)>1.5)e.vx=-Math.sign(dx)*Math.sign(g)*uspd(e)*.5}
     moveEnt(e,dt);return}
