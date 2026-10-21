@@ -110,8 +110,8 @@ const RECIPES=[
   {out:'pick4',n:1,inp:{diamond:5,gold:4}},{out:'sword4',n:1,inp:{diamond:6,gold:5}},
 ];
 const UNITS={
-  miner:{n:'Mineur',hp:60,dmg:4,spd:40,cost:{wood:8,stone:6},range:12,cd:1,d:'Récolte le minerai et le rapporte'},
-  warrior:{n:'Guerrier',hp:120,dmg:12,spd:42,cost:{stone:10,copper:4},range:12,cd:.8,d:'Mêlée solide, creuse vers l\'ennemi'},
+  miner:{n:'Mineur',hp:60,dmg:4,spd:40,cost:{wood:8,stone:6},range:12,cd:1,d:'Rapporte du minerai'},
+  warrior:{n:'Guerrier',hp:120,dmg:12,spd:42,cost:{stone:10,copper:4},range:12,cd:.8,d:'Mêlée solide'},
   archer:{n:'Archer',hp:70,dmg:10,spd:40,cost:{wood:12,iron:3},range:120,cd:1.4,ranged:true,d:'Tire à distance'},
   golem:{n:'Golem',hp:460,dmg:34,spd:24,cost:{stone:25,silver:4,gold:2},range:14,cd:1.6,big:true,d:'Colosse qui brise tout'},
   champion:{n:'Champion rouge',hp:320,dmg:18,spd:48,cost:{},range:12,cd:.7,hero:true,d:''},
@@ -1172,7 +1172,7 @@ function drawHUD(){
     if(s){ctx.drawImage(ICON[s.id],Math.round(x+(sw-18)/2),Math.round(hy+(sw-18)/2),16,16);if(s.n>1)txt(''+s.n,x+sw-4,hy+sw-11,COL.txt,7,'right')}
     if(sw>=18)txt(''+(i+1),x+2,hy+1,on?'#ffffff':COL.dim,6);
     uiHits.push({x,y:hy,w:sw-2,h:sw-2,fn:()=>{p.sel=i}})}
-  let top=Math.min(hy,by);const ss=p.inv[p.sel];if(ss){txt(IT[ss.id].n,VW/2,top-11,COL.txt,8,'center');top-=12}
+  let top=Math.min(hy,by);HL.barTop=top;const ss=p.inv[p.sel];if(ss){txt(IT[ss.id].n,VW/2,top-11,COL.txt,8,'center');top-=12}
   // One-line objective tag; no wide framed banner.
   const ob=OBJ[stats.obj];if(ob&&!panel){const label=uiFit(ob.t,VW-48,7),ow=uiWidth(label,7)+18,ox=Math.round((VW-ow)/2),oy=top-14;
     ctx.fillStyle='#05050ccc';ctx.fillRect(ox,oy,ow,11);txt('◇',ox+3,oy+3,COL.gold,7);txt(label,ox+12,oy+3,COL.txt,7);top=oy-3}
@@ -1200,7 +1200,8 @@ const ORDERS={attack:'Assaut',defend:'Défense',follow:'Suivre'};
 function toggleOrder(){const b=bases[0];b.order=b.order==='attack'?'defend':b.order==='defend'?'follow':'attack';
   toast({attack:'Tes troupes partent à l\'assaut du cœur rouge.',defend:'Tes troupes se regroupent devant ta base.',follow:'Tes troupes t\'escortent.'}[b.order],2.5,'#9fd0ff');sfx.place()}
 function togglePanel(n){panel=panel===n?null:n;cursorItem=null;sfx.place()}
-function drawBasePanel(){const b=bases[0],W=262,H=196,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2)-6;panelRect={x,y,w:W,h:H};
+const panelY=(H,y)=>HL.barTop&&HL.barTop-H-3>=2?Math.max(2,Math.min(y,HL.barTop-H-3)):y;
+function drawBasePanel(){const b=bases[0],W=262,H=196,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-6);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Ta base',x+8,y+6,COL.txt,10,'left',UIF);button(x+W-18,y+4,14,12,'×',()=>togglePanel('base'));
   txt('Recruter',x+8,y+22,COL.dim,7);
   Object.entries(UNITS).filter(([,u])=>!u.hero).forEach(([k,u],i)=>{const yy=y+32+i*24;box(x+6,yy,W-12,22,COL.panel2,'#e8ecff18');
@@ -1211,14 +1212,15 @@ function drawBasePanel(){const b=bases[0],W=262,H=196,x=Math.round(VW/2-W/2),y=M
     txt(u.n+' '+'★'.repeat(l)+'☆'.repeat(3-l),xx+4,yy+3,l>=3?COL.gold:COL.txt,7);if(l<3){costLine(c,xx+4,yy+13,b.storage);button(xx+95,yy+10,25,11,'+',()=>{if(canPay(b.storage,c)){pay(b.storage,c);b.upg[u.id]++;applyUpg(0,u.id);sfx.buy();toast(u.n+' : niveau '+b.upg[u.id],2,COL.gold)}},canPay(b.storage,c))}else txt('max',xx+4,yy+13,COL.gold,7)});
   const nearB=Math.abs(player.x-b.core.x)<90;button(x+W-108,y+4,86,12,'Déposer pierre/bois',()=>{let n=0;for(const k of['stone','wood']){const c=countItem(k);takeItem(k,c);b.storage[k]+=c;n+=c}toast(n?('Déposé : '+n):'Rien à déposer.',2,'#9fd0ff');if(n)sfx.buy()},nearB);
 }
-function drawCraftPanel(){const W=250,rows=RECIPES.length,H=30+rows*17,x=Math.round(VW/2-W/2),y=Math.max(30,Math.round(VH/2-H/2)-6);panelRect={x,y,w:W,h:H};
+function drawCraftPanel(){const W=250,rows=RECIPES.length,RH=clamp(Math.floor(((HL.barTop||VH)-6-30)/rows),12,17),H=30+rows*RH,x=Math.round(VW/2-W/2),y=panelY(H,Math.max(30,Math.round(VH/2-H/2)-6));panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Forge',x+8,y+6,COL.txt,10);txt('sac puis réserve de la base',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('craft'));
   // le minerai est déposé tout seul à la base : la forge puise dans le sac puis dans la réserve
   const inv={},st=bases[0].storage;for(const s of player.inv)if(s)inv[s.id]=(inv[s.id]||0)+s.n;for(const k of RES)inv[k]=(inv[k]||0)+(st[k]||0);
-  RECIPES.forEach((r,i)=>{const yy=y+22+i*17,ok=canPay(inv,r.inp);box(x+6,yy,W-12,15,ok?COL.panel2:'#05050c','#e8ecff18');ctx.drawImage(ICON[r.out],x+8,yy,14,14);
-    txt(IT[r.out].n+(r.n>1?' ×'+r.n:''),x+25,yy+4,ok?COL.txt:COL.dim,7);costLine(r.inp,x+120,yy+4,inv);
-    button(x+W-46,yy+2,38,11,'Créer',()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();toast('Fabriqué : '+IT[r.out].n,2,COL.gold)},ok)})}
-function drawInvPanel(){const sw=20,W=9*sw+12,H=4*sw+34,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2)-10;panelRect={x,y,w:W,h:H};
+  // lignes compressées si l'écran est bas (téléphone en paysage) pour ne pas couvrir les boutons du bas
+  RECIPES.forEach((r,i)=>{const yy=y+22+i*RH,ok=canPay(inv,r.inp),ty=yy+Math.round((RH-2-5)/2);box(x+6,yy,W-12,RH-2,ok?COL.panel2:'#05050c','#e8ecff18');ctx.drawImage(ICON[r.out],x+8,yy,RH-3,RH-3);
+    txt(IT[r.out].n+(r.n>1?' ×'+r.n:''),x+25,ty,ok?COL.txt:COL.dim,7);costLine(r.inp,x+120,ty,inv);
+    button(x+W-46,yy+1,38,RH-4,'Créer',()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();toast('Fabriqué : '+IT[r.out].n,2,COL.gold)},ok)})}
+function drawInvPanel(){const sw=20,W=9*sw+12,H=4*sw+34,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-10);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Sac',x+8,y+6,COL.txt,10);txt('clique pour déplacer',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('inv'));
   for(let i=0;i<36;i++){const r=i<9?3:Math.floor((i-9)/9),c=i%9,xx=x+6+c*sw,yy=y+22+r*sw+(i<9?6:0),s=player.inv[i];
     box(xx,yy,sw-2,sw-2,i<9?'#0a0a14':COL.panel2,'#e8ecff33');if(s){ctx.drawImage(ICON[s.id],xx+1,yy+1);if(s.n>1)txt(''+s.n,xx+sw-4,yy+sw-11,COL.txt,7,'right')}
