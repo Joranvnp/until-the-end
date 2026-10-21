@@ -37,11 +37,31 @@
 - [x] PWA (manifeste + service worker) : installable et jouable hors ligne depuis le navigateur
 - [x] Politique de confidentialité, fiche Play Store, guide de publication
 
+## Version 1.2 — en cours (rendre le jeu addictif et prêt pour le Play Store)
+### Graphismes et animations (Codex)
+- [ ] Animations manquantes : marche/minage/attaque des unités, cycle de marche du joueur, coups de pioche, chute des arbres, ouverture des coffres
+- [ ] Monstres animés (respiration, attaque, mort), projectiles et impacts plus lisibles
+- [ ] Interface : icônes d'objets redessinées, transitions de panneaux, retour visuel sur chaque bouton tactile
+
+### Fonctionnalités
+- [ ] Tutoriel guidé des 3 premières minutes (objectifs pas à pas avec flèche) — décisif pour la rétention
+- [ ] Mode Survie : vagues infinies de plus en plus fortes, score et record
+- [ ] Traduction anglaise (langue auto selon le téléphone + réglage)
+- [ ] Manette (Gamepad API) et clavier Bluetooth
+- [ ] Récompense quotidienne et quêtes (3 objectifs par jour)
+- [ ] Nouveaux biomes (désert, glace profonde) et boss de lune de sang
+
+### Innovation (ce qui différencie le jeu)
+- [ ] Héros à débloquer avec un pouvoir chacun (mineur, archer, bâtisseur)
+- [ ] Reliques : bonus permanents trouvés dans les coffres, à combiner entre les parties
+- [ ] Partage du résultat (temps, défi du jour) en une touche
+
+### Play Store
+- [ ] Brancher `main` sur la version fusionnée (le workflow Android construit l'APK/AAB depuis `main`)
+- [ ] Tester sur téléphone réel, mesurer les performances entrée de gamme
+- [ ] Test fermé 12 testeurs / 14 jours puis production (voir PUBLIER_PLAY_STORE.md)
+
 ## À faire ensuite (idées)
 - [ ] Tester l'APK sur plusieurs téléphones réels (performances sur entrée de gamme)
 - [ ] Musique composée (pistes jour / nuit / bataille) à la place du synthé aléatoire
-- [ ] Manette (Gamepad API) et clavier Bluetooth sur Android
-- [ ] Mode Survie : vagues infinies, score à battre
-- [ ] Nouveaux biomes (désert, glace profonde) et boss de fin de lune de sang
 - [ ] Classement en ligne du défi du jour (Google Play Jeux)
-- [ ] Traduction anglaise (élargit beaucoup l'audience du Play Store)
