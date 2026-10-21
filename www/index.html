@@ -1474,6 +1474,9 @@ function drawEnts(g,cx,cy){
   // dépouilles : la silhouette blanchit, s'aplatit et s'évapore
   for(const c of corpses){const k=c.t/.9;g.save();g.globalAlpha=1-k;g.translate(Math.round(c.x+ox),Math.round(c.y+oy));g.scale(1+k*.4,1-k*.7);g.drawImage(c.img,-c.img.width/2,-c.img.height);g.globalCompositeOperation='lighter';g.globalAlpha=(1-k)*.8;g.drawImage(c.img,-c.img.width/2,-c.img.height);g.restore()}
   // bombes : mèche qui clignote plus vite avant l'explosion
+  // zone de souffle des bombes rouges (sapeurs) : un cercle qui se resserre avant l'explosion
+  for(const b of bombs)if(b.team&&b.t<1){const r=46,a=Math.round((1-b.t)*28);g.fillStyle='rgba(255,74,58,'+(.08+.12*(1-b.t))+')';for(let i=0;i<28;i++){if((i+a)%4>1)continue;const t0=i/28*Math.PI*2;g.fillRect(Math.round(b.x+ox+Math.cos(t0)*r)-1,Math.round(b.y+oy+Math.sin(t0)*r)-1,2,2)}
+    g.globalAlpha=.10+.15*(1-b.t);g.fillStyle='#ff4a3a';g.beginPath();g.arc(Math.round(b.x+ox),Math.round(b.y+oy),r*(.35+.65*b.t),0,Math.PI*2);g.fill();g.globalAlpha=1}
   for(const b of bombs){g.save();g.translate(Math.round(b.x+ox),Math.round(b.y+oy));g.rotate(b.vx*.004*(1.4-b.t)*8);g.drawImage(ICON.bomb,-8,-10);if(Math.sin((1.6-b.t)**2*30)>0){g.globalCompositeOperation='lighter';g.globalAlpha=.6;g.fillStyle='#ff4a3a';g.fillRect(-5,-6,10,10)}g.restore()}
   for(const a of arrows){g.save();g.translate(Math.round(a.x+ox),Math.round(a.y+oy));g.rotate(a.stuck?a.rot:(a.rot=Math.atan2(a.vy,a.vx)));g.drawImage(SPR.arrow,-8,-1);g.restore()}
 }
