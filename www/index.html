@@ -1880,22 +1880,23 @@ function drawSettings(close){const S2=PROF.set,W=Math.min(VW-16,220),rows=[['sou
   rows.forEach(([k,l],i)=>{const on=S2[k];button(x+10,y+26+i*(RB+4),W-20,RB,l+' : '+(k==='lefty'?(on?'gaucher':'droitier'):k==='en'?(on?'English':'français'):on?'oui':'non'),()=>{S2[k]=!S2[k];if(k==='sound'){muted=!S2.sound;if(!muted)audioInit()}if(k==='vib'&&S2.vib)buzz(30);saveProf();sfx.click()},true,on)});
   button(x+W/2-40,y+H-22-(RB-18),80,16+(RB-18),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
 // hauteur des boutons de menu : plus hauts au doigt quand l'écran a la place (n boutons + marge fixe)
+const RX=()=>isTouch?10:0;// bouton Retour plus haut au tactile
 const menuBH=(n,fix)=>isTouch?clamp(Math.floor((VH-fix)/n)-4,18,28):18;
-function drawAchPanel(close){const two=VW>=380,cols=two?2:1,rowsN=Math.ceil(ACH.length/cols),RH=Math.min(20,Math.floor((VH-70)/rowsN)),W=Math.min(VW-12,two?400:240),H=48+rowsN*RH+20,x=Math.round(VW/2-W/2),y=Math.max(2,Math.round(VH/2-H/2));
+function drawAchPanel(close){const two=VW>=380,cols=two?2:1,rowsN=Math.ceil(ACH.length/cols),RH=Math.min(20,Math.floor((VH-70-RX())/rowsN)),W=Math.min(VW-12,two?400:240),H=48+rowsN*RH+20+RX(),x=Math.round(VW/2-W/2),y=Math.max(2,Math.round(VH/2-H/2));
   const an=panelAnim(x,y,W,H);box(x,y,W,H);const na=Object.keys(PROF.ach).length;txt('Succès '+na+'/'+ACH.length,x+W/2,y+7,COL.gold,10,'center');
   const rec=[0,1,2].map(i=>PROF.rec[i]?DIFFS[i].n+' '+fmtT(PROF.rec[i]):null).filter(Boolean);
   txt(uiFit('Parties '+PROF.games+' · Victoires '+PROF.wins+(rec.length?' · Records : '+rec.join(', '):''),W-12,6),x+W/2,y+22,COL.dim,6,'center');
   const cw=(W-12)/cols;ACH.forEach((a,i)=>{const c=Math.floor(i/rowsN),r=i%rowsN,xx=Math.round(x+6+c*cw),yy=y+34+r*RH,on=!!PROF.ach[a.id];
     txt(on?'★':'☆',xx+2,yy+2,on?COL.gold:'#e8ecff40',7);txt(uiFit(a.n,cw-16,7),xx+12,yy+1,on?COL.txt:COL.dim,7);if(RH>=17)txt(uiFit(a.d,cw-16,6),xx+12,yy+9,on?COL.dim:'#e8ecff50',6)});
-  button(x+W/2-40,y+H-19,80,15,'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
-function drawQuestPanel(close){const q=questsToday(),W=Math.min(VW-16,250),H=150,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
+  button(x+W/2-40,y+H-19-RX(),80,15+RX(),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
+function drawQuestPanel(close){const q=questsToday(),W=Math.min(VW-16,250),H=150+RX(),x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   const an=panelAnim(x,y,W,H);box(x,y,W,H);txt('Quêtes du jour',x+W/2,y+8,COL.gold,10,'center');
   q.list.forEach((e,i)=>{const yy=y+26+i*28,bw=W-24;txt(e.done?'★':'☆',x+10,yy+1,e.done?COL.gold:'#e8ecff60',7);txt(uiFit(qName(e),bw-50,7),x+20,yy,e.done?COL.dim:COL.txt,7);
     txt(e.p+'/'+e.g,x+W-10,yy,e.done?COL.ok:COL.dim,7,'right');ctx.fillStyle='#ffffff14';ctx.fillRect(x+20,yy+10,bw-8,3);if(e.p){ctx.fillStyle=e.done?COL.ok:COL.gold;ctx.fillRect(x+20,yy+10,Math.round((bw-8)*e.p/e.g),3)}
     txt(uiFit(lootTxt(QLOOT[e.tier]),bw-8,6),x+20,yy+16,'#e8ecff70',6)});
   const today=q.login===dayKey(),s=today?q.streak:(q.login===dayKey(new Date(Date.now()-864e5))?Math.min(7,q.streak+1):1);
-  txt(uiFit((today?'Récompense du jour reçue · série ':'Lance une partie pour la récompense du jour · série ')+s+'/7',W-16,6),x+W/2,y+H-36,COL.dim,6,'center');
-  button(x+W/2-40,y+H-22,80,16,'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
+  txt(uiFit((today?'Récompense du jour reçue · série ':'Lance une partie pour la récompense du jour · série ')+s+'/7',W-16,6),x+W/2,y+H-36-RX(),COL.dim,6,'center');
+  button(x+W/2-40,y+H-22-RX(),80,16+RX(),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
 // partage du résultat en une touche : feuille de partage Android (plugin Capacitor), Web Share, sinon presse-papiers
 let sharedT=0;const SHARE_URL='https://joranvnp.github.io/until-the-end/';
 function shareText(){const win=state==='win',mode=daily?tr('Défi du jour : ')+tr(daily.mod.n):(surv?tr('Siège · '):'')+tr('Difficulté ')+tr(DIFFS[diff].n);
@@ -1906,7 +1907,7 @@ async function shareResult(){const text=shareText(),data={title:'Until The End',
     if(navigator.share){await navigator.share(data);return}
     await navigator.clipboard.writeText(text+' '+SHARE_URL);sharedT=performance.now();toast('Résultat copié, colle-le où tu veux !',3,COL.ok)}
   catch(e){if(e&&e.name!=='AbortError'&&!/cancel/i.test(e.message||''))toast('Partage impossible sur cet appareil.',3)}}
-function drawRelicPanel(close){const W=Math.min(VW-16,300),wide=W>=260,cols=wide?2:1,rh=wide?30:26,rows=Math.ceil(RELICS.length/cols),H=34+rows*rh+30,x=Math.round(VW/2-W/2),y=Math.max(4,Math.round(VH/2-H/2));
+function drawRelicPanel(close){const W=Math.min(VW-16,300),wide=W>=260,cols=wide?2:1,rh=wide?30:26,rows=Math.ceil(RELICS.length/cols),H=34+rows*rh+30+RX(),x=Math.round(VW/2-W/2),y=Math.max(4,Math.round(VH/2-H/2));
   const an=panelAnim(x,y,W,H);box(x,y,W,H);const sl=relSlots(),eq=PROF.relEq;
   txt('Reliques',x+W/2,y+7,'#c9a7ff',10,'center');txt(uiFit('Équipées '+eq.length+'/'+sl+' · touche pour équiper · pas en défi du jour',W-12,6),x+W/2,y+20,COL.dim,6,'center');
   const cw=Math.floor((W-12-(cols-1)*4)/cols);
@@ -1917,7 +1918,7 @@ function drawRelicPanel(close){const W=Math.min(VW-16,300),wide=W>=260,cols=wide
     txt(uiFit(relDesc(r,lv),cw-10,6),cx+6,cy+14,COL.dim,6);
     uiHits.push({x:cx,y:cy,w:cw,h:rh-3,fn:()=>{const j=eq.indexOf(r.id);if(j>=0)eq.splice(j,1);else{if(eq.length>=sl)eq.shift();eq.push(r.id)}saveProf();sfx.place()}})});
   if(sl<3)txt(uiFit('3e emplacement après 10 victoires ('+PROF.wins+'/10)',W-12,6),x+W/2,y+H-36,'#e8ecff60',6,'center');
-  button(x+W/2-40,y+H-22,80,16,'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
+  button(x+W/2-40,y+H-22-RX(),80,16+RX(),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
 function waveExplain(I){
   if(I.phase==='march')return 'L\'armée rouge marche sur ta base : '+I.alive+(I.alive>1?' unités':' unité')+', à '+I.front+' cases de ton cœur.';
   if(I.phase==='defend')return 'L\'ennemi garde ses troupes chez lui pour se défendre de ton armée.';
