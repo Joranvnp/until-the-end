@@ -118,10 +118,10 @@ const UNITS={
   champion:{n:'Champion rouge',hp:320,dmg:18,spd:48,cost:{},range:12,cd:.7,hero:true,d:''},
 };
 const UPG=[
-  {id:'core',n:'Cœur renforcé',d:'+300 PV max au cœur',cost:{stone:20,iron:4}},
-  {id:'speed',n:'Entraînement',d:'+12% vitesse des unités',cost:{copper:8,coal:6}},
-  {id:'dmg',n:'Forge de guerre',d:'+25% dégâts des unités',cost:{iron:6,gold:2}},
-  {id:'tower',n:'Tour de guet',d:'Tour plus puissante',cost:{stone:15,silver:3}},
+  {id:'core',n:'Cœur renforcé',d:'+300 PV max au cœur',s:'+300 PV',cost:{stone:20,iron:4}},
+  {id:'speed',n:'Entraînement',d:'+12% vitesse des unités',s:'vitesse +',cost:{copper:8,coal:6}},
+  {id:'dmg',n:'Forge de guerre',d:'+25% dégâts des unités',s:'dégâts +',cost:{iron:6,gold:2}},
+  {id:'tower',n:'Tour de guet',d:'Tour plus puissante',s:'tir +',cost:{stone:15,silver:3}},
 ];
 const upgCost=(u,l)=>Object.fromEntries(Object.entries(u.cost).map(([k,v])=>[k,Math.ceil(v*(1+.6*l))]));
 
@@ -1273,7 +1273,7 @@ function drawBasePanel(){const b=bases[0],W=262,H=196,x=Math.round(VW/2-W/2),y=p
     costLine(u.cost,x+136,yy+7,b.storage);button(x+W-48,yy+4,40,14,'Recruter',()=>{if(recruit(0,k))toast(u.n+' recruté !',2,'#9fd0ff')},canPay(b.storage,u.cost))});
   txt('Améliorations',x+8,y+132,COL.dim,7);
   UPG.forEach((u,i)=>{const xx=x+6+(i%2)*126,yy=y+141+Math.floor(i/2)*25,l=b.upg[u.id],c=upgCost(u,l);box(xx,yy,123,23,COL.panel2,'#e8ecff18');
-    txt(u.n+' '+'★'.repeat(l)+'☆'.repeat(3-l),xx+4,yy+3,l>=3?COL.gold:COL.txt,7);if(l<3){costLine(c,xx+4,yy+13,b.storage);button(xx+95,yy+10,25,11,'+',()=>{if(canPay(b.storage,c)){pay(b.storage,c);b.upg[u.id]++;applyUpg(0,u.id);sfx.buy();toast(u.n+' : niveau '+b.upg[u.id],2,COL.gold)}},canPay(b.storage,c))}else txt('max',xx+4,yy+13,COL.gold,7)});
+    txt(u.n+' '+'★'.repeat(l)+'☆'.repeat(3-l),xx+4,yy+3,l>=3?COL.gold:COL.txt,7);if(l<3){costLine(c,xx+4,yy+13,b.storage);txt(uiFit(u.s,44,6),xx+92,yy+14,COL.dim,6,'right');button(xx+95,yy+10,25,11,'+',()=>{if(canPay(b.storage,c)){pay(b.storage,c);b.upg[u.id]++;applyUpg(0,u.id);sfx.buy();toast(u.n+' : niveau '+b.upg[u.id],2,COL.gold)}},canPay(b.storage,c))}else{txt('max',xx+4,yy+13,COL.gold,7);txt(u.s,xx+119,yy+14,COL.dim,6,'right')}});
   const nearB=Math.abs(player.x-b.core.x)<90;button(x+W-108,y+4,86,12,'Déposer pierre/bois',()=>{let n=0;for(const k of['stone','wood']){const c=countItem(k);takeItem(k,c);b.storage[k]+=c;n+=c}toast(n?('Déposé : '+n):'Rien à déposer.',2,'#9fd0ff');if(n)sfx.buy()},nearB);
 }
 function drawCraftPanel(){const W=250,rows=RECIPES.length,RH=clamp(Math.floor(((HL.barTop||VH)-6-30)/rows),12,17),H=30+rows*RH,x=Math.round(VW/2-W/2),y=panelY(H,Math.max(30,Math.round(VH/2-H/2)-6));panelRect={x,y,w:W,h:H};
