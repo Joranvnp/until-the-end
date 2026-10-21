@@ -1,0 +1,35 @@
+# Publie la version web (dossier www) sur GitHub Pages : jeu jouable en ligne + politique de confidentialité
+# À activer une fois : Settings > Pages > Source : GitHub Actions,
+# puis Settings > Secrets and variables > Actions > Variables : WEB_PAGES = on
+name: Web
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # ne tourne qu'une fois Pages activé (variable de dépôt WEB_PAGES = on), ou lancé à la main
+    if: github.event_name == 'workflow_dispatch' || vars.WEB_PAGES == 'on'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: www
+      - id: deployment
+        uses: actions/deploy-pages@v4

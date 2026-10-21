@@ -1,1 +1,10 @@
 node_modules/
+.claude/
+# Android (généré / secrets)
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+*.keystore
+*.jks
+keystore.properties

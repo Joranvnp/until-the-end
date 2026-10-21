@@ -1,0 +1,11 @@
+{
+  "appId": "com.joranvnp.untiltheend",
+  "appName": "Until The End",
+  "webDir": "www",
+  "backgroundColor": "#0b0a16",
+  "android": {
+    "backgroundColor": "#0b0a16",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

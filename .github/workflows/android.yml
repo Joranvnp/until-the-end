@@ -1,0 +1,62 @@
+# Construit l'appli Android à chaque push sur main (ou à la demande) :
+# - APK de test (installable directement sur un téléphone)
+# - AAB signé pour le Play Store, si les secrets de signature sont configurés
+name: Android
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Dépendances
+        run: npm ci
+
+      - name: Copie du jeu dans le projet Android
+        run: npx cap sync android
+
+      - name: Clé de signature (si configurée)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.UTE_KEYSTORE_BASE64 }}
+        if: env.KEYSTORE_BASE64 != ''
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          echo "UTE_KEYSTORE_PATH=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+
+      - name: Construction
+        working-directory: android
+        env:
+          UTE_KEYSTORE_PASSWORD: ${{ secrets.UTE_KEYSTORE_PASSWORD }}
+          UTE_KEY_ALIAS: ${{ secrets.UTE_KEY_ALIAS }}
+          UTE_KEY_PASSWORD: ${{ secrets.UTE_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug bundleRelease
+
+      - name: APK de test
+        uses: actions/upload-artifact@v4
+        with:
+          name: until-the-end-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+
+      - name: AAB pour le Play Store
+        uses: actions/upload-artifact@v4
+        with:
+          name: until-the-end-release-aab
+          path: android/app/build/outputs/bundle/release/*.aab
