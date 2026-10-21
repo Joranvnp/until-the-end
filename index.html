@@ -1260,12 +1260,23 @@ function drawTitle(){
     ['Q D / ← → Marcher   Espace Sauter','Clic gauche Utiliser   Clic droit Miner','B Base   C Forge   E Sac   R Ordre   M Son'];
   const ww=Math.min(VW-20,uiWidth(lines[2])+20);box(Math.round((VW-ww)/2),hy,ww,39,COL.panel,'#e8ecff33');lines.forEach((l,i)=>txt(uiFit(l,ww-12),VW/2,hy+7+i*10,COL.dim,7,'center'));
 }
-function drawEnd(){ctx.fillStyle='rgba(5,5,12,.82)';ctx.fillRect(0,0,VW,VH);const win=state==='win',W=Math.min(VW-24,270),H=134,x=Math.round((VW-W)/2),y=Math.round((VH-H)/2);
+function drawEnd(){ctx.fillStyle='rgba(5,5,12,.82)';ctx.fillRect(0,0,VW,VH);const win=state==='win',W=Math.min(VW-24,270);
+  // conseil adapté à ce qui s'est passé, pour que la partie suivante se joue autrement
+  const rk=stats.rk||{},army=(rk.warrior||0)+(rk.archer||0)+(rk.golem||0);
+  const tip=win?(diff<DIFFS.length-1?'Prêt pour plus dur ? Essaie la difficulté '+DIFFS[diff+1].n+'.':'Victoire en '+DIFFS[diff].n+' : bravo !')
+    :stats.recruited===0?'Astuce : rapporte du minerai à ta base et recrute des mineurs, puis des guerriers (bouton Base).'
+    :(rk.miner||0)===0?'Astuce : des mineurs remplissent la réserve tout seuls, recrute-les en premier.'
+    :army===0?'Astuce : recrute aussi des guerriers et des archers pour protéger ton cœur.'
+    :army<6?'Astuce : garde l\'ordre Défense tant que ton armée est petite, la tour couvre la ligne.'
+    :'Astuce : regroupe une dizaine de combattants avant de lancer l\'Assaut.';
+  const tl=wrapLines(tip,W-20,7),H=124+tl.length*10,x=Math.round((VW-W)/2),y=Math.round((VH-H)/2);
   box(x,y,W,H);txt(win?'VICTOIRE':'DÉFAITE',VW/2,y+16,win?COL.gold:'#ff6fae',21,'center');
   txt(win?'Le cœur ennemi a volé en éclats.':"Ton cœur s'est éteint.",VW/2,y+42,COL.txt,7,'center');
-  const m=Math.floor(time/60);txt('Durée '+m+' min · Blocs minés '+stats.mined,VW/2,y+58,COL.dim,7,'center');
-  txt('Recrues '+stats.recruited+' · Ennemis abattus '+stats.kills,VW/2,y+69,COL.dim,7,'center');
-  button(VW/2-50,y+94,100,22,'Rejouer',()=>{state='title'})}
+  const m=Math.floor(time/60);txt(uiFit('Difficulté '+DIFFS[diff].n+' · Durée '+m+' min · Blocs minés '+stats.mined,W-12,7),VW/2,y+58,COL.dim,7,'center');
+  txt(uiFit('Recrues '+stats.recruited+' (dont '+army+' combattants) · Ennemis abattus '+stats.kills,W-12,7),VW/2,y+69,COL.dim,7,'center');
+  tl.forEach((l,i)=>txt(l,VW/2,y+84+i*10,win?COL.gold:'#ffd27a',7,'center'));
+  const by=y+H-30,bw=Math.min(100,Math.floor((W-30)/2));
+  button(VW/2-bw-5,by,bw,22,'Rejouer',()=>{audioInit();newGame(diff)},true,true);button(VW/2+5,by,bw,22,'Menu',()=>{state='title'})}
 // ---------- contrôles tactiles ----------
 const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;const touch={l:false,r:false,j:false,d:false,a:false};let touchBtns=[];
 // Pavé gauche ◀ ▶ (▼ au-dessus pour creuser vers le bas), à droite ▲ saut et gros bouton d'action (vise tout seul).
