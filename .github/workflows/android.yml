@@ -1,11 +1,11 @@
-# Construit l'appli Android à chaque push sur main (ou à la demande) :
+# Construit l'appli Android à chaque push sur main ou web (ou à la demande) :
 # - APK de test (installable directement sur un téléphone)
 # - AAB signé pour le Play Store, si les secrets de signature sont configurés
 name: Android
 
 on:
   push:
-    branches: [main]
+    branches: [main, web]
   workflow_dispatch:
 
 jobs:
