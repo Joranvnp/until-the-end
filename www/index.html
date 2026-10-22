@@ -2119,7 +2119,7 @@ function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0
   const units=['Mineur : creuse et rapporte le minerai. Fuit les pillards vers la tour.','Guerrier : mêlée solide. Archer : tire de loin, recule au contact.','Golem : colosse lent qui brise tout, idéal contre le cœur.','Contres (+40 % dégâts) : guerrier > golem > archer > guerrier.','Tour de guet : tire sur les ennemis proches de ton cœur. Améliore-la à la base.','',
     'Défense : tes troupes tiennent une ligne devant le cœur, sous la tour. 3 d\'entre elles chassent les pillards.','Assaut : l\'armée marche groupée vers le cœur rouge.','Suivre : tes troupes t\'escortent partout.','Blessées, les unités reculent pour souffler, puis reviennent au combat (sauf le golem).'];
   const lines=pauseHelp?(pauseHelp===2?units:[...goal,'',...help]).flatMap(l=>l?wrapLines(l,W-16,7):['']):[];
-  const PB=menuBH(5,64),H=pauseHelp?30+lines.length*10+24:24+5*(PB+4)+40,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
+  const PB=menuBH(6,64),H=pauseHelp?30+lines.length*10+24:24+6*(PB+4)+40,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   box(x,y,W,H);txt(pauseHelp===2?'Unités et ordres':pauseHelp?'Aide':'Pause',x+W/2,y+7,COL.txt,10,'center');
   if(pauseHelp){lines.forEach((l,i)=>txt(l,x+8,y+24+i*10,COL.txt,7));
     button(x+W/2-78,y+H-20,76,15,pauseHelp===2?'← Commandes':'Unités →',()=>{pauseHelp=pauseHelp===2?1:2;sfx.place()});button(x+W/2+2,y+H-20,76,15,'Retour',()=>{pauseHelp=false})}
@@ -2128,7 +2128,8 @@ function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0
     button(bx,y+24+(PB+4),bw,PB,'Réglages',()=>{menuPanel='set';panelT=0;sfx.place()});
     button(bx,y+24+2*(PB+4),bw,PB,'Aide et commandes',()=>{pauseHelp=1});
     button(bx,y+24+3*(PB+4),bw,PB,'Succès '+Object.keys(PROF.ach).length+'/'+ACH.length,()=>{menuPanel='ach';panelT=0;sfx.place()});
-    button(bx,y+24+4*(PB+4),bw,PB,'Sauvegarder et quitter',()=>{saveGame();paused=false;panel=null;state='title'});
+    button(bx,y+24+4*(PB+4),bw,PB,'Triche (dev)',()=>{menuPanel='cheat';panelT=0;sfx.place()});
+    button(bx,y+24+5*(PB+4),bw,PB,'Sauvegarder et quitter',()=>{saveGame();paused=false;panel=null;state='title'});
     txt(daily?'Défi du jour : '+daily.mod.n:surv?'Siège · vague '+(stats.waves+1):'Difficulté '+DIFFS[diff].n,x+W/2,y+H-36,daily?COL.gold:COL.dim,6,'center');
     txt('Partie sauvegardée toutes les 20 s',x+W/2,y+H-22,COL.dim,6,'center')}}
 const ORDERS={attack:'Assaut',defend:'Défense',follow:'Suivre'};
@@ -2268,7 +2269,7 @@ function drawTitle(){
   txt('v'+VERSION,VW-4,VH-9,'#e8ecff40',6,'right');
 }
 // panneaux Réglages / Succès, partagés par l'écran titre et le menu pause
-function drawMenuPanel(close){if(menuPanel==='set')return drawSettings(close);if(menuPanel==='quest')return drawQuestPanel(close);if(menuPanel==='relic')return drawRelicPanel(close);return drawAchPanel(close)}
+function drawMenuPanel(close){if(menuPanel==='set')return drawSettings(close);if(menuPanel==='quest')return drawQuestPanel(close);if(menuPanel==='relic')return drawRelicPanel(close);if(menuPanel==='cheat')return drawCheatPanel(close);return drawAchPanel(close)}
 function panelAnim(x,y,W,H){const k=1-Math.pow(1-panelT,3);if(k>=1)return false;ctx.save();ctx.globalAlpha=k;const cx=x+W/2,cy=y+H/2,z=.9+.1*k;ctx.translate(cx,cy+(1-k)*8);ctx.scale(z,z);ctx.translate(-cx,-cy);return true}
 function drawSettings(close){const S2=PROF.set,W=Math.min(VW-16,220),rows=[['sound','Son'],['music','Musique'],['vib','Vibrations'],['shake','Secousses de l\'écran'],['crt','Effet rétro (lignes)'],['lefty','Commandes'],['en','Langue / Language']],RB=menuBH(rows.length,60),H=30+rows.length*(RB+4)+26+(RB-18),x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   const an=panelAnim(x,y,W,H);box(x,y,W,H);txt('Réglages',x+W/2,y+8,COL.txt,10,'center');
@@ -2284,6 +2285,18 @@ function drawAchPanel(close){const two=VW>=380,cols=two?2:1,rowsN=Math.ceil(ACH.
   const cw=(W-12)/cols;ACH.forEach((a,i)=>{const c=Math.floor(i/rowsN),r=i%rowsN,xx=Math.round(x+6+c*cw),yy=y+34+r*RH,on=!!PROF.ach[a.id];
     txt(on?'★':'☆',xx+2,yy+2,on?COL.gold:'#e8ecff40',7);txt(uiFit(a.n,cw-16,7),xx+12,yy+1,on?COL.txt:COL.dim,7);if(RH>=17)txt(uiFit(a.d,cw-16,6),xx+12,yy+9,on?COL.dim:'#e8ecff50',6)});
   button(x+W/2-40,y+H-19-RX(),80,15+RX(),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
+// ==== TRICHE (outil de test, à retirer avant publication) ====
+function drawCheatPanel(close){const b=bases[0],R=[['wood',200],['stone',200],['coal',100],['copper',100],['iron',100],['silver',50],['gold',50],['diamond',20]],
+  BH=15+RX(),W=Math.min(VW-12,260),H=26+7*(BH+4),x=Math.round(VW/2-W/2),y=Math.max(2,Math.round(VH/2-H/2)),cw=(W-20)/2;
+  const an=panelAnim(x,y,W,H);box(x,y,W,H);txt('Triche (dev)',x+W/2,y+7,COL.gold,10,'center');
+  const done=m=>{sfx.pick();toast(m,1.5,COL.gold)};
+  R.forEach(([k,n],i)=>button(Math.round(x+8+(i%2)*(cw+4)),y+22+Math.floor(i/2)*(BH+4),Math.round(cw),BH,'+'+n+' '+tr(IT[k].n),()=>{b.storage[k]+=n;done('+'+n+' '+tr(IT[k].n))}));
+  const row=k=>y+22+k*(BH+4),bx=x+8,bw=W-16;
+  button(bx,row(4),Math.round(cw),BH,'Tout ×1000',()=>{for(const k in b.storage)b.storage[k]+=1000;done('+1000 de chaque')});
+  button(Math.round(bx+cw+4),row(4),Math.round(cw),BH,'+10 '+tr(IT.crystal.n),()=>{addItem('crystal',10);done('+10 '+tr(IT.crystal.n))});
+  button(bx,row(5),Math.round(cw),BH,'Soigner',()=>{player.hp=player.maxhp;b.core.hp=b.core.maxhp;done('Héros et cœur soignés')});
+  button(Math.round(bx+cw+4),row(5),Math.round(cw),BH,'+5 potions, +10 bombes',()=>{addItem('potion',5);addItem('bomb',10);done('Potions et bombes ajoutées')});
+  button(bx,row(6),bw,BH,'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
 function drawQuestPanel(close){const q=questsToday(),W=Math.min(VW-16,250),H=166+RX(),x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   const an=panelAnim(x,y,W,H);box(x,y,W,H);txt('Quêtes du jour',x+W/2,y+8,COL.gold,10,'center');
   q.list.forEach((e,i)=>{const yy=y+26+i*34,bw=W-24;if(i){ctx.fillStyle='#ffffff10';ctx.fillRect(x+10,yy-7,W-20,1)}txt(e.done?'★':'☆',x+10,yy+1,e.done?COL.gold:'#e8ecff60',7);txt(uiFit(qName(e),bw-50,7),x+20,yy,e.done?COL.dim:COL.txt,7);
