@@ -1278,6 +1278,9 @@ function updateAI(dt){
   if(b.order==='defend'&&foeMiners>=2&&time-(ai.lastRaid||0)>90&&fighters.length>=3){const idle=fighters.filter(e=>!e.raid&&!e.retreat).slice(0,2);idle.forEach(e=>e.raid=true);ai.lastRaid=time;if(idle.length)toast('Des pillards rouges traquent tes mineurs !',3,'#ff9a8a')}
   // 6. armée : on rassemble au point de ralliement puis on attaque en groupe (effectif plafonné : lisibilité et perfs)
   if(fighters.length<survCap())recruit(1,counter());
+  // renforts : les recrues restées au ralliement pendant la vague partent ensemble en escouade dès qu'elles sont assez nombreuses
+  if(!surv&&b.order==='attack'){const late=fighters.filter(e=>lateRed(e)&&!e.retreat&&Math.abs(e.x-b.core.x)<20*T);
+    if(late.length>=Math.max(6,Math.ceil(ai.sent*.3))){for(const e of late)e.waveNo=ai.waveNo;ai.sent+=late.length;toast('Des renforts rouges rejoignent l\'assaut ('+late.length+' unités) !',3,'#ff9a8a')}}
   // avant de lancer la vague, on jauge la défense adverse (unités au cœur, joueur, tour) : trop forte, on grossit encore
   // l'armée, au plus 90 s ou jusqu'au plafond d'effectif, puis on attaque quand même pour ne jamais rester passif
   // cœur bleu sous 30 % : l'armée rouge revient l'achever avec un effectif réduit, sans hésiter
