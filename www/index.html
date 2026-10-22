@@ -507,7 +507,7 @@ let lastEndChange=0,confetti=[],panelT=1,craftFx=0,endInfo={},fade=0,bloodNight=
 let paused=false,pauseHelp=false,endT=0,endState=null,panel=null, cursorItem=null, stats, ai, titleCam=0, hoverTile=null, mining=null;
 const DIFFS=[{n:'Paisible',inc:.55,core:1.3},{n:'Normal',inc:1,core:1},{n:'Brutal',inc:1.6,core:.85}];
 function newGame(d,dly=null,sv=false){
-  daily=dly;diff=d;surv=sv&&!dly;genWorld(dly?dly.seed:(Math.random()*1e9)|0);fade=1;bloodNight=-1;weather={rain:0,target:0,t:20,flash:0};corpses=[];pops=[];bombs=[];visualDebris.length=0;PROF.games++;saveProf();
+  daily=dly;diff=d;surv=sv&&!dly;genWorld(dly?dly.seed:(Math.random()*1e9)|0);fade=1;bloodNight=-1;weather={rain:0,target:0,t:20,flash:0};corpses=[];pops=[];bombs=[];visualDebris.length=0;caveSpores.length=0;caveSpawn=0;PROF.games++;saveProf();
   ents=[];parts=[];arrows=[];floats=[];msgs=[];time=dayLen*.08;regrowT=0;panel=null;cursorItem=null;
   stats={mined:0,recruited:0,kills:0,start:time,obj:0,rk:{},chests:0,waves:0};
   bases=[0,1].map(t=>{const coreTx=t===0?19:WW-20;const core={type:'core',team:t,x:coreTx*T-3,y:BASE_GY*T-34,w:22,h:34,hp:0,maxhp:0,flash:0,anim:0};
@@ -1397,7 +1397,26 @@ function updateFx(dt){if(state==='title')titleT+=dt;else titleT=0;if(fade>0)fade
 // lune de sang : une nuit sur quatre (toutes en défi « Nuits rouges »), monstres doublés
 const nightNo=()=>Math.floor(time/dayLen);
 const isBlood=()=>daylight()<.25&&(daily&&daily.mod.id==='blood'||nightNo()%4===3);
+// spores des grottes : hasard visuel indépendant, population bornée autour de la caméra
+const caveSpores=[],caveRand=mulberry(73519),caveColors=['#38ffd0','#b07cff','#ffcf6a'];let caveSpawn=0;
+function caveAir(x,y){const tx=Math.floor(x/T),ty=Math.floor(y/T);return tx>=0&&tx<WW&&ty>surf[tx]&&ty<WH&&getT(tx,ty)===AIR}
+function updateCaveSpores(dt){const cap=lowFx?30:60;
+  for(let i=caveSpores.length-1;i>=0;i--){const p=caveSpores[i];p.t+=dt;
+    p.x+=dt*(p.vx+Math.sin(p.t*.8+p.phase)*2);p.y+=dt*(p.vy+Math.cos(p.t*.6+p.phase));
+    if(p.t>p.life||p.x<cam.x-16||p.x>cam.x+VW+16||p.y<cam.y-16||p.y>cam.y+VH+16||!caveAir(p.x,p.y))caveSpores.splice(i,1)}
+  if(caveSpores.length>cap)caveSpores.length=cap;
+  caveSpawn=Math.min(caveSpawn+dt*24,4);
+  while(caveSpawn>=1){caveSpawn--;if(caveSpores.length>=cap)continue;
+    const x=cam.x+caveRand()*VW,y=cam.y+caveRand()*VH;if(!caveAir(x,y))continue;
+    caveSpores.push({x,y,vx:(caveRand()-.5)*3,vy:-.5-caveRand(),t:0,life:18+caveRand()*16,phase:caveRand()*Math.PI*2,col:caveColors[Math.floor(caveRand()*3)],size:caveRand()<.2?2:1})}}
+// même pulsation pour le point lumineux et son halo diffus, avec apparition douce
+function drawCaveSpores(g,cx,cy,glow=false){if(glow&&lowFx)return;g.save();g.globalCompositeOperation='lighter';
+  for(let i=0;i<Math.min(caveSpores.length,lowFx?30:60);i++){const p=caveSpores[i],x=Math.round(p.x-cx),y=Math.round(p.y-cy);
+    if(x<-16||x>VW+16||y<-16||y>VH+16)continue;
+    const a=Math.min(1,p.t,p.life-p.t)*(.5+.3*Math.sin(p.t*1.6+p.phase));
+    if(glow)halo(g,x,y,p.col,13,a*.18);else{g.globalAlpha=a;g.fillStyle=p.col;g.fillRect(x,y,p.size,p.size)}}g.restore()}
 function updateWorldFx(dt){
+  updateCaveSpores(dt);
   for(let i=visualDebris.length-1;i>=0;i--){visualDebris[i].t+=dt;if(visualDebris[i].t>.65)visualDebris.splice(i,1)}
   for(const e of ents)if(!e.dead&&e.kind==='golem'){
     const beat=Math.floor(e.anim/2);
@@ -1639,12 +1658,12 @@ function drawAtmos(g,cx,cy){
     const a=Math.pow(.5+.5*Math.sin(time*1.7+seed*50),2)*.85;halo(g,X-cx,Y-cy,'#ffe066',9,a*.3);g.globalAlpha=a;g.fillStyle='#ffe066';g.fillRect(Math.round(X-cx),Math.round(Y-cy),1,1)}g.restore();
   if(!VG||VG.width!==VW||VG.height!==VH){VG=mk(VW,VH);const v=VG.getContext('2d'),gr=v.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.35,VW/2,VH/2,Math.max(VW,VH)*.7);gr.addColorStop(0,'#05050c00');gr.addColorStop(1,'#05050c99');v.fillStyle=gr;v.fillRect(0,0,VW,VH)}g.drawImage(VG,0,0)}
 function drawGlowPass(g,cx,cy,box){if(!glowLayer||glowLayer.width!==VW||glowLayer.height!==VH){glowLayer=mk(VW,VH);glowTint=mk(VW,VH)}
-  const q=glowLayer.getContext('2d'),t=glowTint.getContext('2d');q.clearRect(0,0,VW,VH);drawBloom(q,box);drawGlows(q,cx,cy);
+  const q=glowLayer.getContext('2d'),t=glowTint.getContext('2d');q.clearRect(0,0,VW,VH);drawBloom(q,box);drawGlows(q,cx,cy);drawCaveSpores(q,cx,cy,true);
   g.save();g.globalCompositeOperation='lighter';
   if(!lowFx)for(const[col,dx]of[['#ff3355',-1],['#38ffff',1]]){t.globalCompositeOperation='copy';t.drawImage(glowLayer,0,0);t.globalCompositeOperation='multiply';t.fillStyle=col;t.fillRect(0,0,VW,VH);t.globalCompositeOperation='destination-in';t.drawImage(glowLayer,0,0);g.globalAlpha=.15;g.drawImage(glowTint,dx,0)}
   g.globalAlpha=.8;g.drawImage(glowLayer,0,0);g.restore()}
 // effets par-dessus le monde : anneaux, éclairs de pose, pluie, éclair d'orage, vignettes (dégâts, lune de sang, PV bas)
-function drawOverlays(g,cx,cy){g.save();
+function drawOverlays(g,cx,cy){drawCaveSpores(g,cx,cy);g.save();
   for(const q of pops){const k=1-q.t/q.max;
     if(q.ring){g.globalCompositeOperation='lighter';g.globalAlpha=(1-k)*.9;g.strokeStyle=q.col;g.lineWidth=2-k;g.beginPath();g.arc(Math.round(q.x-cx),Math.round(q.y-cy),2+q.r*Math.sqrt(k),0,7);g.stroke()}
     else if(q.flash){g.globalCompositeOperation='lighter';halo(g,q.x-cx,q.y-cy,'#fff0c0',90,(1-k))}
