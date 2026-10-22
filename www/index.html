@@ -1853,7 +1853,9 @@ function drawCraftPanel(){const CW=250,av=(HL.barTop||VH)-6-30,
   // lignes compressées si l'écran est bas (téléphone en paysage) pour ne pas couvrir les boutons du bas
   RECIPES.forEach((r,i)=>{const X=x+Math.floor(i/rows)*(CW-6),yy=y+22+(i%rows)*RH,ok=canPay(inv,r.inp),ty=yy+Math.round((RH-2-5)/2),is=Math.min(16,RH-3);box(X+6,yy,CW-12,RH-2,ok?COL.panel2:'#05050c','#e8ecff18');ctx.drawImage(ICON[r.out],X+8,yy+Math.floor((RH-2-is)/2),is,is);
     txt(IT[r.out].n+(r.n>1?' ×'+r.n:''),X+27,ty,ok?COL.txt:COL.dim,7);costLine(r.inp,X+120,ty,inv);
-    button(X+CW-46,yy+1,38,RH-4,'Créer',()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n,2,COL.gold)},ok)})}
+    // stock déjà dans le sac, en coin de l'icône (comme la barre d'objets) : évite de fabriquer en double
+    const own=countItem(r.out);if(own)txt(''+own,X+8+is,yy+RH-9,COL.gold,6,'right');
+    const go=()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n,2,COL.gold)};cardHit(X+6,yy,CW-12,RH-2,go,ok);button(X+CW-46,yy+1,38,RH-4,'Créer',go,ok)})}
 function drawInvPanel(){const sw=20,W=9*sw+12,H=4*sw+34,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-10);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Sac',x+8,y+6,COL.txt,10);txt(isTouch?'touche pour déplacer':'clique pour déplacer',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('inv'));
   for(let i=0;i<36;i++){const r=i<9?3:Math.floor((i-9)/9),c=i%9,xx=x+6+c*sw,yy=y+22+r*sw+(i<9?6:0),s=player.inv[i];
