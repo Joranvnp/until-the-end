@@ -1981,14 +1981,19 @@ function logo(cx,y,size){const z=uiScale(size),L=uiLetters('UNTIL THE END');let 
 function drawTitle(){
   ctx.fillStyle='rgba(5,5,12,.55)';ctx.fillRect(0,0,VW,VH);
   if(menuPanel)return drawMenuPanel(()=>{menuPanel=null});
-  const tsz=VW<360?21:28,lh=uiScale(tsz)*5+24,port=VH>VW*1.2,sv=hasSave();let ty=Math.max(14,Math.round(VH*(port?.25:.1)));
-  const bw=Math.min(210,VW-24),bx=Math.round(VW/2-bw/2),
+  const port=VH>VW*1.2,sv=hasSave(),
+    // téléphone en paysage : logo et aide à gauche, boutons à droite sur toute la hauteur (empilés, ils plafonnaient à ~22 px réels)
+    land=isTouch&&!port&&VW>=VH*1.6,tsz=VW<360||land?21:28,lh=uiScale(tsz)*5+24,nb=sv?4:3;let ty=Math.max(14,Math.round(VH*(port?.25:.1)));
+  const bw=land?Math.min(280,Math.floor(VW*.46)):Math.min(210,VW-24),bx=land?VW-bw-Math.round(VW*.04):Math.round(VW/2-bw/2),
     // tactile : boutons plus hauts tant que la hauteur le permet
-    BH=isTouch?clamp(Math.floor((VH-ty-lh-64)/6)-4,20,port?34:30):20,SH=isTouch?BH-4:18,blk=(sv?4:3)*(BH+4)+(SH+4)*2+12+39;
+    BH=land?clamp(Math.floor((VH-8)/(nb+2))-4,20,36):isTouch?clamp(Math.floor((VH-ty-lh-64)/6)-4,20,port?34:30):20,SH=isTouch?BH-4:18,blk=nb*(BH+4)+(SH+4)*2+12+39;
+  // colonne de gauche en paysage (logo, défi, aide), sinon tout est centré
+  const cx=land?Math.round(bx/2):VW/2,tw=land?bx-16:bw;
   // portrait : logo + menu centrés ensemble (avant, tout le tiers bas de l'écran restait vide)
   if(port)ty=Math.max(14,Math.round((VH-lh-blk)*.5));
-  logo(VW/2,ty,tsz);txt('Mine. Forge. Détruis leur cœur.',VW/2,ty+lh-15,COL.dim,7,'center');
-  let y=ty+lh,k=0;if(sv){button(bx-slideIn(k++),y,bw,BH,'Continuer la partie',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)},true,true);y+=BH+4}
+  if(land)ty=Math.max(6,Math.round((VH-lh-12-43)*.5));
+  logo(cx,ty,tsz);txt('Mine. Forge. Détruis leur cœur.',cx,ty+lh-15,COL.dim,7,'center');
+  let y=land?Math.max(4,Math.round((VH-nb*(BH+4)-(SH+4)*2+4)/2)):ty+lh,k=0;if(sv){button(bx-slideIn(k++),y,bw,BH,'Continuer la partie',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)},true,true);y+=BH+4}
   const D=dailyInfo(),done=PROF.daily.won===D.key;
   button(bx+slideIn(k++),y,bw,BH,(done?'★ ':'')+'Défi du jour : '+D.mod.n,()=>{audioInit();newGame(1,D)},true,!sv&&false);y+=BH+4;
   const g3=Math.floor((bw-8)/3);// ▶ : ces trois boutons lancent la partie (sinon on cherche un bouton « Jouer » qui n'existe pas)
@@ -2001,10 +2006,11 @@ function drawTitle(){
   {const q=questsToday(),nd=q.list.filter(e=>e.done).length,rw=q.login!==dayKey();const hw=Math.floor((bw-4)/2);button(bx+slideIn(k),y,hw,SH,'Quêtes '+nd+'/3'+(rw?' · cadeau':''),()=>{menuPanel='quest';panelT=0;sfx.place()},true,rw);
     button(bx+hw+4+slideIn(k++),y,hw,SH,'Héros : '+heroDef(PROF.hero).n,()=>{nextHero();sfx.place()},true);y+=SH+4}
   const st=PROF.daily.streak&&PROF.daily.last>=dayKey(new Date(Date.now()-864e5))?PROF.daily.streak:0;
-  txt(uiFit(D.mod.d+(st?' · Série : '+st+' jour'+(st>1?'s':''):''),bw,7),VW/2,y,done?COL.gold:'#ffd27a',7,'center');y+=12;
+  if(land)y=ty+lh;
+  txt(uiFit(D.mod.d+(st?' · Série : '+st+' jour'+(st>1?'s':''):''),tw,7),cx,y,done?COL.gold:'#ffd27a',7,'center');y+=12;
   const lines=isTouch?['← → Marcher   ▲ Sauter','Gros bouton : miner, frapper, lancer','Base · Forge · Sac : commandes du bas']:
     ['Q D / ← → Marcher   Espace Sauter','Clic gauche Utiliser   Clic droit Miner','B Base   C Forge   E Sac   R Ordre   M Son'];
-  if(y+40<VH){const ww=Math.min(VW-20,uiWidth(lines[2])+20);box(Math.round((VW-ww)/2),y,ww,39,COL.panel,'#e8ecff33');lines.forEach((l,i)=>txt(uiFit(l,ww-12),VW/2,y+7+i*10,COL.dim,7,'center'))}
+  if(y+40<VH){const ww=Math.min(land?tw:VW-20,uiWidth(lines[2])+20);box(Math.round(cx-ww/2),y,ww,39,COL.panel,'#e8ecff33');lines.forEach((l,i)=>txt(uiFit(l,ww-12),cx,y+7+i*10,COL.dim,7,'center'))}
   txt('v'+VERSION,VW-4,VH-9,'#e8ecff40',6,'right');
 }
 // panneaux Réglages / Succès, partagés par l'écran titre et le menu pause
