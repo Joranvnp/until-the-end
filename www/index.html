@@ -932,7 +932,8 @@ function recruit(team,kind,free){const b=bases[team],u=UNITS[kind];if(!free&&!ca
     carry:{},carryN:0,state:'seek',tgt:null,offs:R(-1,1),progX:sx,progY:0,progT:0,stuck:0,swing:0,ignore:null,ignoreT:0,wantMove:false};
   e.spawnT=.6;if(onScreen(e)){pops.push({ring:1,x:sx+e.w/2,y:e.y+e.h/2,t:.45,max:.45,col:team?'#ff8a7a':'#9fd0ff',r:22});burst(sx+e.w/2,e.y+e.h,team?'#ff9a8a':'#9fd0ff',10,30,-60,.9)}
   ents.push(e);if(team===0&&!free){stats.recruited++;qAdd('recruit');if(kind==='golem')unlock('golem');if(ents.filter(o=>o.type==='unit'&&o.team===0&&!o.dead).length>=10)unlock('army10');stats.rk=stats.rk||{};stats.rk[kind]=(stats.rk[kind]||0)+1;sfx.buy()}return e}
-const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed+(e.team===0?relV('drum')/100:0))*(e.boost||1)*(e.chgT>time?1.9:1);
+// un mineur en fuite détale (+35 %) : sinon le guerrier rouge en raid, plus rapide, le rattrapait toujours
+const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed+(e.team===0?relV('drum')/100:0))*(e.boost||1)*(e.chgT>time?1.9:1)*(e.kind==='miner'&&e.fleeT>time?1.35:1);
 const CTR={warrior:'golem',golem:'archer',archer:'warrior'};
 const udmg=e=>UNITS[e.kind].dmg*(1+.25*bases[e.team].upg.dmg);
 const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*5*T;
@@ -1174,7 +1175,7 @@ function updateGatherer(e,u,dt){
     if(e.state==='heal'){if(e.hp>e.maxhp*.9){e.state='seek'}else{const hx=core.x+11-24;if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');return}}}
   const thr=e.kind==='champion'?pickTarget(e,u,e.state==='home'?60:120):nearestHostile(e,18);
   // mineur menacé par un combattant : il lâche le filon et file se mettre à l'abri sous la tour, puis attend que ça se calme
-  if(e.kind==='miner'){const foe=nearestHostile(e,7*T);if(foe&&(foe.type==='monster'||foe.kind!=='miner')&&(foe.raid||foe.type==='monster'||e.hp<e.maxhp*.7)){if(time>(e.fleeT||0)&&e.team===0&&onScreen(e))floatText(e.x+e.w/2,e.y-6,'!','#ff9a8a');e.fleeT=time+6;e.state='home';e.tgt=null}}
+  if(e.kind==='miner'){const foe=nearestHostile(e,7*T);if(foe&&(foe.type==='monster'||foe.kind!=='miner')&&(foe.raid||foe.type==='monster'||e.hp<e.maxhp*.7)){if(time>(e.fleeT||0)&&e.team===0&&onScreen(e))floatText(e.x+e.w/2,e.y-6,'!','#ff9a8a');e.fleeT=time+6;e.fleeFrom=foe;e.state='home';e.tgt=null}}
   const fleeing=e.kind==='miner'&&time<(e.fleeT||0);
   if(thr&&!fleeing){if(e.kind==='champion')return engage(e,u,thr,dt);if(e.atk<=0)meleeOrShoot(e,u,thr)}
   if(e.state==='seek'&&fleeing){const hx=core.x+11+(e.team===0?16:-16);if(Math.abs(hx-(e.x+e.w/2))>10)navigate(e,hx,dt,'climb');else{e.vx=0;moveEnt(e,dt)}return}
@@ -1203,7 +1204,10 @@ function updateGatherer(e,u,dt){
       else{const side=Math.sign(ex-tx)||(e.offs<0?-1:1);navigate(e,(tx+side*(v+1))*T+8,dt,'flat')}
       if(e.carryN>=cap||(e.junk||0)>=40)e.state='home';return}
     navigate(e,tx*T+8,dt,ty<fy-1||e.stuck>=2?'climb':'flat');if(e.carryN>=cap||(e.junk||0)>=40)e.state='home';return}
-  const hx=core.x+11+(e.team===0?16:-16);if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');
+  const hx=core.x+11+(e.team===0?16:-16);
+  // le danger est entre lui et la base (raid sur le chemin, siège) : il s'éloigne du danger au lieu de foncer dedans
+  if(fleeing&&e.fleeFrom&&!e.fleeFrom.dead){const mx=e.x+e.w/2,d=e.fleeFrom.x+e.fleeFrom.w/2-mx;if(Math.sign(d)===Math.sign(hx-mx)&&Math.abs(d)<Math.abs(hx-mx)+3*T){navigate(e,clamp(mx-Math.sign(d)*8*T,8*T,(WW-8)*T),dt,'flat');return}}
+  if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');
   if(Math.abs(e.x+e.w/2-hx)<22&&Math.abs(e.y-core.y)<60){for(const k in e.carry)if(b.storage[k]!==undefined)b.storage[k]+=e.carry[k];
     if(e.team===0){const parts2=Object.entries(e.carry).filter(([,v])=>v>0).map(([k,v])=>v+' '+tr(IT[k].n).toLowerCase());if(parts2.length){toast('Un mineur rapporte : '+parts2.join(', '),3,'#9fd0ff');floatText(core.x+11,core.y-4,'+'+(e.carryN+(e.junk||0)),'#9fd0ff');if(onScreen(e))sfx.pick()}}
     e.carry={};e.carryN=0;e.junk=0;e.state='seek';e.tgt=null}}
