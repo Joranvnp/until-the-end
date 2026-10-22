@@ -1510,6 +1510,10 @@ function drawSky(g,cx,cy){const [top,bot]=skyColors(),gr=g.createLinearGradient(
       for(let i=0;i<9;i++){const cl=SPR.clouds[i%6],span=VW+cl.width*2,x=((hash2(i,5)*span-cx*.08+time*(3+i%3*2))%span+span)%span-cl.width,y=VH*.08+hash2(i,6)*VH*.3-cy*.01;g.drawImage(cl,Math.round(x),Math.round(y))}g.globalAlpha=1}}
   if(underground>0){g.fillStyle=`rgba(5,5,12,${underground*.8})`;g.fillRect(0,0,VW,VH)}}
 
+const waterMirror=mk(1,3*T),waterMirrorG=waterMirror.getContext('2d'),waterColors=[];
+for(let d=0;d<=3*T;d++){const f=Math.pow(1-d/(3*T),2);waterColors.push('rgb('+Math.round(3+5*f)+','+Math.round(6+19*f)+','+Math.round(12+22*f)+')')}
+// tuiles d'eau précalculées par profondeur (0..3) et hauteur de vague (top 0..T-1) : un drawImage au lieu de 16 fillRect
+const waterTileC={};function waterTile(dk,top){const k=dk*T+top;let c=waterTileC[k];if(!c){c=waterTileC[k]=mk(T,T);const q=c.getContext('2d');for(let r=top;r<T;r++){q.fillStyle=waterColors[Math.min(3*T,Math.max(0,dk*T+r-3))];q.fillRect(0,r,T,1)}}return c}
 function drawWorld(g,cx,cy){
   const x0=Math.max(0,Math.floor(cx/T)-1),x1=Math.min(WW-1,Math.floor((cx+VW)/T)+1),y0=Math.max(0,Math.floor(cy/T)-1),y1=Math.min(WH-1,Math.floor((cy+VH)/T)+1);
   const ox=Math.round(-cx),oy=Math.round(-cy);
@@ -1537,10 +1541,38 @@ function drawWorld(g,cx,cy){
     if(SPR.oreGlint[t]&&((Math.floor(time*3)+x*7+y*11)&15)===0)g.drawImage(SPR.oreGlint[t][h],px,py);
     if(!interior&&d.solid&&!TD[getT(x,y-1)].solid){g.fillStyle=t===GRASS?'#63ebca':t===DIRT?'#967052':t===DEEP?'#7960ce':'#667d9c';g.fillRect(px,py,T,1);
       if(t===GRASS){g.drawImage(TEX[(x%7===0)?PLANT:CPLANT][x&3],px+Math.round(Math.sin(time*1.6+x*.7)*.8),py-T)}}}
+  // Eau miroir : tampon réutilisé, rides nettes et lumière discrète.
+  let waterRuns=0;
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(fg[idx(x,y)]!==WATER)continue;const px=x*T+ox,py=y*T+oy,surface=getT(x,y-1)!==WATER;
+    const o=surface?Math.round(Math.sin(time*2.2+x*.8)*1.3+Math.sin(time*1.3-x*.35)):0,top=surface?3+o:0;
+    let depth=0;while(depth<3*T&&getT(x,y-1-depth/T)===WATER)depth+=T;
+    g.drawImage(waterTile(depth/T,Math.max(0,Math.min(T-1,top))),px,py);
+    if(surface&&px+T>0&&px<VW&&py>=0&&py+6<VH&&(x===x0||px<=0||getT(x-1,y)!==WATER||getT(x-1,y-1)===WATER))waterRuns++;
+  }
+  if(!lowFx&&waterRuns){if(waterMirror.width!==VW+4)waterMirror.width=VW+4;waterMirrorG.imageSmoothingEnabled=false;
+    let budget=60,runs=waterRuns;g.save();g.imageSmoothingEnabled=false;
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(getT(x,y)!==WATER||getT(x,y-1)===WATER)continue;
+      const start=x;while(x<x1&&getT(x+1,y)===WATER&&getT(x+1,y-1)!==WATER)x++;
+      const left=Math.max(0,start*T+ox),right=Math.min(VW,(x+1)*T+ox),line=y*T+oy;
+      if(right<=left||line<0||line+6>=VH)continue;
+      const slices=Math.min(24,Math.max(0,Math.floor(budget/Math.max(1,runs))-1));runs--;
+      const h=Math.min(3*T,line,VH-line-3,slices*2);if(h<1)continue;
+      const sx=Math.max(0,left-2),sw=Math.min(VW,right+2)-sx;
+      waterMirrorG.clearRect(0,0,waterMirror.width,3*T);waterMirrorG.drawImage(g.canvas,sx,line-h,sw,h,0,0,sw,h);budget--;
+      g.save();g.beginPath();
+      for(let tx=start;tx<=x;tx++){const o=Math.round(Math.sin(time*2.2+tx*.8)*1.3+Math.sin(time*1.3-tx*.35));let bottom=(y+1)*T+oy;
+        for(let ty=y+1;bottom<line+3+h&&ty<WH&&getT(tx,ty)===WATER;ty++)bottom+=T;
+        g.rect(tx*T+ox,line+3+o,T,Math.max(0,Math.min(bottom,line+3+h)-line-3-o))}g.clip();
+      for(let r=0;r<h&&budget>0;r+=2){const rh=Math.min(2,h-r),dx=Math.round(Math.sin(time*1.6+y*.7+r*.35)*1.5+Math.sin(time*.7+r*.13));
+        g.globalAlpha=.35*(1-r/h);g.save();g.translate(sx+dx,line+3+r+rh);g.scale(1,-1);g.drawImage(waterMirror,0,h-r-rh,sw,rh,0,0,sw,rh);g.restore();budget--}
+      g.globalAlpha=.22;g.fillStyle='#06232d';g.fillRect(left,line,right-left,h+3);g.restore();
+    }g.restore();
+  }
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){if(fg[idx(x,y)]!==WATER)continue;const px=x*T+ox,py=y*T+oy;
-    if(getT(x,y-1)!==WATER){const o=Math.round(Math.sin(time*2.2+x*.8)*1.3+Math.sin(time*1.3-x*.35));g.fillStyle='#050812';g.fillRect(px,py+3+o,T,T-3-o);
+    if(getT(x,y-1)!==WATER){const o=Math.round(Math.sin(time*2.2+x*.8)*1.3+Math.sin(time*1.3-x*.35));
+      g.fillStyle='rgba(93,222,231,.07)';g.fillRect(px+Math.round(3+Math.sin(time*.7+x)*2),py+9+o,7,1);
       g.fillStyle='rgba(93,222,231,.8)';g.fillRect(px,py+3+o,T,1);if(((x*13+Math.floor(time*3))%7)===0){g.fillStyle='#e8fbff';g.fillRect(px+((x*5)%12),py+5+o,2,1)}}
-    else{g.fillStyle='#050812';g.fillRect(px,py,T,T);if(((x*7+y*3+Math.floor(time*2))%11)===0){g.fillStyle='rgba(87,124,200,.45)';g.fillRect(px+((x*3+y)%13),py+((y*5)%14),2,1)}}}
+    else if(((x*7+y*3+Math.floor(time*2))%11)===0){g.fillStyle='rgba(87,124,200,.18)';g.fillRect(px+((x*3+y)%13),py+((y*5)%14),2,1)}}
   for(const tr of trees){const im=tr.img,X=tr.x*T+8-im.width/2+ox+Math.round(Math.sin(time*(.9+weather.rain)+tr.x*.37)*(1+weather.rain*1.5)),Y=(tr.top-1)*T+8-im.height/2+oy;if(X>VW||X+im.width<0||Y>VH||Y+im.height<0)continue;g.drawImage(im,Math.round(X),Math.round(Y))}
   for(const d of visualDebris){const k=d.t/.65;
     g.save();g.globalAlpha=1-Math.max(0,(k-.55)/.45);
@@ -1681,6 +1713,12 @@ function drawAtmos(g,cx,cy){
   if(!VG||VG.width!==VW||VG.height!==VH){VG=mk(VW,VH);const v=VG.getContext('2d'),gr=v.createRadialGradient(VW/2,VH/2,Math.min(VW,VH)*.35,VW/2,VH/2,Math.max(VW,VH)*.7);gr.addColorStop(0,'#05050c00');gr.addColorStop(1,'#05050c99');v.fillStyle=gr;v.fillRect(0,0,VW,VH)}g.drawImage(VG,0,0)}
 function drawGlowPass(g,cx,cy,box){if(!glowLayer||glowLayer.width!==VW||glowLayer.height!==VH){glowLayer=mk(VW,VH);glowTint=mk(VW,VH)}
   const q=glowLayer.getContext('2d'),t=glowTint.getContext('2d');q.clearRect(0,0,VW,VH);drawBloom(q,box);drawGlows(q,cx,cy);drawCaveSpores(q,cx,cy,true);
+  if(!lowFx){const ox=Math.round(-cx),oy=Math.round(-cy),x0=Math.max(0,Math.floor(cx/T)),x1=Math.min(WW-1,Math.floor((cx+VW)/T)),y0=Math.max(0,Math.floor(cy/T)),y1=Math.min(WH-1,Math.floor((cy+VH)/T));let n=0;
+    q.save();q.globalCompositeOperation='lighter';
+    for(let y=y0;y<=y1&&n<10;y++)for(let x=x0;x<=x1&&n<10;x++){if(getT(x,y)!==WATER||getT(x,y-1)===WATER)continue;const start=x;
+      while(x<x1&&getT(x+1,y)===WATER&&getT(x+1,y-1)!==WATER)x++;
+      for(let tx=start;tx<=x&&n<10;tx+=4){const span=Math.min(4,x-tx+1),X=tx*T+span*T/2+ox,Y=y*T+oy+3;if(Y<0||Y>=VH)continue;halo(q,X,Y,'#5ddee7',span*T*.7,.2);n++}}
+    q.restore()}
   g.save();g.globalCompositeOperation='lighter';
   if(!lowFx)for(const[col,dx]of[['#ff3355',-1],['#38ffff',1]]){t.globalCompositeOperation='copy';t.drawImage(glowLayer,0,0);t.globalCompositeOperation='multiply';t.fillStyle=col;t.fillRect(0,0,VW,VH);t.globalCompositeOperation='destination-in';t.drawImage(glowLayer,0,0);g.globalAlpha=.15;g.drawImage(glowTint,dx,0)}
   g.globalAlpha=.8;g.drawImage(glowLayer,0,0);g.restore()}
