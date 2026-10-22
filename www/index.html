@@ -128,8 +128,8 @@ const UPG=[
   {id:'dmg',n:'Forge de guerre',d:'+25% dégâts des unités',s:'dégâts +',cost:{iron:6,gold:2}},
   {id:'tower',n:'Tour de guet',d:'Tour plus puissante',s:'tir +',cost:{stone:15,silver:3}},
   // générateurs : produisent tout seuls dans la réserve, chaque niveau accélère et enrichit la production
-  {id:'saw',n:'Scierie',d:'Produit bois et pierre',s:'bois +',cost:{wood:15,stone:10},gen:{t:10}},
-  {id:'mine',n:'Mine auto',d:'Produit du minerai',s:'minerai +',cost:{copper:10,iron:3},gen:{t:15}},
+  {id:'saw',n:'Scierie',d:'Produit bois et pierre',s:'bois +',cost:{stone:30},gen:{t:10}},
+  {id:'mine',n:'Mine auto',d:'Produit du minerai',s:'minerai +',cost:{stone:25,copper:6,iron:2},gen:{t:15}},
 ];
 const genLoot=(id,l)=>id==='saw'?{wood:2+2*l,stone:1+l}:Object.assign({coal:l,copper:1+l},l>=2?{iron:l-1}:{},l>=3?{silver:1}:{});
 // le cycle raccourcit avec le niveau : 10 / 8 / 6 s pour la scierie, 15 / 12 / 9 s pour la mine
@@ -508,7 +508,7 @@ function newGame(d,dly=null,sv=false){
   stats={mined:0,recruited:0,kills:0,start:time,obj:0,rk:{},chests:0,waves:0};
   bases=[0,1].map(t=>{const coreTx=t===0?19:WW-20;const core={type:'core',team:t,x:coreTx*T-3,y:BASE_GY*T-34,w:22,h:34,hp:0,maxhp:0,flash:0,anim:0};
     core.maxhp=core.hp=Math.round(1600*(t===1?DIFFS[d].core:1)*(dly&&dly.mod.id==='glass'?.5:1));
-    const b={team:t,order:t===0?'attack':'defend',core,storage:{wood:20,stone:20,coal:0,copper:6,iron:0,silver:0,gold:0,diamond:0},upg:{core:0,speed:0,dmg:0,tower:0,saw:0,mine:0},
+    const b={team:t,order:'defend',core,storage:{wood:20,stone:20,coal:0,copper:6,iron:0,silver:0,gold:0,diamond:0},upg:{core:0,speed:0,dmg:0,tower:0,saw:0,mine:0},
       castleX:(t===0?4:WW-16)*T-8,tower:{x:t===0?(4*T-8)+155:(WW-16)*T-8+21,y:BASE_GY*T-128,cd:2}};
     ents.push(core);return b});
   player={type:'player',team:0,x:22*T,y:BASE_GY*T-24,w:10,h:22,vx:0,vy:0,hp:100,maxhp:100,dir:1,onGround:false,anim:0,flash:0,
