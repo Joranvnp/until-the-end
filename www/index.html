@@ -1123,6 +1123,8 @@ function sapper(e){if(e.kind!=='warrior')return false;e.blkT=e.blocked&&e.onGrou
   ai.sapT=time+30-diff*7;e.atk=1;e.swing=.3;throwBomb(e.x+e.w/2,e.y+4,ax*T+8,fy*T+4,1);
   if(!ai.sapSaid&&Math.abs(e.x-player.x)<VW*1.5){ai.sapSaid=true;toast('Un sapeur rouge fait sauter tes murs !',3,'#ff9a8a')}return true}
 const ORE_VAL={[COAL]:2,[COPPER]:3,[IRON]:5,[SILVER]:7,[GOLD]:10,[DIAMOND]:14};
+// intérêt d'un minerai selon le stock de la base : ce qui manque pour recruter passe devant ce qui s'entasse
+const oreNeed=(b,t)=>{const h=b.storage[TD[t].drop]||0;return h<4?3:h<10?1.8:h>40?.4:h>25?.7:1};
 // minerai inaccessible par le haut : une tuile indestructible (sol du château, socle) bouche la colonne
 function sealedFromAbove(x,y){for(let yy=Math.max(0,surf[x]-1);yy<y;yy++)if(TD[getT(x,yy)].hard===Infinity)return true;return false}
 function findOre(e,far){const b=bases[e.team],home=Math.floor((b.core.x+11)/T),dir=e.team===0?1:-1,champ=e.kind==='champion';let best=null,bs=-1;
@@ -1133,12 +1135,12 @@ function findOre(e,far){const b=bases[e.team],home=Math.floor((b.core.x+11)/T),d
     if(best)return best}
   // suivre le filon : un minerai à portée de pioche (rayon 4 blocs) passe avant tout, il ne coûte presque aucun creusage
   if(!far&&!champ){const ex=Math.floor((e.x+e.w/2)/T),ey=Math.floor((e.y+e.h/2)/T);for(let y=ey-3;y<=ey+4;y++)for(let x=ex-4;x<=ex+4;x++){const t=getT(x,y),v=ORE_VAL[t];if(!v||TD[t].tier>2||y<surf[x]||e.bad?.has(x+','+y))continue;
-    const sc=v/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+2);if(sc>bs){bs=sc;best={tx:x,ty:y}}}if(best)return best}
+    const sc=v*oreNeed(b,t)/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+2);if(sc>bs){bs=sc;best={tx:x,ty:y}}}if(best)return best}
   for(let i=0;i<700;i++){const x=clamp(home+dir*RI(5,champ||far?150:70),2,WW-3),y=RI(surf[x]+1,Math.min(WH-4,surf[x]+(champ||far?34:20)));const t=getT(x,y),v=ORE_VAL[t];if(!v)continue;
     if(!champ&&TD[t].tier>2)continue;if(sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;
     // coût depuis la position du mineur : un minerai à pic sous lui demande un long escalier (on descend d'un bloc par bloc de côté)
     const mx=Math.floor((e.x+e.w/2)/T),my=Math.floor((e.y+e.h-1)/T),steep=Math.max(0,(y-my)-Math.abs(x-mx));
-    const d=Math.abs(x-home)*(champ?.35:1)*.6+Math.abs(x-mx)*.4+Math.abs(y-surf[clamp(x,0,WW-1)])*1.6+steep*3;const sc=v/(d+12);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
+    const d=Math.abs(x-home)*(champ?.35:1)*.6+Math.abs(x-mx)*.4+Math.abs(y-surf[clamp(x,0,WW-1)])*1.6+steep*3;const sc=v*(champ?1:oreNeed(b,t))/(d+12);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
   return best}
 // descendre d'une marche : creuser la colonne devant (hauteur du corps + une case dessous), avancer, tomber d'un bloc
 function stairDown(e,dt,dir){e.dir=dir;e.wantMove=true;e.vx=dir*uspd(e)*.8;moveEnt(e,dt);if(!e.onGround)return 1;
@@ -1490,7 +1492,6 @@ function drawEnts(g,cx,cy){
   const ox=-cx,oy=-cy;
   for(const e of ents){if(e.dead&&e.type!=='core')continue;if(e.type==='player')continue;
     if(e.x+40<cx||e.x-40>cx+VW||e.y+40<cy||e.y-60>cy+VH)continue;
-    // troupe à l'arrêt : léger décalage propre à chaque unité pour lire une foule plutôt qu'un seul soldat
     // décalage d'affichage propre à chaque unité (aussi en marche) : une troupe se lit en rang au lieu d'un seul tas
     if(e.type==='unit')e.dOff=(e.dOff||0)+(e.offs*(Math.abs(e.vx)<5?7:5)-(e.dOff||0))*.15;
     const X=Math.round(e.x+ox+(e.type==='unit'?e.dOff+(e.swing>0?e.dir:0):e.type==='monster'&&e.atk>.8?e.dir*3:0)+(e.flash>0?(e.hitVisualDir||0)*2:0)),Y=Math.round(e.y+oy+(e.stepOff||0));
