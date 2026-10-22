@@ -1167,7 +1167,7 @@ function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-
     if(vy<-T*.8)return climbUp(e,dt,tgt.x+tgt.w/2)}
   navigate(e,tgt.x+tgt.w/2,dt,e.stuck>=2?(tgt.y<e.y-20?'climb':'flat'):'auto');
   if(e.stuck>=3){e.ignore=tgt;e.ignoreT=time+10;e.stuck=1}}
-let armyMid=[null,null],massed=false,massN=0,massNeed=0,oddsT=0,oddsWarnT=-99;
+let armyMid=[null,null],armyN=[0,0],massed=false,massN=0,massNeed=0,oddsT=0,oddsWarnT=-99;
 // assaut rouge : l'armée se rassemble à ~45 cases de ton cœur et ne donne l'assaut qu'en masse
 // (sinon elle arrive au compte-gouttes, chaque groupe se fait raser par la tour et le siège s'éternise)
 const STAGE=45;
@@ -1176,7 +1176,7 @@ const STAGE=45;
 const lateRed=e=>e.team===1&&bases[1].order==='attack'&&ai.waveNo&&e.waveNo!==ai.waveNo&&!e.raid&&!e.strike;
 function computeArmies(){const rc=bases[0].core.x+11,red=ents.filter(e=>e.type==='unit'&&e.team===1&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.raid&&!e.strike&&!lateRed(e)),near=red.filter(e=>Math.abs(e.x-rc)<(STAGE+12)*T).length;massN=near;massNeed=Math.max(4,Math.ceil(red.length*.6));
   if(bases[1].order!=='attack')massed=false;else if(!massed&&red.length>=4&&near>=Math.max(4,red.length*.6)){massed=true;toast('L\'armée rouge est rassemblée : assaut sur ton cœur !',3,'#ff9a8a');sfx.alarm&&sfx.alarm()}else if(massed&&near<3)massed=false;
-  for(const t of[0,1]){const xs=ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.retreat&&!e.raid&&!e.strike&&e.stuck<1&&!lateRed(e)).map(e=>e.x).sort((a,b)=>a-b);if(xs.length<3){armyMid[t]=null;continue}const med=xs[Math.floor(xs.length/2)],fwd=t===0?1:-1;
+  for(const t of[0,1]){const xs=ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.retreat&&!e.raid&&!e.strike&&e.stuck<1&&!lateRed(e)).map(e=>e.x).sort((a,b)=>a-b);armyN[t]=xs.length;if(xs.length<3){armyMid[t]=null;continue}const med=xs[Math.floor(xs.length/2)],fwd=t===0?1:-1;
     // arrière-garde : l'unité la plus en retard, sans compter celles restées très loin derrière (renforts tout juste recrutés)
     let rear=med;for(const x of xs)if((med-x)*fwd>0&&(med-x)*fwd<40*T&&(x-rear)*fwd<0)rear=x;armyMid[t]=rear}
   checkOdds()}
@@ -1246,7 +1246,7 @@ function updateUnit(e,dt){
   // (jusqu'à 34 cases : le repli rouge s'arrête ~18 cases derrière le front, soit 25-30 cases du cœur)
   if(b.order==='defend'&&u.ranged&&!e.retreat){const fl=ents.find(o=>o.type==='unit'&&o.team!==e.team&&!o.dead&&o.retreat&&o.hp<o.maxhp*.7&&Math.abs(o.x-home.x)<34*T&&Math.abs(o.y-e.y)<5*T);if(fl)return engage(e,u,fl,dt)}
   const intr=intruder[e.team];if(b.order==='defend'&&intr&&!intr.dead&&underTower(b,intr)&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
-  let dest=follow?player.x+player.w/2-player.dir*20+e.offs*36:b.order==='defend'?rallyX(e.team)+e.offs*30:bases[1-e.team].core.x+11+e.offs*6;
+  let dest=follow?player.x+player.w/2-player.dir*20+e.offs*36:b.order==='defend'?rallyX(e.team)+e.offs*(30+Math.min(armyN[e.team],20)*4)-(u.ranged?(e.team===0?1:-1)*2*T:0):bases[1-e.team].core.x+11+e.offs*6;
   if(e.team===1&&b.order==='attack'&&!massed)dest=bases[0].core.x+11+(STAGE+e.offs*6)*T;
   if(follow){const pdy=player.y-e.y;
     // héros descendu dans une grotte juste en dessous : l'escorte creuse un puits vers lui (sinon elle attend en surface, à l'aplomb)
