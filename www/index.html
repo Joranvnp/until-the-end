@@ -1395,9 +1395,9 @@ function drawSky(g,cx,cy){const [top,bot]=skyColors(),gr=g.createLinearGradient(
   // étoile filante de temps en temps
   {const k=Math.floor(time/7),ph=time/7-k;if(night>.6&&hash2(k,77)<.35&&ph<.12){const sx=hash2(k,78)*VW,sy=hash2(k,79)*VH*.3,t=ph/.12;g.globalAlpha=(1-underground)*(1-t);g.fillStyle='#ffffff';for(let i=0;i<8;i++)g.fillRect(Math.round(sx+t*60-i*2),Math.round(sy+t*25-i),1,1)}}
   g.globalAlpha=1-underground;
-  // soleil et lune sur un arc
-  {const a=sunAng(),sx=VW/2-Math.cos(a)*VW*.42,sy=VH*.62-Math.sin(a)*VH*.5;if(Math.sin(a)>-.15){halo(g,sx,sy,'#ffd27a',40,.5*(1-underground));g.globalAlpha=1-underground;disc(g,sx,sy,7,'#fff3c4','#ffcf6a')}
-   const mx=VW/2+Math.cos(a)*VW*.42,my=VH*.62+Math.sin(a)*VH*.5;if(Math.sin(a)<.15){const bl=state==='play'&&isBlood();halo(g,mx,my,bl?'#ff3a3a':'#9fc0ff',bl?50:32,.45*(1-underground));g.globalAlpha=1-underground;disc(g,mx,my,6,bl?'#ff6a5a':'#e4ecff',bl?'#a01828':'#a9b8e0');g.fillStyle=bl?'#c8303a':'#c3cdee';g.fillRect(Math.round(mx-2),Math.round(my-1),2,2);g.fillRect(Math.round(mx+2),Math.round(my+2),1,1)}}
+  // soleil et lune sur un arc, dont le sommet reste sous le HUD (en portrait il passait derrière les ressources)
+  {const a=sunAng(),amp=Math.min(VH*.5,VH*.62-(state==='play'?hudLow+10:0)),sx=VW/2-Math.cos(a)*VW*.42,sy=VH*.62-Math.sin(a)*amp;if(Math.sin(a)>-.15){halo(g,sx,sy,'#ffd27a',40,.5*(1-underground));g.globalAlpha=1-underground;disc(g,sx,sy,7,'#fff3c4','#ffcf6a')}
+   const mx=VW/2+Math.cos(a)*VW*.42,my=VH*.62+Math.sin(a)*amp;if(Math.sin(a)<.15){const bl=state==='play'&&isBlood();halo(g,mx,my,bl?'#ff3a3a':'#9fc0ff',bl?50:32,.45*(1-underground));g.globalAlpha=1-underground;disc(g,mx,my,6,bl?'#ff6a5a':'#e4ecff',bl?'#a01828':'#a9b8e0');g.fillStyle=bl?'#c8303a':'#c3cdee';g.fillRect(Math.round(mx-2),Math.round(my-1),2,2);g.fillRect(Math.round(mx+2),Math.round(my+2),1,1)}}
   g.globalAlpha=1;
   for(let L=0;L<4;L++){const c=skyLayers[L],f=[.06,.13,.23,.34][L],ox=-((cx*f%c.width+c.width)%c.width),oy=Math.round(VH-c.height+18-cy*.02);
     for(let x=ox;x<VW;x+=c.width)g.drawImage(c,Math.round(x),oy);
@@ -1659,6 +1659,7 @@ let HL={touchY:0},resPrev={},resPop={},selPrev=0,selT=0,pressFx=null;
 const HEART=['.XX.XX.','XXXXXXX','XXXXXXX','.XXXXX.','..XXX..','...X...'];
 function heart(x,y,f){for(let j=0;j<6;j++)for(let i=0;i<7;i++)if(HEART[j][i]==='X'){const full=i<7*f;ctx.fillStyle=full?(j===1&&i<3&&i>0?'#ffc2dc':'#ff6fae'):'#2a2346';ctx.fillRect(x+i,y+j,1,1)}}
 // Rotate the arrow's pixel mask, then snap each output pixel to the UI grid.
+let hudLow=0;
 function drawObjPointer(cx,cy,hudBottom,bottom){
   if(!objTgt||state!=='play'||panel||paused||menuPanel)return;
   const col=objTgt.kind==='base'?COL.blue:objTgt.kind==='ore'?ORE[COPPER][1]:COL.red;
@@ -1757,7 +1758,7 @@ function drawHUD(cx=cam.x,cy=cam.y){
   const rc=k=>time-(resPop[k]||-9)<.6?(Math.sin(time*20)>0?COL.gold:'#ffffff'):COL.txt,rb=k=>time-(resPop[k]||-9)<.25?-1:0;
   if(narrow){ry=cy0+21;RES.forEach((k,i)=>{const x=8+(i%4)*32,y=ry+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y+rb(k),10,10);txt(uiFit(''+b0.storage[k],20,7),x+11,y+2,rc(k),7);resCell(k,x,y,31)});ry+=24+(waveVisible?14:0)}
   else{ry=38;RES.forEach((k,i)=>{const x=8+(i%4)*27,y=ry+5+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y-2+rb(k),10,10);txt(''+b0.storage[k],x+11,y,rc(k),7);resCell(k,x,y-2,26)});ry=cy0+30+waveGap}
-  let hudBottom=Math.max(62,my+mh+2,cy0+31,ry);
+  let hudBottom=Math.max(62,my+mh+2,cy0+31,ry);hudLow=hudBottom;
   // Latest messages only, on small fading bands so the world stays visible.
   {const tw=narrow?VW-32:Math.max(160,Math.min(300,mx-heroW-24));const tx=narrow?VW/2:(midW>=150?heroW+12+midW/2+4:VW/2);let y=narrow?ry:Math.max(ry,cy0+30),linesLeft=narrow?(VH>VW*1.5?4:2):Infinity; // portrait : le ciel est libre, on garde les messages entiers
    for(const m of msgs.slice(-2)){ctx.globalAlpha=clamp(m.t,0,1)*.9;const sl=Math.round(Math.max(0,1-(m.d-m.t)*6)*-8);y+=sl;const lines=wrapLines(m.s,tw,7);for(let i=0;i<lines.length&&linesLeft>0;i++,linesLeft--){const l=narrow?uiFit(linesLeft===1?lines.slice(i).join(' '):lines[i],tw,7):lines[i],width=uiWidth(l,7);ctx.fillStyle='#05050cbb';ctx.fillRect(Math.round(tx-width/2)-4,y-2,width+8,9);txt(l,tx,y,COL.txt,7,'center');y+=10}y+=3;ctx.globalAlpha=1}hudBottom=Math.max(hudBottom,y)}
