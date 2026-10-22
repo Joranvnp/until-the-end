@@ -137,7 +137,7 @@ const genT=(u,l)=>u.gen.t*(1-.2*(l-1));
 function updateGens(dt){for(const b of bases){if(b.core.dead)continue;b.genT=b.genT||{};
   for(const u of UPG){const l=b.upg[u.id]||0;if(!u.gen||!l)continue;b.genT[u.id]=(b.genT[u.id]||0)+dt;if(b.genT[u.id]<genT(u,l))continue;b.genT[u.id]=0;
     const loot=genLoot(u.id,l);addLoot(b.storage,loot);
-    if(b.team===0&&onScreen(b.core))floatText(b.core.x+b.core.w/2,b.core.y-8,Object.entries(loot).map(([k,n])=>'+'+n+' '+IT[k].n.toLowerCase()).join(' '),'#bfe8a0')}}}
+    if(b.team===0&&onScreen(b.core))floatText(b.core.x+b.core.w/2,b.core.y-8,Object.entries(loot).map(([k,n])=>'+'+n+' '+tr(IT[k].n).toLowerCase()).join(' '),'#bfe8a0')}}}
 const upgCost=(u,l)=>Object.fromEntries(Object.entries(u.cost).map(([k,v])=>[k,Math.ceil(v*(1+.6*l))]));
 
 // =====================================================================
@@ -558,7 +558,7 @@ const EN={"Armée rouge trop forte devant tes troupes (": "Red army too strong a
 let EN_RE=null;const TR=new Map(),TRM=new Set(); // TRM : textes restés sans traduction (tests)
 // phrase exacte, sinon remplacement des morceaux connus (textes assemblés avec des nombres)
 function tr(s){if(!PROF.set.en||s==null)return s;s=String(s);let r=TR.get(s);if(r!==undefined)return r;
-  r=EN[s];if(r===undefined){if(!EN_RE){for(const k in IT){const n=IT[k].n,l=n.toLowerCase();if(EN[n]&&EN[l]===undefined)EN[l]=EN[n].toLowerCase()}EN_RE=new RegExp(Object.keys(EN).sort((a,b)=>b.length-a.length).map(k=>(/^\p{L}/u.test(k)?'(?<!\\p{L})':'')+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+(/\p{L}$/u.test(k)?'(?!\\p{L})':'')).join('|'),'gu');}
+  r=EN[s];if(r===undefined){if(!EN_RE){for(const k in IT){const n=IT[k].n,l=n.toLowerCase();if(l.length>2&&EN[n]&&EN[l]===undefined)EN[l]=EN[n].toLowerCase()}EN_RE=new RegExp(Object.keys(EN).sort((a,b)=>b.length-a.length).map(k=>(/^\p{L}/u.test(k)?'(?<!\\p{L})':'')+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+(/\p{L}$/u.test(k)?'(?!\\p{L})':'')).join('|'),'gu');}
     r=s.replace(EN_RE,m=>EN[m]??m)}
   if(TR.size>3000)TR.clear();TR.set(s,r);if(r===s)TRM.add(s);return r}
 // vibrations : plugin natif Capacitor si présent (Android), sinon API web
@@ -691,7 +691,7 @@ const OBJ=[
   {t:'Détruis le cœur rouge, à l\'autre bout du monde',ok:()=>false,rw:{}},
 ];
 function checkObjectives(){const o=OBJ[stats.obj];if(!o||!o.ok())return;const b=bases[0];for(const[k,v]of Object.entries(o.rw))b.storage[k]+=v;
-  const rw=Object.entries(o.rw).map(([k,v])=>'+'+v+' '+IT[k].n.toLowerCase()).join(', ');stats.obj++;toast('Objectif accompli !'+(rw?' Récompense : '+rw:''),4,COL.gold);sfx.buy()}
+  const rw=Object.entries(o.rw).map(([k,v])=>'+'+v+' '+tr(IT[k].n).toLowerCase()).join(', ');stats.obj++;toast('Objectif accompli !'+(rw?' Récompense : '+rw:''),4,COL.gold);sfx.buy()}
 // cible de l'objectif en cours, pour la flèche du guide : {x,y,kind} en pixels monde, ou null si rien à montrer
 let objTgt=null,objTgtT=0;
 function nearestOre(id,r=40){const px=Math.floor((player.x+player.w/2)/T),py=Math.floor((player.y+player.h/2)/T);let best=null,bd=1e9;
@@ -1182,7 +1182,7 @@ function updateGatherer(e,u,dt){
     navigate(e,tx*T+8,dt,ty<fy-1||e.stuck>=2?'climb':'flat');if(e.carryN>=cap||(e.junk||0)>=40)e.state='home';return}
   const hx=core.x+11+(e.team===0?16:-16);if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');
   if(Math.abs(e.x+e.w/2-hx)<22&&Math.abs(e.y-core.y)<60){for(const k in e.carry)if(b.storage[k]!==undefined)b.storage[k]+=e.carry[k];
-    if(e.team===0){const parts2=Object.entries(e.carry).filter(([,v])=>v>0).map(([k,v])=>v+' '+IT[k].n.toLowerCase());if(parts2.length){toast('Un mineur rapporte : '+parts2.join(', '),3,'#9fd0ff');floatText(core.x+11,core.y-4,'+'+(e.carryN+(e.junk||0)),'#9fd0ff');if(onScreen(e))sfx.pick()}}
+    if(e.team===0){const parts2=Object.entries(e.carry).filter(([,v])=>v>0).map(([k,v])=>v+' '+tr(IT[k].n).toLowerCase());if(parts2.length){toast('Un mineur rapporte : '+parts2.join(', '),3,'#9fd0ff');floatText(core.x+11,core.y-4,'+'+(e.carryN+(e.junk||0)),'#9fd0ff');if(onScreen(e))sfx.pick()}}
     e.carry={};e.carryN=0;e.junk=0;e.state='seek';e.tgt=null}}
 
 // =====================================================================
