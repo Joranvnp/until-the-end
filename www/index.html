@@ -2148,7 +2148,9 @@ function drawTouch(){touchBtns=touchLayout();const p=player,sel=p&&p.inv[p.sel];
         for(let i=0;i<6;i++)ctx.fillRect(ox+(6-i)*z,oy+(2+i)*z,z,2*z)}}
     else if(b.k==='p'){const cd=player?player.pwCd/heroDef(HERO).cd:0;if(cd>0){ctx.fillStyle='#ffffff22';ctx.fillRect(x+2,y+2+Math.round((H-4)*(1-cd)),W-4,Math.round((H-4)*cd))}
       const sz=Math.max(14,Math.round(H*.42)),z=uiScale(sz),lab=cd>0?Math.ceil(player.pwCd)+'':'★';txt(lab,x+W/2,Math.round(y+H/2-2.5*z-3),cd>0?COL.dim:(pressed?'#ffffff':COL.gold),sz,'center');
-      txt(uiFit(heroDef(HERO).p,W-6,6),x+W/2,y+H-9,cd>0?COL.dim:COL.txt,6,'center')}
+      // nom de la compétence : peut déborder du bouton (fond sombre) plutôt que d'être tronqué (« FRÉNÉS… »)
+      const pl=uiFit(heroDef(HERO).p,Math.min(W+16,2*(VW-x-W/2-2),2*(x+W/2-2)),6),pw=uiWidth(pl,6);if(pw>W-6){ctx.fillStyle='#05050ccc';ctx.fillRect(Math.round(x+W/2-pw/2-2),y+H-10,pw+4,8)}
+      txt(pl,x+W/2,y+H-9,cd>0?COL.dim:COL.txt,6,'center')}
     else{const n=Math.max(5,Math.floor(W*.32/2)*2+1),mid=Math.floor(n/2),stem=Math.max(1,Math.floor(n/6));
       const ox=x+Math.floor((W-n)/2),oy=y+Math.floor((H-n)/2);
       ctx.fillStyle=pressed?'#ffffff':COL.txt;
