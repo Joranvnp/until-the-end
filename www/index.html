@@ -572,7 +572,12 @@ function waterStep(){if(!wActive.size)return;const list=[...wActive].sort((a,b)=
   for(const i of list){if(fg[i]!==WATER)continue;const x=i%WW,y=(i/WW)|0;if(y>=WH-1)continue;
     if(flowable(fg[i+WW])){wMove(i,i+WW);continue}
     const press=y>0&&fg[i-WW]===WATER;const ds=rnd()<.5?[-1,1]:[1,-1];
-    for(const d of ds){const sx=x+d;if(sx<1||sx>=WW-1)continue;const j=i+d;if(!flowable(fg[j]))continue;if(press||flowable(fg[j+WW])){wMove(i,j);break}}}}
+    let moved=false;
+    for(const d of ds){const sx=x+d;if(sx<1||sx>=WW-1)continue;const j=i+d;if(!flowable(fg[j]))continue;if(press||flowable(fg[j+WW])){wMove(i,j);moved=true;break}}
+    // mise à niveau : une goutte posée sur la nappe glisse à la surface jusqu'au premier creux (évite les marches d'eau figées)
+    if(moved||press||fg[i+WW]!==WATER)continue;
+    for(const d of ds){let done=false;for(let k=1;k<=24;k++){const sx=x+d*k;if(sx<1||sx>=WW-1)break;const j=i+d*k;
+      if(!flowable(fg[j]))break;if(flowable(fg[j+WW])){wMove(i,j+WW);done=true;break}if(fg[j+WW]!==WATER)break}if(done)break}}}
 
 // ---------- éclairage (propagation BFS, lissé au rendu) ----------
 const LQ=new Int32Array(WW*WH*2),LCI=new Uint8Array(WW*WH);
