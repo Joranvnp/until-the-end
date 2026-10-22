@@ -1582,7 +1582,7 @@ function drawConfetti(){for(const c of confetti){ctx.save();ctx.translate(c.x,c.
 // bannière de succès qui glisse depuis le haut
 function drawAch(){const a=achPop[0];if(!a)return;const k=a.t<.35?a.t/.35:a.t>3.5?1-(a.t-3.5)/.5:1,e=1-Math.pow(1-k,3);
   const W=Math.min(VW-16,Math.max(uiWidth('SUCCÈS : '+a.a.n,8),uiWidth(a.a.d,7))+28),x=Math.round(VW/2-W/2),y=Math.round(-30+e*(36));
-  box(x,y,W,24,'#05050cf0',COL.gold);ctx.globalAlpha=.5+.5*Math.sin(a.t*8);txt('★',x+6,y+5,COL.gold,8);ctx.globalAlpha=1;
+  box(x,y,W,24,'#05050cf0',COL.gold);ctx.globalAlpha=.7+.3*Math.sin(a.t*8);txt('★',x+6,y+5,COL.gold,8);ctx.globalAlpha=1;
   txt('Succès : '+a.a.n,x+18,y+4,COL.gold,8);txt(uiFit(a.a.d,W-24,7),x+18,y+14,COL.txt,7)}
 function drawCRT(){if(!CRT||CRT.width!==cv.width||CRT.height!==cv.height){CRT=mk(cv.width,cv.height);const q=CRT.getContext('2d');q.fillStyle='rgba(0,0,8,.16)';for(let y=1;y<CRT.height;y+=2)q.fillRect(0,y,CRT.width,1)}ctx.drawImage(CRT,0,0)}
 
