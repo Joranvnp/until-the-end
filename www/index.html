@@ -1186,7 +1186,8 @@ const oreNeed=(b,t)=>{const h=b.storage[TD[t].drop]||0;return h<4?3:h<10?1.8:h>4
 function sealedFromAbove(x,y){for(let yy=Math.max(0,surf[x]-1);yy<y;yy++)if(TD[getT(x,yy)].hard===Infinity)return true;return false}
 function findOre(e,far){const b=bases[e.team],home=Math.floor((b.core.x+11)/T),dir=e.team===0?1:-1,champ=e.kind==='champion';let best=null,bs=-1;
   // jamais de mine au pied de son propre cœur : le trou piégeait les défenseurs 10 blocs sous la base, incapables de la protéger
-  const nearHome=(x,y)=>Math.abs(x-home)<=9+Math.max(0,y-surf[x]);
+  // ni au-delà de la montagne centrale, en plein territoire rouge (le champion, lui, va où il veut)
+  const nearHome=(x,y)=>Math.abs(x-home)<=9+Math.max(0,y-surf[x])||!champ&&(x-home)*dir>180;
   // le champion vide d'abord le filon où il se trouve (balayage local) au lieu de traverser la carte à chaque cible perdue
   if(champ){const ex=Math.floor((e.x+e.w/2)/T),ey=Math.floor((e.y+e.h/2)/T);
     for(let y=Math.max(1,ey-14);y<=Math.min(WH-4,ey+14);y++)for(let x=Math.max(2,ex-22);x<=Math.min(WW-3,ex+22);x++){const v=ORE_VAL[getT(x,y)];if(!v)continue;
@@ -1217,7 +1218,7 @@ function updateGatherer(e,u,dt){
     if(e.state==='heal'){if(e.hp>e.maxhp*.9){e.state='seek'}else{const hx=core.x+11-24;if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');return}}}
   const thr=e.kind==='champion'?pickTarget(e,u,e.state==='home'?60:120):nearestHostile(e,18);
   // mineur menacé par un combattant : il lâche le filon et file se mettre à l'abri sous la tour, puis attend que ça se calme
-  if(e.kind==='miner'){const foe=nearestHostile(e,7*T);if(foe&&(foe.type==='monster'||foe.kind!=='miner')&&(foe.raid||foe.type==='monster'||e.hp<e.maxhp*.7)){if(time>(e.fleeT||0)&&e.team===0&&onScreen(e))floatText(e.x+e.w/2,e.y-6,'!','#ff9a8a');e.fleeT=time+6;e.fleeFrom=foe;e.state='home';e.tgt=null}}
+  if(e.kind==='miner'){const foe=nearestHostile(e,7*T);if(foe&&(foe.type==='monster'||foe.kind!=='miner')){if(time>(e.fleeT||0)&&e.team===0&&onScreen(e))floatText(e.x+e.w/2,e.y-6,'!','#ff9a8a');e.fleeT=time+6;e.fleeFrom=foe;e.state='home';e.tgt=null}}
   const fleeing=e.kind==='miner'&&time<(e.fleeT||0);
   if(thr&&!fleeing){if(e.kind==='champion')return engage(e,u,thr,dt);if(e.atk<=0)meleeOrShoot(e,u,thr)}
   if(e.state==='seek'&&fleeing){const hx=core.x+11+(e.team===0?16:-16);if(Math.abs(hx-(e.x+e.w/2))>10)navigate(e,hx,dt,'climb');else{e.vx=0;moveEnt(e,dt)}return}
