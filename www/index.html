@@ -1871,7 +1871,9 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
   Object.entries(UNITS).filter(([,u])=>!u.hero).forEach(([k,u],i)=>{const yy=y+32+i*24;box(x+6,yy,RW-12,22,COL.panel2,'#e8ecff18');
     const img=SPR[k+'0'].R.idle[0];ctx.drawImage(img,x+9,yy+(k==='golem'?-3:-2));txt(u.n,x+30,yy+3,COL.txt,8);
     // effectif actuel de ce type, pour savoir quoi recruter sans compter à l'écran
-    const own=ents.filter(e=>e.type==='unit'&&e.team===0&&e.kind===k&&!e.dead).length;if(own)txt('×'+own,x+34+uiWidth(u.n,8),yy+3,'#9fd0ff',8);txt(uiFit(u.d,101,6),x+30,yy+12,COL.dim,6);
+    const own=ents.filter(e=>e.type==='unit'&&e.team===0&&e.kind===k&&!e.dead).length;if(own)txt('×'+own,x+34+uiWidth(u.n,8),yy+3,'#9fd0ff',8);
+    // contre visible : le triangle guerrier > golem > archer > guerrier n'était écrit que dans l'aide
+    if(CTR[k])txt('▶'+UNITS[CTR[k]].n,x+132,yy+3,'#7dff9a',6,'right');txt(uiFit(u.d,101,6),x+30,yy+12,COL.dim,6);
     costLine(u.cost,x+136,yy+7,b.storage);const go=()=>{if(recruit(0,k))toast(u.n+' recruté !',2,'#9fd0ff')},ok=canPay(b.storage,u.cost);cardHit(x+6,yy,RW-12,22,go,ok);button(x+RW-48,yy+4,40,14,'Recruter',go,ok)});
   const X=ux(x);txt('Améliorations',X+8,y+uy-9,COL.dim,7);if(UPG.some(u=>bases[1].upg[u.id]))txt('★ rouge = niveau ennemi',X+RW-8,y+uy-8,'#ff8a7a',6,'right');
   UPG.forEach((u,i)=>{const xx=X+6+(i%2)*(cw+3),yy=y+uy+Math.floor(i/2)*25,l=b.upg[u.id],c=upgCost(u,l),le=bases[1].upg[u.id];box(xx,yy,cw,23,COL.panel2,le>l?'#ff6a5a55':'#e8ecff18');if(u.gen&&l){ctx.fillStyle='#7dff9a55';ctx.fillRect(xx+1,yy+21,Math.round((cw-2)*Math.min(1,(b.genT&&b.genT[u.id]||0)/genT(u,l))),1)}if(le)txt(le+'★',xx+cw-4,yy+3,'#ff8a7a',6,'right');
