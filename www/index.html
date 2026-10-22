@@ -1036,9 +1036,12 @@ let armyMid=[null,null],massed=false,massN=0,massNeed=0,oddsT=0,oddsWarnT=-99;
 // assaut rouge : l'armée se rassemble à ~45 cases de ton cœur et ne donne l'assaut qu'en masse
 // (sinon elle arrive au compte-gouttes, chaque groupe se fait raser par la tour et le siège s'éternise)
 const STAGE=45;
-function computeArmies(){const rc=bases[0].core.x+11,red=ents.filter(e=>e.type==='unit'&&e.team===1&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.raid&&!e.strike),near=red.filter(e=>Math.abs(e.x-rc)<(STAGE+12)*T).length;massN=near;massNeed=Math.max(4,Math.ceil(red.length*.6));
+// renfort rouge recruté pendant une vague : il reste au ralliement et partira avec la suivante
+// (sinon chaque recrue rejoint seule le front, s'y fait abattre, et la vague ne se termine jamais)
+const lateRed=e=>e.team===1&&bases[1].order==='attack'&&ai.waveNo&&e.waveNo!==ai.waveNo&&!e.raid&&!e.strike;
+function computeArmies(){const rc=bases[0].core.x+11,red=ents.filter(e=>e.type==='unit'&&e.team===1&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.raid&&!e.strike&&!lateRed(e)),near=red.filter(e=>Math.abs(e.x-rc)<(STAGE+12)*T).length;massN=near;massNeed=Math.max(4,Math.ceil(red.length*.6));
   if(bases[1].order!=='attack')massed=false;else if(!massed&&red.length>=4&&near>=Math.max(4,red.length*.6)){massed=true;toast('L\'armée rouge est rassemblée : assaut sur ton cœur !',3,'#ff9a8a');sfx.alarm&&sfx.alarm()}else if(massed&&near<3)massed=false;
-  for(const t of[0,1]){const xs=ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.retreat&&!e.raid&&!e.strike&&e.stuck<1).map(e=>e.x).sort((a,b)=>a-b);if(xs.length<3){armyMid[t]=null;continue}const med=xs[Math.floor(xs.length/2)],fwd=t===0?1:-1;
+  for(const t of[0,1]){const xs=ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.retreat&&!e.raid&&!e.strike&&e.stuck<1&&!lateRed(e)).map(e=>e.x).sort((a,b)=>a-b);if(xs.length<3){armyMid[t]=null;continue}const med=xs[Math.floor(xs.length/2)],fwd=t===0?1:-1;
     // arrière-garde : l'unité la plus en retard, sans compter celles restées très loin derrière (renforts tout juste recrutés)
     let rear=med;for(const x of xs)if((med-x)*fwd>0&&(med-x)*fwd<40*T&&(x-rear)*fwd<0)rear=x;armyMid[t]=rear}
   checkOdds()}
@@ -1061,7 +1064,7 @@ function updateUnit(e,dt){
   if(e.stuck>=3)e.lostT=(e.lostT||0)+dt;else e.lostT=Math.max(0,(e.lostT||0)-dt*2);
   if(e.lostT>45&&e.kind!=='champion'&&(e.y+e.h)/T>surf[clamp(Math.floor((e.x+e.w/2)/T),0,WW-1)]+4){e.dead=true;burst(e.x+e.w/2,e.y+e.h/2,'#c9c0d8',8,50,200,.6);return}
   if(e.kind==='miner'||e.kind==='champion')return updateGatherer(e,u,dt);
-  const b=bases[e.team],home=b.core;
+  const b=lateRed(e)?{...bases[1],order:'defend'}:bases[e.team],home=b.core;
   // soin près de son cœur hors combat (4 s sans coup), sinon les défenseurs deviennent invulnérables pendant un siège
   if(Math.abs(e.x-home.x)<130){if(time-(e.hitT||0)>4)e.hp=Math.min(e.maxhp,e.hp+dt*4)}
   // hors combat depuis 8 s : on récupère lentement où qu'on soit (sinon les blessés traversent toute la carte en boucle)
@@ -1286,7 +1289,7 @@ function updateAI(dt){
     else ai.wait=false}
   else{ai.holdT=0;ai.holdMsg=false;ai.wait=false}
   if(ready&&!ai.wait){b.order='attack';ai.waveNo=(ai.waveNo||0)+1;for(const e of fighters)e.waveNo=ai.waveNo;ai.holdT=0;ai.holdMsg=false;ai.sent=fighters.length;ai.lastWave=time;ai.wave=Math.min(surv?44:28,ai.wave+2+diff);toast(kill?'Ton cœur faiblit : l\'armée rouge revient l\'achever ('+fighters.length+' unités) !':'L\'armée rouge marche sur ta base ('+fighters.length+' unités) !',4,'#ff9a8a')}
-  else if(b.order==='attack'&&(surv?(time-ai.lastWave>200?0:fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat).length):fighters.filter(e=>!e.retreat&&!e.raid).length)<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';if(surv){qAdd('wave');stats.waves++;if(stats.waves%5===0)findRelic();if(stats.waves>=10)unlock('siege10');toast('Vague '+stats.waves+' repoussée ! La suivante sera plus forte.',4,COL.gold);sfx.buy()}else toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
+  else if(b.order==='attack'&&(surv?(time-ai.lastWave>200?0:fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat).length):fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat&&!e.raid).length)<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';if(surv){qAdd('wave');stats.waves++;if(stats.waves%5===0)findRelic();if(stats.waves>=10)unlock('siege10');toast('Vague '+stats.waves+' repoussée ! La suivante sera plus forte.',4,COL.gold);sfx.buy()}else toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
 function applyUpg(team,id){const b=bases[team];if(id==='core'){b.core.maxhp+=300;b.core.hp+=300}}
 function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw=b.tower;tw.cd-=dt;if(tw.cd>0)continue;const lv=b.upg.tower;
   const fake={x:tw.x,y:tw.y,w:0,h:0,team:b.team},rng=220+lv*18;let t=null,bd=rng;
