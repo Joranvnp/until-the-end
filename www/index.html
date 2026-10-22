@@ -1088,7 +1088,10 @@ function updateUnit(e,dt){
     // arrivé au point de repli mais coincé au fond d'une grotte : il remonte à la surface au lieu d'y attendre
     else if((e.y+e.h)/T>surf[clamp(Math.floor((e.x+e.w/2)/T),0,WW-1)]+2)climbUp(e,dt,e.x+e.w/2);else{e.vx=0;moveEnt(e,dt)}return}}
   // l'archer recule si un combattant au corps à corps est trop près
-  if(u.ranged){const th=nearestHostile(e,34);if(th&&th.kind!=='archer'&&th.type!=='core'&&e.atk>.3){e.dir=Math.sign(th.x-e.x)||e.dir;e.vx=-e.dir*uspd(e)*.9;moveEnt(e,dt);e.dir=Math.sign(th.x-e.x)||e.dir;return}}
+  // acculé (mur, falaise) : il ne recule plus et tire à bout portant (avant : il piétinait contre le château sans jamais tirer)
+  if(u.ranged){const th=nearestHostile(e,34);if(th&&th.kind!=='archer'&&th.type!=='core'&&e.atk>.3&&(e.pinT||0)<.5){const x0=e.x;e.dir=Math.sign(th.x-e.x)||e.dir;e.vx=-e.dir*uspd(e)*.9;moveEnt(e,dt);
+    e.pinT=Math.abs(e.x-x0)<uspd(e)*dt*.3?(e.pinT||0)+dt:0;e.dir=Math.sign(th.x-e.x)||e.dir;return}
+    if(!th)e.pinT=0;else if(e.pinT>=.5)e.pinT+=dt;if(e.pinT>3)e.pinT=0}
   // raid : chasser les mineurs adverses
   if(e.raid){const prey=ents.filter(o=>o.type==='unit'&&o.team!==e.team&&o.kind==='miner'&&!o.dead).sort((a,c)=>Math.abs(a.x-e.x)-Math.abs(c.x-e.x))[0];
     if(prey){const dx=prey.x-e.x,dy=prey.y-e.y;if(Math.abs(dx)<u.range+8&&Math.abs(dy)<30){meleeOrShoot(e,u,prey);moveEnt(e,dt);return}
