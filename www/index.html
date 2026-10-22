@@ -1715,8 +1715,10 @@ function drawHUD(cx=cam.x,cy=cam.y){
   // barres des cœurs (+ effectifs)
   let cx0,cw,cy0;const midW=mx-heroW-26;
   if(narrow){cx0=8;cw=VW-16;cy0=my+mh+3}else if(midW>=150){cw=Math.min(240,midW);cx0=Math.round(heroW+12+(midW-cw)/2+4);cy0=4}else{cx0=8;cw=VW-16;cy0=Math.max(42,my+mh+6)}
-  uiCore(cx0,cy0+3,COL.blue);uiCore(cx0+cw-7,cy0+3,COL.red);
-  bar(cx0+11,cy0+5,cw/2-19,3,b0.core.hp/b0.core.maxhp,COL.blue);bar(cx0+cw/2+8,cy0+5,cw/2-19,3,b1.core.hp/b1.core.maxhp,COL.red);
+  // cœur touché : la barre clignote en blanc ; ton cœur sous 35 % passe à l'orange
+  const coreCol=(c,col)=>time-(c.hitT||0)<.6&&Math.floor(time*10)%2?'#ffffff':c===b0.core&&c.hp<c.maxhp*.35?(Math.floor(time*3)%2?'#ffb04a':COL.blue):col;
+  uiCore(cx0,cy0+3,coreCol(b0.core,COL.blue));uiCore(cx0+cw-7,cy0+3,coreCol(b1.core,COL.red));
+  bar(cx0+11,cy0+5,cw/2-19,3,b0.core.hp/b0.core.maxhp,coreCol(b0.core,COL.blue));bar(cx0+cw/2+8,cy0+5,cw/2-19,3,b1.core.hp/b1.core.maxhp,coreCol(b1.core,COL.red));
   txt('·',cx0+cw/2,cy0+5,COL.dim,7,'center');const pl=n=>n>1||(n===0&&PROF.set.en)?' unités':' unité';txt('TOI · '+al+pl(al),cx0,cy0+13,COL.blue,7);txt(en+pl(en)+' · ENNEMI',cx0+cw,cy0+13,COL.red,7,'right');
   // cœur attaqué hors écran : flèche au bord qui pointe vers la base, avec ses PV et la distance
   {const c=b0.core,sx=c.x+c.w/2-cx;if(!c.dead&&c.hitT&&time-c.hitT<3&&(sx<-4||sx>VW+4)){const left=sx<0,pu=Math.sin(time*8)>0,col=pu?'#ff6a5a':'#ffb0a0',
