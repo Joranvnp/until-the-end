@@ -1732,7 +1732,7 @@ function drawHUD(cx=cam.x,cy=cam.y){
   const intel=ai?.intel,waveVisible=intel&&['gather','march','defend'].includes(intel.phase),waveGap=waveVisible?6:0;
   if(waveVisible){const gathering=intel.phase==='gather',marching=intel.phase==='march';
     const pulse=Math.sin(time*6)>0,col=gathering?(intel.eta<=30?(pulse?'#ffbd62':'#ff8a54'):COL.red):marching?(intel.front<40&&pulse?'#ff9a8a':COL.red):COL.dim;
-    const cnt=intel.have>=intel.need?intel.need+' PRÊTE':intel.have+'/'+intel.need;
+    const cnt=intel.have>=intel.need?'PRÊTE ('+intel.need+')':intel.have+'/'+intel.need; // « 5 PRÊTE » se lisait comme un numéro de vague
     // l'armée rouge attend le gros des troupes à ~45 cases de ton cœur avant l'assaut : on montre où elle en est
     const massing=marching&&!massed&&massN>0;
     let label=gathering?(intel.danger?'! ':'')+'VAGUE ROUGE  '+cnt+' · DANS '+intel.eta+' S':massing?'ARMÉE ROUGE SE RASSEMBLE · '+massN+'/'+massNeed:marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
