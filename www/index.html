@@ -1720,7 +1720,7 @@ function drawObjPointer(cx,cy,hudBottom,bottom){
   }
   ctx.restore();
 }
-function drawHUD(cx=cam.x,cy=cam.y){
+function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;
   const p=player,b0=bases[0],b1=bases[1],narrow=VW<430;if(p.sel!==selPrev){selPrev=p.sel;selT=time;sfx.click()}if(selT>time)selT=time;
   const al=ents.filter(e=>e.type==='unit'&&e.team===0&&!e.dead).length,en=ents.filter(e=>e.type==='unit'&&e.team===1&&!e.dead).length;
   // héros
@@ -1764,13 +1764,14 @@ function drawHUD(cx=cam.x,cy=cam.y){
     if(uiWidth(label,7)>maxWidth-padding)label=gathering?(intel.danger?'! ':'')+cnt+' · '+intel.eta+' S':massing?'RASSEMBL. '+massN+'/'+massNeed:marching?'MARCHE · '+intel.front+' CASES':label;
     label=uiFit(label,maxWidth-padding,7);
     const width=uiWidth(label,7)+padding,x=right-width,y=narrow?cy0+44:cy0+20;
-    box(x,y,width,11,COL.panel,'#e5534b33');
+    const draw=(y=y0)=>{box(x,y,width,11,COL.panel,'#e5534b33');
     txt(label,right-5,y+2,col,7,'right');
-    // toucher / cliquer le bandeau : la vague expliquée en clair
-    if(!panel)uiHits.push({x:x-2,y:y-3,w:width+4,h:17,fn:()=>{sfx.place();toast(waveExplain(intel),6,col)}});
     if(marching)txt('←',x+2,y+2,col,7);
     else{ctx.fillStyle=col;ctx.fillRect(x+2,y+2,1,6);ctx.fillRect(x+3,y+2,4,3)}
-    if(gathering)bar(x+2,y+8,width-4,2,intel.need>0?clamp(intel.have/intel.need,0,1):0,col);
+    if(gathering)bar(x+2,y+8,width-4,2,intel.need>0?clamp(intel.have/intel.need,0,1):0,col)},y0=y;
+    draw();HL.waveDraw={x,y,w:width,draw};
+    // toucher / cliquer le bandeau : la vague expliquée en clair
+    if(!panel)uiHits.push({x:x-2,y:y-3,w:width+4,h:17,fn:()=>{sfx.place();toast(waveExplain(intel),6,col)}});
   }
   // réserve de la base
   let ry;
@@ -1824,6 +1825,8 @@ function drawHUD(cx=cam.x,cy=cam.y){
   drawObjPointer(cx,cy,hudBottom,top);
   panelRect=null;if(panel){const k=1-Math.pow(1-panelT,3);ctx.save();if(k<1){ctx.globalAlpha=k;ctx.translate(0,Math.round((1-k)*14))}
     if(panel==='base')drawBasePanel();else if(panel==='craft')drawCraftPanel();else if(panel==='inv')drawInvPanel();ctx.restore();
+    // paysage téléphone : le panneau recouvre le bandeau de vague ; on le repeint dans sa ligne de titre (milieu libre) pour garder l'arrivée de l'ennemi visible
+    const wd=HL.waveDraw;if(wd&&panelRect&&wd.y<panelRect.y+panelRect.h&&wd.y+11>panelRect.y&&wd.x<panelRect.x+panelRect.w&&wd.x+wd.w>panelRect.x)wd.draw(panelRect.y+1);
     if(craftFx>0&&panelRect){ctx.globalAlpha=craftFx*1.2;ctx.strokeStyle=COL.gold;ctx.strokeRect(panelRect.x-.5-craftFx*6,panelRect.y-.5-craftFx*6,panelRect.w+craftFx*12,panelRect.h+craftFx*12);ctx.globalAlpha=1}}
   if(paused)drawPause();
 }
