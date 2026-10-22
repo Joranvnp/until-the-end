@@ -1735,7 +1735,7 @@ function drawHUD(cx=cam.x,cy=cam.y){
     const cnt=intel.have>=intel.need?'PRÊTE ('+intel.need+')':intel.have+'/'+intel.need; // « 5 PRÊTE » se lisait comme un numéro de vague
     // l'armée rouge attend le gros des troupes à ~45 cases de ton cœur avant l'assaut : on montre où elle en est
     const massing=marching&&!massed&&massN>0;
-    let label=gathering?(intel.danger?'! ':'')+'VAGUE ROUGE  '+cnt+' · DANS '+intel.eta+' S':massing?'ARMÉE ROUGE SE RASSEMBLE · '+massN+'/'+massNeed:marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
+    let label=gathering?(intel.danger?'! ':'')+'VAGUE ROUGE '+cnt+' · DANS '+intel.eta+' S':massing?'ARMÉE ROUGE SE RASSEMBLE · '+massN+'/'+massNeed:marching?'ARMÉE ROUGE EN MARCHE · '+intel.alive+' · '+intel.front+' CASES':"L'ENNEMI SE DÉFEND";
     // barre des cœurs au centre (écran large) : le bandeau se cale dessous, sinon il recouvrirait la minicarte
     const centered=!narrow&&midW>=150,right=centered?cx0+cw:VW-8,padding=18,maxWidth=centered?cw:VW-16;
     // portrait : le bandeau prend sa propre ligne sous la réserve (à côté, il n'avait que 40 px et devenait illisible)
