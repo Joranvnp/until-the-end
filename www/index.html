@@ -408,6 +408,27 @@ function buildingSprite(kind,team,lvl){const c=mk(56,kind==='saw'?48:56),g=c.get
   }
   return outline(c,INK)}
 
+function castleAddon(kind,team,lvl){const h=kind==='tower'?16+lvl*16:kind==='speed'?48:40,c=mk(kind==='dmg'?26:40,h),g=c.getContext('2d'),P=pen(g),col=team?'#e5534b':'#4f9df5';c.lights=[];c.ox=kind==='tower'?135:kind==='core'?178:kind==='dmg'?110:1;c.oy=kind==='tower'?-109-h:kind==='core'?-h:kind==='dmg'?-64-h:-117-h;
+  const masonry=(x,y,w,ht)=>{P(x,y,w,ht,INK);g.save();g.beginPath();g.rect(x,y,w,ht);g.clip();for(let j=0;j<ht;j+=16)for(let i=0;i<w;i+=16)g.drawImage(TEX[CASTLE][(i/16+j/16)&3],x+i,y+j);g.restore();P(x,y,w,1,'#8796ff');P(x,y,1,ht,'#5364bb')},beam=(x,y,w,ht)=>{P(x,y,w,ht,'#7a5a48');P(x,y,w,1,'#a07a5a');P(x,y,1,ht,'#a07a5a')};
+  const flag=(x,y,w,ht)=>{P(x,y,1,ht+6,'#8796ff');P(x+1,y+1,w,ht,shade(col,-.5));P(x+1,y+1,w,1,col);P(x+1,y+2,w-2,ht-3,col);P(x+2,y+3,1,ht-4,'#c9c9d9')},fire=(x,y)=>{P(x-2,y+2,7,3,INK);P(x-1,y+2,5,1,'#8796ff');P(x,y-3,3,5,'#d9844a');P(x+1,y-5,1,7,'#ffce78');P(x+1,y-1,1,3,'#fff1ba');c.lights.push([x+1,y])};
+  if(kind==='tower'){
+    // Tour avant : hourd, baliste, brasier.
+    if(lvl===1){P(5,h-15,30,14,INK);for(const x of[6,19,32])beam(x,h-15,2,14);beam(5,h-6,30,2);for(let j=0;j<7;j++){P(9-j,h-22+j,22+j*2,1,INK);P(9-j,h-22+j,1,1,'#8796ff')}P(3,h-15,34,2,'#4055b4');flag(20,1,8,5)}
+    else{masonry(6,23,28,h-24);for(const x of[5,15,25]){P(x,19,7,6,INK);P(x,19,7,1,'#798aff')}P(4,h-3,32,2,'#8796ff');P(17,31,6,10,INK);P(19,33,2,6,'#ffce78');beam(17,12,4,7);beam(9,11,24,3);P(10,9,23,1,'#c9c9d9');P(31,8,3,3,'#8796ff');for(let i=0;i<6;i++){P(23+i,5+i,2,1,'#a07a5a');P(28-i,12+i,2,1,'#a07a5a')}P(23,6,1,11,'#5364bb');if(lvl===3){masonry(7,7,6,12);fire(9,6);flag(29,28,5,10)}}
+  }else if(kind==='core'){
+    // Rempart au sol.
+    if(lvl===1){for(let x=3;x<38;x+=6){beam(x,20,4,19);P(x+1,17,2,3,'#a07a5a')}beam(2,28,36,2);beam(2,35,36,2)}
+    else{const y=lvl===3?13:22;masonry(2,y+5,36,34-y);for(let x=2;x<38;x+=9){masonry(x,y,6,6)}P(2,38,36,1,'#798aff');if(lvl===3){P(13,24,14,14,INK);P(16,22,8,2,'#5364bb');for(const x of[16,20,24])P(x,26,1,12,'#4055b4');flag(7,4,13,12);beam(32,22,2,10);fire(32,21)}}
+  }else if(kind==='dmg'){
+    // Forge sur le toit.
+    const top=lvl===1?16:8;P(6,top-6,7,4,'#191d32');P(4,top-3,10,3,'#24243b');masonry(7,top,7,28-top);P(6,top,9,2,'#798aff');P(8,top+2,5,2,INK);
+    if(lvl===3){P(18,9,5,5,'#191d32');masonry(18,15,5,14);P(17,14,7,2,'#798aff');P(19,16,3,2,INK)}masonry(3,26,20,13);P(7,29,12,9,INK);P(9,31,8,6,'#d9844a');P(10,33,6,3,'#ffce78');P(12,34,2,2,'#fff1ba');for(const x of[10,15])P(x,30,1,7,'#7a5a48');P(2,38,22,1,'#8796ff');c.lights.push([13,34]);if(lvl===3){P(20,29,1,6,'#ffce78');c.lights.push([20,32])}
+  }else{
+    // Étendards sur la tour arrière.
+    const top=lvl===1?23:lvl===2?12:5;P(18,top,3,h-top-1,INK);P(19,top,1,h-top-1,'#8796ff');flag(19,top+2,lvl===1?9:15,lvl===1?7:13);if(lvl===3){flag(19,24,12,10);P(18,2,3,3,'#d9844a');P(19,1,1,3,'#fff1ba')}P(15,h-2,9,1,'#5364bb')
+  }
+  outline(c,INK);if(!team)return c;const f=flipC(c);f.ox=176-c.ox-c.width;f.oy=c.oy;f.lights=c.lights.map(([x,y])=>[c.width-1-x,y]);return f}
+
 function weaponSprite(kind,colA='#6c5baf',colB='#a8adff'){const c=mk(16,16),P=pen(c.getContext('2d'));
   if(kind==='sword'){for(let i=0;i<8;i++){P(6+i,9-i,1,2,colA);P(7+i,9-i,1,1,colB)}for(let i=0;i<4;i++)P(3+i,8+i,1,1,'#8c85ce');P(3,12,2,2,'#45396e');P(2,14,2,1,'#8c85ce')}
   else if(kind==='pick'){for(let i=0;i<10;i++)P(3+i,13-i,1,2,'#4e4e8b');for(const[x,y]of[[3,5],[4,4],[5,3],[6,2],[7,2],[8,2],[9,3],[10,3],[11,4],[12,5],[13,6],[13,7]])P(x,y,1,2,colA);P(6,2,3,1,colB);P(10,3,2,1,colB)}
@@ -421,7 +442,8 @@ function buildSprites(){
     SPR['archer'+t]=charSet({...base,role:'archer',hood:t?'#783e52':'#35587b'});
     SPR['miner'+t]=charSet({...base,role:'miner',hard:'#bb904f',beard:'#684b55'});
     SPR['golem'+t]=golemSet(tc);SPR['core'+t]=coreSprite(tc);SPR['castle'+t]=castleSprite(t);
-    for(const k of['saw','mine'])for(const l of[1,2,3])SPR[k+l+'_'+t]=buildingSprite(k,t,l)}
+    for(const k of['saw','mine'])for(const l of[1,2,3])SPR[k+l+'_'+t]=buildingSprite(k,t,l);
+    for(const k of['tower','core','dmg','speed'])for(const l of[1,2,3])SPR['add_'+k+l+'_'+t]=castleAddon(k,t,l)}
   SPR.champion0=charSet({role:'champion',tunic:'#4f9df5'});
   SPR.champion1=charSet({role:'champion',skin:'#ae8e93',tunic:'#e5534b',pants:'#302238',boots:'#161626',helm:'#43394f',plume:'#ff8666',cape:'#942f4c',belt:'#ceaa6b'});
   SPR.zombie=charSet({role:'zombie',skin:'#87a18b',hair:'#303d46',tunic:'#665575',pants:'#303047',boots:'#1b2130'});
@@ -1579,6 +1601,7 @@ function drawWorld(g,cx,cy){
       if(phase===7){g.fillStyle='#12313b';g.fillRect(px+7+(y%3),py,1,T);g.fillRect(px+3,py+4,5,1);g.fillRect(px+9,py+11,4,1)}}}
   // château
   for(const b of bases){const c=SPR['castle'+b.team];g.drawImage(c,Math.round(b.castleX+ox),Math.round(BASE_GY*T-c.height+oy+1));
+    for(const k of['tower','core','dmg','speed']){const l=Math.min(3,b.upg&&b.upg[k]||0);if(!l)continue;const s=SPR['add_'+k+l+'_'+b.team];g.drawImage(s,Math.round(b.castleX+s.ox+ox),Math.round(BASE_GY*T+1+s.oy+oy))}
     // le château grandit : scierie et mine apparaissent à côté et changent d'allure à chaque niveau
     for(const k of['saw','mine']){const l=Math.min(3,b.upg&&b.upg[k]||0);if(!l)continue;const s=SPR[k+l+'_'+b.team],X=Math.round(bldX(b,k)+ox),Y=Math.round(BASE_GY*T-s.height+oy+1);if(X>VW+60||X+s.width<-60)continue;g.drawImage(s,X,Y);
       if(s.wheel&&!b.core.dead){const[wx,wy,r]=s.wheel,a=time*(k==='saw'?6:1.5)*(b.team?-1:1);g.fillStyle='#c8d0ff';for(let i=0;i<4;i++){const q=a+i*Math.PI/2;g.fillRect(Math.round(X+wx+Math.cos(q)*(r-1)),Math.round(Y+wy+Math.sin(q)*(r-1)),1,1)}}}}
@@ -1727,6 +1750,7 @@ function drawGlows(g,cx,cy){g.save();g.globalCompositeOperation='lighter';
     if(bx>VW+60||bx+c.width<-60)continue;
     if(!b.core.dead){for(const[x,y]of c.wins)halo(g,bx+x+4,by+y+6,'#ffbd62',18,.45);
       halo(g,b.core.x-cx+11,b.core.y-cy+16,b.team?'#e5534b':'#4f9df5',38+2*Math.sin(time*2+b.team),.6+.08*Math.sin(time*2+b.team))}
+    for(const k of['tower','core','dmg','speed']){const l=Math.min(3,b.upg&&b.upg[k]||0);if(!l||b.core.dead)continue;const s=SPR['add_'+k+l+'_'+b.team],X=bx+s.ox,Y=BASE_GY*T+1+s.oy-cy;for(const[x,y]of s.lights||[])halo(g,X+x,Y+y,'#ffbd62',14+(k==='tower'?Math.sin(time*7+b.team):0),.4)}
     for(const k of['saw','mine']){const l=Math.min(3,b.upg&&b.upg[k]||0);if(!l||b.core.dead)continue;const s=SPR[k+l+'_'+b.team],X=bldX(b,k)-cx,Y=BASE_GY*T-s.height+1-cy;for(const[x,y]of s.lights||[])halo(g,X+x,Y+y,'#ffbd62',14,.4)}
     for(const dx of[-12,188]){const x=Math.round(bx+dx),y=Math.round(by+95);g.globalAlpha=1;g.globalCompositeOperation='source-over';g.fillStyle='#404667';g.fillRect(x,y-65,1,65);g.drawImage(TEX[TORCH][0],x-8,y-4);g.globalCompositeOperation='lighter';halo(g,x,y+4,'#ffce78',40,.8)}}
   const x0=Math.max(0,Math.floor(cx/T)),x1=Math.min(WW-1,Math.floor((cx+VW)/T)+1),y0=Math.max(0,Math.floor(cy/T)),y1=Math.min(WH-1,Math.floor((cy+VH)/T)+1);
