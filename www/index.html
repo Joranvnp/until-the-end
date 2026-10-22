@@ -668,7 +668,8 @@ function dailyInfo(){const k=dayKey();let h=k*2654435761>>>0;h^=h>>>15;return{ke
 let daily=null; // défi en cours (null en partie libre)
 let surv=false; // mode Siège : vagues infinies, le cœur rouge ne tombe pas
 // Siège : chaque vague repoussée renforce la suivante (revenu, effectif max, délai réduit)
-const survCap=()=>22+diff*8+(surv?Math.min(24,stats.waves*3):0),firstWave=()=>surv?Math.max(60,150-stats.waves*10):[300,210,120][diff]+(firstRun?120:0);
+// Paisible : plafond rouge plus bas (22 défenseurs dès 5 min, un assaut de 12 unités s'y brisait sans entamer le cœur)
+const survCap=()=>[16,30,38][diff]+(surv?Math.min(24,stats.waves*3):0),firstWave=()=>surv?Math.max(60,150-stats.waves*10):[300,210,120][diff]+(firstRun?120:0);
 // ---------- prise en main de la toute première partie : marcher, sauter, miner (avant les objectifs) ----------
 // firstRun : vraie pendant la première partie libre du profil ; repousse la première vague de 2 min et met en avant le bouton Base
 let tut=-1,firstRun=false;
