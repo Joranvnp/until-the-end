@@ -1249,7 +1249,8 @@ function updateAI(dt){
   // 2. économie
   if(cnt('miner')<wantMiners&&recruit(1,'miner'))return;
   // 3. améliorations quand la réserve déborde
-  for(const u of UPG){const l=b.upg[u.id];if(l<3&&rnd()<.2){const c=upgCost(u,l);if(canPay(st,c)&&(st.stone>c.stone*2||ai.style==='eco')){pay(st,c);b.upg[u.id]++;applyUpg(1,u.id);return}}}
+  // réserve au double du coût sur CHAQUE ressource (avant : seule la pierre comptait, donc jamais dégâts/vitesse qui n'en coûtent pas)
+  for(const u of UPG){const l=b.upg[u.id];if(l<3&&rnd()<.2){const c=upgCost(u,l);if(canPay(st,c)&&(Object.entries(c).every(([k,v])=>(st[k]||0)>=v*2)||ai.style==='eco')){pay(st,c);b.upg[u.id]++;applyUpg(1,u.id);return}}}
   // 4. contre-attaque : l'armée du joueur est loin de sa base, son cœur est dégarni
   {const pc=bases[0].core.x,home=teamPow(0,pc,45*T),away=ents.filter(e=>e.type==='unit'&&e.team===0&&!e.dead&&e.kind!=='miner'&&Math.abs(e.x-pc)>90*T).length;
    const reserve=fighters.filter(e=>!e.raid&&!e.strike&&!e.retreat);
