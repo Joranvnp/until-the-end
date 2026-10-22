@@ -1072,7 +1072,9 @@ function updateUnit(e,dt){
     // encore talonné à son point de repli : on recule d'un cran
     if(near&&Math.abs(e.retX-(e.x+e.w/2))<=8)e.retX=retreatSpot(e,home);
     if(time-(e.hitT||0)>4)e.hp=Math.min(e.maxhp,e.hp+dt*1.5);
-    const hx=e.retX;if(Math.abs(hx-(e.x+e.w/2))>8)navigate(e,hx,dt,'auto');else{e.vx=0;moveEnt(e,dt)}return}}
+    const hx=e.retX;if(Math.abs(hx-(e.x+e.w/2))>8)navigate(e,hx,dt,e.stuck>=2?'climb':'auto');
+    // arrivé au point de repli mais coincé au fond d'une grotte : il remonte à la surface au lieu d'y attendre
+    else if((e.y+e.h)/T>surf[clamp(Math.floor((e.x+e.w/2)/T),0,WW-1)]+2)climbUp(e,dt,e.x+e.w/2);else{e.vx=0;moveEnt(e,dt)}return}}
   // l'archer recule si un combattant au corps à corps est trop près
   if(u.ranged){const th=nearestHostile(e,34);if(th&&th.kind!=='archer'&&th.type!=='core'&&e.atk>.3){e.dir=Math.sign(th.x-e.x)||e.dir;e.vx=-e.dir*uspd(e)*.9;moveEnt(e,dt);e.dir=Math.sign(th.x-e.x)||e.dir;return}}
   // raid : chasser les mineurs adverses
