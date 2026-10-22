@@ -278,6 +278,37 @@ function buildTextures(){
       }
     }
   }
+  // Petits vestiges enfouis : sprites transparents, palette atténuée.
+  SPR.roots=[];SPR.pebbles=[];SPR.fossils=[];SPR.bio=[];
+  for(let v=0;v<4;v++){const c=mk(16,16),P=pen(c.getContext('2d'));
+    for(let j=0;j<2+v%2;j++){const sx=3+j*4+v%2,len=6+(v*3+j*5)%9;
+      for(let y=0;y<len;y++){const x=sx+((y+v*2)/5|0)%2;
+        P(x,y,1,1,y%4===0?'#685044':'#4c3a33');
+        if(y===3+j*2||y===7+j)P(x+(j%2?1:-2),y,2,1,'#44342f');
+      }
+    }SPR.roots.push(c);
+  }
+  for(let v=0;v<3;v++){const c=mk(16,16),P=pen(c.getContext('2d'));
+    for(const [x,y,r] of [[4+v,8-v,2],[10-v,10,1],[8+v,5+v,1]]){
+      P(x-r,y,2*r+1,2,'#34363c');P(x-r+1,y-1,2*r-1,2,'#5c5956');P(x,y-1,1,1,'#767064');
+    }SPR.pebbles.push(c);
+    const f=mk(16,16),Q=pen(f.getContext('2d')),a='#8b8777',b='#5e605a';
+    if(v===0){ // poisson
+      Q(4,8,8,1,a);Q(3,7,2,3,b);Q(3,7,1,1,a);
+      for(let x=6;x<=10;x+=2){Q(x,6,1,2,b);Q(x,9,1,2,a)}
+      Q(12,7,1,3,b);Q(13,6,1,1,a);Q(13,10,1,1,a);
+    }else if(v===1){ // coquille en spirale
+      Q(5,4,5,1,b);Q(4,5,1,5,a);Q(5,10,6,1,b);Q(11,6,1,4,a);Q(6,5,4,1,a);
+      Q(6,6,1,3,b);Q(7,8,3,1,a);Q(9,6,1,2,b);Q(7,6,1,1,a);
+    }else{ // os et vertèbres
+      Q(5,7,6,1,a);Q(4,6,2,1,b);Q(4,8,2,1,a);Q(10,6,2,1,a);Q(10,8,2,1,b);
+      Q(7,10,2,1,b);Q(8,12,2,1,a);Q(6,4,2,1,b);
+    }SPR.fossils.push(f);
+  }
+  for(let v=0;v<2;v++){const c=mk(16,16),P=pen(c.getContext('2d')),a=v?'#8c79a9':'#71a79d',b=v?'#514365':'#355c5e';
+    P(6+v,6,1,5,b);P(7+v,5,1,5,a);P(8+v,7,1,3,b);
+    P(10-v,10,1,2,a);P(4,11-v,1,1,b);P(11,4+v,1,1,a);SPR.bio.push(c);
+  }
   SPR.torch=[];SPR.slash=[];SPR.chestOpen=[];
   for(let f=0;f<4;f++){
     const c=mk(16,16),q=c.getContext('2d'),P=pen(q);q.drawImage(TEX[TORCH][0],0,0);
@@ -1618,6 +1649,16 @@ function drawWorld(g,cx,cy){
     const buried=interior&&SPR.buried[t];
     g.drawImage(buried?buried[h]:TEX[t][h],px,py);
     if(interior&&!buried){g.fillStyle='rgba(6,6,15,.75)';g.fillRect(px,py,T,T)}
+    if(interior&&(t===DIRT||t===STONE||t===DEEP)){
+      let k=Math.imul(x,374761393)^Math.imul(y,668265263);k=Math.imul(k^(k>>>13),1274126177);k=(k^(k>>>16))>>>0;
+      const n=k%1260,v=k>>>16;let deco=null;
+      if(t===DIRT){const depth=y-(surf0||surf)[x];
+        if(n<90)deco=SPR.pebbles[v%3];
+        else if(depth>=1&&depth<=3&&n<90+(depth===1?420:140))deco=SPR.roots[v&3];
+      }else if(n<14)deco=SPR.fossils[v%3];
+      else if(t===DEEP&&n<35)deco=SPR.bio[v&1];
+      if(deco)g.drawImage(deco,px,py);
+    }
     if(SPR.oreGlint[t]&&((Math.floor(time*3)+x*7+y*11)&15)===0)g.drawImage(SPR.oreGlint[t][h],px,py);
     if(!interior&&d.solid&&!TD[getT(x,y-1)].solid){g.fillStyle=t===GRASS?'#63ebca':t===DIRT?'#967052':t===DEEP?'#7960ce':'#667d9c';g.fillRect(px,py,T,1);
       if(t===GRASS){g.drawImage(TEX[(x%7===0)?PLANT:CPLANT][x&3],px+Math.round(Math.sin(time*1.6+x*.7)*.8),py-T)}}}
