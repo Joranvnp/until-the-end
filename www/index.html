@@ -1148,6 +1148,9 @@ function findOre(e,far){const b=bases[e.team],home=Math.floor((b.core.x+11)/T),d
     for(let y=Math.max(1,ey-14);y<=Math.min(WH-4,ey+14);y++)for(let x=Math.max(2,ex-22);x<=Math.min(WW-3,ex+22);x++){const v=ORE_VAL[getT(x,y)];if(!v)continue;
       if(y<surf[x]||sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;const sc=v/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+4);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
     if(best)return best}
+  // réserve de bois à sec (un mineur coûte 8 bois, et seul le joueur en rapportait) : un mineur à la fois va abattre l'arbre le plus proche côté base
+  if(!champ&&e.team===0&&b.storage.wood<10&&!ents.some(o=>o!==e&&o.team===e.team&&o.kind==='miner'&&!o.dead&&o.tgt?.wood)){
+    for(let k=3;k<60;k++){const x=home+dir*k;if(x<2||x>WW-3)break;const y=surf[x]-1;if(getT(x,y)===LOG&&!e.bad?.has(x+','+y))return{tx:x,ty:y,wood:true}}}
   // suivre le filon : un minerai à portée de pioche (rayon 4 blocs) passe avant tout, il ne coûte presque aucun creusage
   if(!far&&!champ){const ex=Math.floor((e.x+e.w/2)/T),ey=Math.floor((e.y+e.h/2)/T);for(let y=ey-3;y<=ey+4;y++)for(let x=ex-4;x<=ex+4;x++){const t=getT(x,y),v=ORE_VAL[t];if(!v||TD[t].tier>2||y<surf[x]||e.bad?.has(x+','+y))continue;
     const sc=v*oreNeed(b,t)/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+2);if(sc>bs){bs=sc;best={tx:x,ty:y}}}if(best)return best}
@@ -1177,7 +1180,9 @@ function updateGatherer(e,u,dt){
   if(e.state==='seek'){
     // cible bloquée ou poursuivie plus de 20 s : on la met de côté pour ne pas y revenir en boucle
     if(e.tgt&&(e.stuck>=3||time-(e.tgtT||0)>20)){(e.bad=e.bad||new Set()).add(e.tgt.tx+','+e.tgt.ty);if(e.bad.size>40)e.bad=new Set();e.tgt=null}
-    if(!e.tgt||!ORE_VAL[getT(e.tgt.tx,e.tgt.ty)]){e.tgt=findOre(e)||findOre(e,true);e.stuck=0;if(!e.tgt){e.state='home';return}
+    // arbre abattu : il rapporte aussitôt le bois à la base
+    if(e.tgt?.wood&&getT(e.tgt.tx,e.tgt.ty)!==LOG&&(e.carry.wood||0)>0){e.tgt=null;e.state='home';return}
+    if(!e.tgt||!(e.tgt.wood?getT(e.tgt.tx,e.tgt.ty)===LOG:ORE_VAL[getT(e.tgt.tx,e.tgt.ty)])){e.tgt=findOre(e)||findOre(e,true);e.stuck=0;if(!e.tgt){e.state='home';return}
       // le chrono suit la tuile visée : reprendre la même cible ne le remet pas à zéro
       const key=e.tgt.tx+','+e.tgt.ty;if(key!==e.tgtKey){e.tgtKey=key;e.tgtT=time}}
     const{tx,ty}=e.tgt,cx=e.x+e.w/2,cy=e.y+e.h/2,ex=Math.floor(cx/T),fy=Math.floor((e.y+e.h-1)/T);
