@@ -1701,7 +1701,7 @@ function drawObjPointer(cx,cy,hudBottom,bottom){
   ctx.restore();
 }
 function drawHUD(cx=cam.x,cy=cam.y){
-  const p=player,b0=bases[0],b1=bases[1],narrow=VW<430;if(p.sel!==selPrev){selPrev=p.sel;selT=time;sfx.click()}
+  const p=player,b0=bases[0],b1=bases[1],narrow=VW<430;if(p.sel!==selPrev){selPrev=p.sel;selT=time;sfx.click()}if(selT>time)selT=time;
   const al=ents.filter(e=>e.type==='unit'&&e.team===0&&!e.dead).length,en=ents.filter(e=>e.type==='unit'&&e.team===1&&!e.dead).length;
   // héros
   const heroW=narrow?Math.min(124,Math.floor(VW*.44)):112;
@@ -1785,7 +1785,7 @@ function drawHUD(cx=cam.x,cy=cam.y){
     if(s&&!isTouch&&mouse.inside&&mouse.x>=x&&mouse.x<x+sw-2&&mouse.y>=hy&&mouse.y<hy+sw-2)hotTip={s,x:x+(sw-2)/2}}
   // équerres aux deux coins opposés de la case choisie, tracées après toutes les cases pour ne pas être recouvertes par la voisine
   {const x=hx+p.sel*sw,e=sw-2;ctx.fillStyle=Math.sin(time*5)>0?'#ffffff':'#a0a4be';ctx.fillRect(x-2,hy-2,6,1);ctx.fillRect(x-2,hy-2,1,6);ctx.fillRect(x+e-4,hy+e+1,6,1);ctx.fillRect(x+e+1,hy+e-4,1,6)}
-  let top=Math.min(hy,by);HL.barTop=top;const ss=p.inv[p.sel];if(ss){txt(IT[ss.id].n,VW/2,top-11,COL.txt,8,'center');top-=12}
+  let top=Math.min(hy,by);HL.barTop=top;const ss=p.inv[p.sel],sa=2.5-(time-selT);if(ss&&sa>0){ctx.globalAlpha=Math.min(1,sa*2);txt(IT[ss.id].n,VW/2,top-11,COL.txt,8,'center');ctx.globalAlpha=1;top-=12} // nom de l'objet seulement juste après un changement de case
   {const og=ents.find(e=>e.kind==='ogre'&&!e.dead);if(og&&!panel){const w=Math.min(VW-40,220),x=Math.round((VW-w)/2),y=top-16;txt("Ogre de sang",VW/2,y,'#ff9a8a',7,'center');
     ctx.fillStyle='#120e1c';ctx.fillRect(x-1,y+8,w+2,5);ctx.fillStyle='#ff5a4a';ctx.fillRect(x,y+9,Math.max(1,Math.round(w*og.hp/og.maxhp)),3);top=y-3}}
   // One-line objective tag; no wide framed banner.
