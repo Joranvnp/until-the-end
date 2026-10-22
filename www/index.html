@@ -1111,7 +1111,13 @@ function updateUnit(e,dt){
   const intr=intruder[e.team];if(b.order==='defend'&&intr&&!intr.dead&&underTower(b,intr)&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
   let dest=follow?player.x+player.w/2-player.dir*20+e.offs*36:b.order==='defend'?rallyX(e.team)+e.offs*30:bases[1-e.team].core.x+11+e.offs*6;
   if(e.team===1&&b.order==='attack'&&!massed)dest=bases[0].core.x+11+(STAGE+e.offs*6)*T;
-  if(follow){if(Math.abs(dest-(e.x+e.w/2))<10){e.vx=0;moveEnt(e,dt);return}if(player.y<e.y-3*T&&Math.abs(dest-(e.x+e.w/2))<T*2)return climbUp(e,dt,dest)}
+  if(follow){const pdy=player.y-e.y;
+    // héros descendu dans une grotte juste en dessous : l'escorte creuse un puits vers lui (sinon elle attend en surface, à l'aplomb)
+    // (à plus de 2,5 cases de côté : tunnel horizontal jusqu'à son aplomb, l'escalier 'climb' les ferait remonter)
+    if(pdy>3*T&&Math.abs(player.x+player.w/2-(e.x+e.w/2))<T*8){const pcx=player.x+player.w/2;
+      if(Math.abs(pcx-(e.x+e.w/2))>T*.8){navigate(e,pcx,dt,'flat');return}
+      e.vx=(pcx-(e.x+e.w/2))*4;moveEnt(e,dt);if(e.onGround){const o0=Math.floor(e.x/T),o1=Math.floor((e.x+e.w-.01)/T),fy=Math.floor((e.y+e.h-.01)/T);for(let x=o0;x<=o1;x++)if(digStep(e,x,fy+1,dt,false)===0)break}return}
+    if(Math.abs(dest-(e.x+e.w/2))<10&&Math.abs(pdy)<3*T){e.vx=0;moveEnt(e,dt);return}if(player.y<e.y-3*T&&Math.abs(dest-(e.x+e.w/2))<T*2)return climbUp(e,dt,dest)}
   // au pied du cœur adverse mais tombée dans un cratère en contrebas : on remonte en pilier vers lui
   // (sinon l'armée attend au fond du trou, cible hors de portée, sans jamais frapper le cœur) ; sans progrès, on décale le pilier
   if(b.order==='attack'&&!follow){const ec=bases[1-e.team].core,ecx=ec.x+11,below=(e.y-(ec.y+ec.h))/T;
