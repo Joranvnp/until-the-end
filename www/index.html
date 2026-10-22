@@ -932,7 +932,7 @@ function recruit(team,kind,free){const b=bases[team],u=UNITS[kind];if(!free&&!ca
     carry:{},carryN:0,state:'seek',tgt:null,offs:R(-1,1),progX:sx,progY:0,progT:0,stuck:0,swing:0,ignore:null,ignoreT:0,wantMove:false};
   e.spawnT=.6;if(onScreen(e)){pops.push({ring:1,x:sx+e.w/2,y:e.y+e.h/2,t:.45,max:.45,col:team?'#ff8a7a':'#9fd0ff',r:22});burst(sx+e.w/2,e.y+e.h,team?'#ff9a8a':'#9fd0ff',10,30,-60,.9)}
   ents.push(e);if(team===0&&!free){stats.recruited++;qAdd('recruit');if(kind==='golem')unlock('golem');if(ents.filter(o=>o.type==='unit'&&o.team===0&&!o.dead).length>=10)unlock('army10');stats.rk=stats.rk||{};stats.rk[kind]=(stats.rk[kind]||0)+1;sfx.buy()}return e}
-const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed+(e.team===0?relV('drum')/100:0))*(e.boost||1);
+const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed+(e.team===0?relV('drum')/100:0))*(e.boost||1)*(e.chgT>time?1.9:1);
 const CTR={warrior:'golem',golem:'archer',archer:'warrior'};
 const udmg=e=>UNITS[e.kind].dmg*(1+.25*bases[e.team].upg.dmg);
 const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*5*T;
@@ -1020,6 +1020,8 @@ function clearShot(e,tgt){if(e.csT>time&&e.csTgt===tgt)return e.csOk;
   for(let t=0;t<tt;t+=1/30){vy+=300/30;x+=vx/30;y+=vy/30;if(solidAt(Math.floor(x/T),Math.floor(y/T))){ok=false;break}}
   e.csT=time+.5;e.csTgt=tgt;e.csOk=ok;return ok}
 function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-tgt.w/2-e.w/2,dy=tgt.type==='core'?vgap(e,tgt)+10:Math.abs(tgt.y+tgt.h/2-(e.y+e.h/2));
+  // golem : charge sur un archer proche, sinon l'archer recule plus vite qu'il n'avance et le contre golem > archer ne joue jamais
+  if(e.kind==='golem'&&tgt.kind==='archer'&&gap<80&&gap>u.range){if(!(e.chgT>time))visualPuff(e.x+e.w/2,e.y+e.h,'#8a7f99',4);e.chgT=time+.4}
   if(gap<=u.range&&dy<(u.ranged?(tgt.type==='core'?50:130):30)&&(!u.ranged||tgt.type==='core'||clearShot(e,tgt))){meleeOrShoot(e,u,tgt);
     // mêlée : chacun garde sa place dans la portée (offs), pour qu'une troupe ne s'empile pas sur un seul pixel
     if(!u.ranged){const g=(e.offs+1)/2*(u.range-2)-gap;if(Math.abs(g)>1.5)e.vx=-Math.sign(dx)*Math.sign(g)*uspd(e)*.5}
