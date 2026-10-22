@@ -25,7 +25,9 @@ const UIF='"Pixelify Sans", ui-monospace, monospace', TITF='"Press Start 2P", ui
 let S=4, VW=480, VH=270;
 const wc=document.createElement('canvas'), w=wc.getContext('2d');
 function resize(){
-  const d=window.devicePixelRatio||1;
+  let d=window.devicePixelRatio||1;
+  // petite fenêtre PC en basse densité (S tomberait à 1, texte minuscule) : on dessine en plus basse résolution, le CSS agrandit ×1,5
+  if(!(('ontouchstart' in window)||navigator.maxTouchPoints>0)&&Math.min(innerWidth,innerHeight)*d<500)d/=1.5;
   cv.width=Math.floor(innerWidth*d); cv.height=Math.floor(innerHeight*d);
   S=Math.max(1,Math.floor(Math.min(cv.width,cv.height)/250));
   // Tablette tactile : au moins ~360 px logiques de haut pour loger HUD + commandes sans chevauchement.
