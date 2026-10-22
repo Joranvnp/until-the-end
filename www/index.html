@@ -1923,7 +1923,7 @@ function drawQuestPanel(close){const q=questsToday(),W=Math.min(VW-16,250),H=150
   txt(uiFit((today?'Récompense du jour reçue · série ':'Lance une partie pour la récompense du jour · série ')+s+'/7',W-16,6),x+W/2,y+H-36-RX(),COL.dim,6,'center');
   button(x+W/2-40,y+H-22-RX(),80,16+RX(),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
 // partage du résultat en une touche : feuille de partage Android (plugin Capacitor), Web Share, sinon presse-papiers
-let sharedT=0;const SHARE_URL='https://joranvnp.github.io/until-the-end/';
+let sharedT=-1e9;const SHARE_URL='https://joranvnp.github.io/until-the-end/';
 function shareText(){const win=state==='win',mode=daily?tr('Défi du jour : ')+tr(daily.mod.n):(surv?tr('Siège · '):'')+tr('Difficulté ')+tr(DIFFS[diff].n);
   const head=surv?tr('J\'ai repoussé ')+stats.waves+tr(' vagues en mode Siège'):win?tr('J\'ai détruit le cœur rouge en ')+tr(fmtT(endInfo.dur||0)):tr('Mon cœur est tombé après ')+tr(fmtT(endInfo.dur||0));
   return 'Until The End · '+head+' ('+mode+', '+stats.kills+' '+tr('ennemis abattus')+').'+(daily?' '+tr('Fais mieux sur le défi du jour !'):win||surv?' '+tr('Bats mon record !'):'')}
@@ -1960,7 +1960,9 @@ function drawEnd(){if(!endShownT||endShownT<lastEndChange)endShownT=performance.
     :army===0?'Astuce : recrute aussi des guerriers et des archers pour protéger ton cœur.'
     :army<6?'Astuce : garde l\'ordre Défense tant que ton armée est petite, la tour couvre la ligne.'
     :'Astuce : regroupe une dizaine de combattants avant de lancer l\'Assaut.';
-  const tl=wrapLines(tip,W-20,7),H=136+tl.length*10,x=Math.round((VW-W)/2),k=clamp(titleEnd(),0,1),y=Math.round((VH-H)/2+(1-(1-Math.pow(1-k,3)))*30);
+  // victoire : un bouton lance directement la difficulté suivante (le conseil la propose, Rejouer relançait la même)
+  const next=win&&!surv&&!daily&&diff<DIFFS.length-1;
+  const tl=wrapLines(tip,W-20,7),H=136+tl.length*10+(next?28:0),x=Math.round((VW-W)/2),k=clamp(titleEnd(),0,1),y=Math.round((VH-H)/2+(1-(1-Math.pow(1-k,3)))*30);
   ctx.globalAlpha=k;box(x,y,W,H);ctx.globalAlpha=1;txt(win?'VICTOIRE':'DÉFAITE',VW/2,y+16,win?COL.gold:'#ff6fae',21,'center');
   txt(win?'Le cœur ennemi a volé en éclats.':surv?'Vagues repoussées : '+stats.waves:"Ton cœur s'est éteint.",VW/2,y+42,surv?COL.gold:COL.txt,7,'center');
   txt(uiFit((daily?'Défi du jour · '+daily.mod.n:(surv?'Siège · ':'')+'Difficulté '+DIFFS[diff].n)+' · Durée '+fmtT(endInfo.dur||0),W-12,7),VW/2,y+58,COL.dim,7,'center');
@@ -1970,7 +1972,8 @@ function drawEnd(){if(!endShownT||endShownT<lastEndChange)endShownT=performance.
   txt(uiFit('Blocs '+stats.mined+' · Recrues '+stats.recruited+' · Ennemis abattus '+stats.kills+' · Coffres '+(stats.chests||0),W-12,7),VW/2,y+69,COL.dim,7,'center');
   tl.forEach((l,i)=>txt(l,VW/2,y+84+i*10,win?COL.gold:'#ffd27a',7,'center'));
   const by=y+H-30,bw=Math.min(80,Math.floor((W-36)/3));
-  button(VW/2-bw*1.5-6,by,bw,22,'Rejouer',()=>{audioInit();newGame(diff,daily,surv)},true,true);button(VW/2-bw/2,by,bw,22,performance.now()-sharedT<2500?'Copié !':'Partager',shareResult);button(VW/2+bw/2+6,by,bw,22,'Menu',()=>{state='title'})}
+  if(next)button(VW/2-bw*1.5-6,by-28,bw*3+12,22,'Difficulté '+DIFFS[diff+1].n+' ▶',()=>{audioInit();newGame(diff+1)},true,true);
+  button(VW/2-bw*1.5-6,by,bw,22,'Rejouer',()=>{audioInit();newGame(diff,daily,surv)},true,!next);button(VW/2-bw/2,by,bw,22,performance.now()-sharedT<2500?'Copié !':'Partager',shareResult);button(VW/2+bw/2+6,by,bw,22,'Menu',()=>{state='title'})}
 // ---------- contrôles tactiles ----------
 const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;const touch={l:false,r:false,j:false,d:false,a:false,p:false};let touchBtns=[];
 // Pavé gauche ◀ ▶ (▼ au-dessus pour creuser vers le bas), à droite ▲ saut et gros bouton d'action (vise tout seul).
@@ -2124,5 +2127,5 @@ function pollPad(dt){const gp=navigator.getGamepads?[...navigator.getGamepads()]
 addEventListener('gamepadconnected',()=>audioInit());
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;try{pollPad(dt);update(dt);render()}catch(err){console.error(err)}requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
-window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{get msgs(){return msgs},TRM,spawnOgre,hurt,usePower,nextHero,get HERO(){return HERO},set panel(v){panel=v},set help(v){pauseHelp=v},endGame,SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,shareText,shareResult,findRelic,set paused(v){paused=v}},get objTgt(){return objTgt},get tut(){return tut},get firstRun(){return firstRun},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
+window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{get msgs(){return msgs},get diff(){return diff},TRM,spawnOgre,hurt,usePower,nextHero,get HERO(){return HERO},set panel(v){panel=v},set help(v){pauseHelp=v},endGame,SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,shareText,shareResult,findRelic,set paused(v){paused=v}},get objTgt(){return objTgt},get tut(){return tut},get firstRun(){return firstRun},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
 </script>
