@@ -2115,9 +2115,9 @@ function drawTitle(){
   const port=VH>VW*1.2,sv=hasSave(),
     // téléphone en paysage : logo et aide à gauche, boutons à droite sur toute la hauteur (empilés, ils plafonnaient à ~22 px réels)
     land=isTouch&&!port&&VW>=VH*1.6,tsz=VW<360||land?21:28,lh=uiScale(tsz)*5+24,nb=sv?4:3;let ty=Math.max(14,Math.round(VH*(port?.25:.1)));
-  const bw=land?Math.min(280,Math.floor(VW*.46)):Math.min(210,VW-24),bx=land?VW-bw-Math.round(VW*.04):Math.round(VW/2-bw/2),
+  const bw=land?Math.min(280,Math.floor(VW*.46)):port?Math.min(300,VW-32):Math.min(210,VW-24),bx=land?VW-bw-Math.round(VW*.04):Math.round(VW/2-bw/2),
     // tactile : boutons plus hauts tant que la hauteur le permet
-    BH=land?clamp(Math.floor((VH-8)/(nb+2))-4,20,36):isTouch?clamp(Math.floor((VH-ty-lh-64)/6)-4,20,port?34:30):20,SH=isTouch?BH-4:18,blk=nb*(BH+4)+(SH+4)*2+12+39;
+    BH=land?clamp(Math.floor((VH-8)/(nb+2))-4,20,36):port?clamp(Math.floor((VH-lh-120)/(nb+4))-4,20,40):isTouch?clamp(Math.floor((VH-ty-lh-64)/6)-4,20,port?34:30):20,SH=isTouch||port?BH-6:18,blk=nb*(BH+4)+(SH+4)*2+12+39;
   // colonne de gauche en paysage (logo, défi, aide), sinon tout est centré
   const cx=land?Math.round(bx/2):VW/2,tw=land?bx-16:bw;
   // portrait : logo + menu centrés ensemble (avant, tout le tiers bas de l'écran restait vide)
