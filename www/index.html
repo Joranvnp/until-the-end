@@ -1639,7 +1639,7 @@ function drawAtmos(g,cx,cy){
 function drawGlowPass(g,cx,cy,box){if(!glowLayer||glowLayer.width!==VW||glowLayer.height!==VH){glowLayer=mk(VW,VH);glowTint=mk(VW,VH)}
   const q=glowLayer.getContext('2d'),t=glowTint.getContext('2d');q.clearRect(0,0,VW,VH);drawBloom(q,box);drawGlows(q,cx,cy);
   g.save();g.globalCompositeOperation='lighter';
-  for(const[col,dx]of[['#ff3355',-1],['#38ffff',1]]){t.globalCompositeOperation='copy';t.drawImage(glowLayer,0,0);t.globalCompositeOperation='multiply';t.fillStyle=col;t.fillRect(0,0,VW,VH);t.globalCompositeOperation='destination-in';t.drawImage(glowLayer,0,0);g.globalAlpha=.15;g.drawImage(glowTint,dx,0)}
+  if(!lowFx)for(const[col,dx]of[['#ff3355',-1],['#38ffff',1]]){t.globalCompositeOperation='copy';t.drawImage(glowLayer,0,0);t.globalCompositeOperation='multiply';t.fillStyle=col;t.fillRect(0,0,VW,VH);t.globalCompositeOperation='destination-in';t.drawImage(glowLayer,0,0);g.globalAlpha=.15;g.drawImage(glowTint,dx,0)}
   g.globalAlpha=.8;g.drawImage(glowLayer,0,0);g.restore()}
 // effets par-dessus le monde : anneaux, éclairs de pose, pluie, éclair d'orage, vignettes (dégâts, lune de sang, PV bas)
 function drawOverlays(g,cx,cy){g.save();
@@ -2318,7 +2318,10 @@ function pollPad(dt){const gp=navigator.getGamepads?[...navigator.getGamepads()]
     if(!paused){if(hit(3))togglePanel('inv');if(hit(6))togglePanel('base');if(hit(10))togglePanel('craft');if(hit(8))toggleOrder()}}
   pad.prev=gp.buttons.map(x=>x.pressed||x.value>.5)}
 addEventListener('gamepadconnected',()=>audioInit());
-function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;try{pollPad(dt);update(dt);render()}catch(err){console.error(err)}requestAnimationFrame(frame)}
+// qualité adaptative : si l'appareil tient moins de ~45 images/s pendant ~4 s de jeu, on coupe l'aberration chromatique du halo
+let fxAvg=16,fxSlowN=0,lowFx=false;
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(state==='play'&&!paused&&!lowFx){fxAvg=fxAvg*.95+dt*50;fxSlowN=fxAvg>22?fxSlowN+1:0;if(fxSlowN>150)lowFx=true}try{pollPad(dt);update(dt);render()}catch(err){console.error(err)}requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
-window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{get msgs(){return msgs},get diff(){return diff},TRM,spawnOgre,hurt,usePower,nextHero,get HERO(){return HERO},set panel(v){panel=v},set help(v){pauseHelp=v},endGame,SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,shareText,shareResult,findRelic,set paused(v){paused=v}},get objTgt(){return objTgt},get tut(){return tut},get firstRun(){return firstRun},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
+window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},get lowFx(){return lowFx},set lowFx(v){lowFx=v},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{get msgs(){return msgs},get diff(){return diff},TRM,spawnOgre,hurt,usePower,nextHero,get HERO(){return HERO},set panel(v){panel=v},set help(v){pauseHelp=v},endGame,SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,shareText,shareResult,findRelic,set paused(v){paused=v}},get objTgt(){return objTgt},get tut(){return tut},get firstRun(){return firstRun},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
 </script>
