@@ -2057,7 +2057,7 @@ function drawTitle(){
     button(bx+hw+4+slideIn(k++),y,hw,SH,'Héros : '+heroDef(PROF.hero).n,()=>{nextHero();sfx.place()},true);y+=SH+4}
   const st=PROF.daily.streak&&PROF.daily.last>=dayKey(new Date(Date.now()-864e5))?PROF.daily.streak:0;
   if(land)y=ty+lh;
-  txt(uiFit(D.mod.d+(st?' · Série : '+st+' jour'+(st>1?'s':''):''),tw,7),cx,y,done?COL.gold:'#ffd27a',7,'center');y+=12;
+  txt(uiFit('Défi du jour : '+D.mod.d+(st?' · Série : '+st+' jour'+(st>1?'s':''):''),tw,7),cx,y,done?COL.gold:'#ffd27a',7,'center');y+=12;
   const lines=isTouch?['← → Marcher   ▲ Sauter','Gros bouton : miner, frapper, lancer','Base · Forge · Sac : commandes du bas']:
     ['Q D / ← → Marcher   Espace Sauter','Clic gauche Utiliser   Clic droit Miner','B Base   C Forge   E Sac   R Ordre   M Son'];
   if(y+40<VH){const ww=Math.min(land?tw:VW-20,uiWidth(lines[2])+20);box(Math.round(cx-ww/2),y,ww,39,COL.panel,'#e8ecff33');lines.forEach((l,i)=>txt(uiFit(l,ww-12),cx,y+7+i*10,COL.dim,7,'center'))}
