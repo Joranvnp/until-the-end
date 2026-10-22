@@ -1841,14 +1841,15 @@ function watchAssault(dt){if((aslT-=dt)>0)return;aslT=1;const b=bases[0];if(b.or
 function toggleOrder(){const b=bases[0];b.order=b.order==='attack'?'defend':b.order==='defend'?'follow':'attack';
   toast({attack:'Tes troupes partent à l\'assaut du cœur rouge.',defend:'Tes troupes se regroupent devant ta base.',follow:'Tes troupes t\'escortent.'}[b.order],2.5,'#9fd0ff');sfx.place()}
 function togglePanel(n){panel=panel===n?null:n;cursorItem=null;panelT=0;sfx.place()}
-const panelY=(H,y)=>HL.barTop&&HL.barTop-H-3>=2?Math.max(2,Math.min(y,HL.barTop-H-3)):y;
+// le panneau reste au-dessus de la barre d'actions et, sur tactile, des boutons qu'il chevaucherait en largeur (si la place le permet)
+const panelY=(H,y,x,W)=>{let b=HL.barTop||VH;if(isTouch&&W)for(const t of touchLayout())if(t.x<x+W&&t.x+t.w>x&&t.y-H-3>=2)b=Math.min(b,t.y);return b-H-3>=2?Math.max(2,Math.min(y,b-H-3)):y};
 // tablette tactile : espace libre entre les commandes de gauche et de droite, pour y caler un panneau au lieu de les recouvrir
 function touchGap(){if(!isTouch)return null;const T=touchLayout();return{L:Math.max(0,...T.filter(t=>t.x<VW/2).map(t=>t.x+t.w)),R:Math.min(VW,...T.filter(t=>t.x>=VW/2).map(t=>t.x))}}
 function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
   // paysage bas (téléphone couché) : recrues à gauche, améliorations à droite, pour ne pas couvrir la barre d'objets
   const wide=VW>=RW*2+8&&(HL.barTop||VH)-4<221;
   const gp=!wide&&touchGap();if(gp&&gp.R-gp.L<RW+6&&gp.R-gp.L>=252){RW=Math.min(262,gp.R-gp.L-4);cx=(gp.L+gp.R)/2}
-  const cw=Math.floor((RW-15)/2),W=wide?RW*2:RW,H=wide?132:221,ux=wide?x0=>x0+RW-4:x0=>x0,uy=wide?32:141,x=Math.round(cx-W/2),y=panelY(H,Math.round(VH/2-H/2)-6);panelRect={x,y,w:W,h:H};
+  const cw=Math.floor((RW-15)/2),W=wide?RW*2:RW,H=wide?132:221,ux=wide?x0=>x0+RW-4:x0=>x0,uy=wide?32:141,x=Math.round(cx-W/2),y=panelY(H,Math.round(VH/2-H/2)-6,x,W);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Ta base',x+8,y+6,COL.txt,10,'left');button(x+W-18,y+4,14,12,'×',()=>togglePanel('base'));
   txt('Recruter',x+8,y+22,COL.dim,7);
   Object.entries(UNITS).filter(([,u])=>!u.hero).forEach(([k,u],i)=>{const yy=y+32+i*24;box(x+6,yy,RW-12,22,COL.panel2,'#e8ecff18');
@@ -1863,7 +1864,7 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
 }
 function drawCraftPanel(){const CW=250,av=(HL.barTop||VH)-6-30,
   // paysage bas : deux colonnes de recettes, lignes plus hautes et panneau qui ne monte plus sur la minicarte
-  wide=VW>=CW*2+8&&av/RECIPES.length<17,rows=wide?Math.ceil(RECIPES.length/2):RECIPES.length,W=wide?CW*2-6:CW,RH=clamp(Math.floor(av/rows),12,wide?21:17),H=30+rows*RH,gp=!wide&&touchGap(),x=Math.round((gp&&gp.R-gp.L>=W+4&&gp.R-gp.L<W+16?(gp.L+gp.R)/2:VW/2)-W/2),y=panelY(H,Math.max(30,Math.round(VH/2-H/2)-6));panelRect={x,y,w:W,h:H};
+  wide=VW>=CW*2+8&&av/RECIPES.length<17,rows=wide?Math.ceil(RECIPES.length/2):RECIPES.length,W=wide?CW*2-6:CW,RH=clamp(Math.floor(av/rows),12,wide?21:17),H=30+rows*RH,gp=!wide&&touchGap(),x=Math.round((gp&&gp.R-gp.L>=W+4&&gp.R-gp.L<W+16?(gp.L+gp.R)/2:VW/2)-W/2),y=panelY(H,Math.max(30,Math.round(VH/2-H/2)-6),x,W);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Forge',x+8,y+6,COL.txt,10);txt('sac puis réserve de la base',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('craft'));
   // le minerai est déposé tout seul à la base : la forge puise dans le sac puis dans la réserve
   const inv={},st=bases[0].storage;for(const s of player.inv)if(s)inv[s.id]=(inv[s.id]||0)+s.n;for(const k of RES)inv[k]=(inv[k]||0)+(st[k]||0);
@@ -1873,7 +1874,7 @@ function drawCraftPanel(){const CW=250,av=(HL.barTop||VH)-6-30,
     // stock déjà dans le sac, en coin de l'icône (comme la barre d'objets) : évite de fabriquer en double
     const own=countItem(r.out);if(own)txt(''+own,X+8+is,yy+RH-9,COL.gold,6,'right');
     const go=()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n,2,COL.gold)};cardHit(X+6,yy,CW-12,RH-2,go,ok);button(X+CW-46,yy+1,38,RH-4,'Créer',go,ok)})}
-function drawInvPanel(){const sw=20,W=9*sw+12,H=4*sw+34,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-10);panelRect={x,y,w:W,h:H};
+function drawInvPanel(){const sw=20,W=9*sw+12,H=4*sw+34,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-10,x,W);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Sac',x+8,y+6,COL.txt,10);txt(isTouch?'touche pour déplacer':'clique pour déplacer',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('inv'));
   for(let i=0;i<36;i++){const r=i<9?3:Math.floor((i-9)/9),c=i%9,xx=x+6+c*sw,yy=y+22+r*sw+(i<9?6:0),s=player.inv[i];
     box(xx,yy,sw-2,sw-2,i<9?'#0a0a14':COL.panel2,'#e8ecff33');if(s){ctx.drawImage(ICON[s.id],xx+1,yy+1);if(s.n>1)qty(s.n,xx+sw-4,yy+sw-11)}
