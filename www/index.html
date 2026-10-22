@@ -1965,7 +1965,7 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
 }
 function drawCraftPanel(){const CW=250,av=(HL.barTop||VH)-6-30,
   // paysage bas : deux colonnes de recettes, lignes plus hautes et panneau qui ne monte plus sur la minicarte
-  wide=VW>=CW*2+8&&av/RECIPES.length<17,rows=wide?Math.ceil(RECIPES.length/2):RECIPES.length,W=wide?CW*2-6:CW,RH=clamp(Math.floor(av/rows),12,wide?21:17),H=30+rows*RH,gp=!wide&&touchGap(),x=Math.round((gp&&gp.R-gp.L>=W+4&&gp.R-gp.L<W+16?(gp.L+gp.R)/2:VW/2)-W/2),y=panelY(H,Math.max(30,Math.round(VH/2-H/2)-6),x,W);panelRect={x,y,w:W,h:H};
+  wide=VW>=CW*2+8&&av/RECIPES.length<17,rows=wide?Math.ceil(RECIPES.length/2):RECIPES.length,W=wide?CW*2-6:CW,RH=clamp(Math.floor(av/rows),12,wide?21:isTouch?22:17),H=30+rows*RH,gp=!wide&&touchGap(),x=Math.round((gp&&gp.R-gp.L>=W+4&&gp.R-gp.L<W+16?(gp.L+gp.R)/2:VW/2)-W/2),y=panelY(H,Math.max(30,Math.round(VH/2-H/2)-6),x,W);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Forge',x+8,y+6,COL.txt,10);
   // bandeau de vague repeint dans la ligne de titre : on lui cède la place du sous-titre pour qu'il ne cache pas le ×
   const wd=HL.waveDraw;if(wd&&wd.y<y+H&&wd.y+11>y&&wd.x<x+W&&wd.x+wd.w>x)panelTitleHi=x+W-22;else txt('sac puis réserve de la base',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('craft'));
