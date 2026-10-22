@@ -1046,7 +1046,7 @@ function recruit(team,kind,free){const b=bases[team],u=UNITS[kind];if(!free&&!ca
   e.spawnT=.6;if(onScreen(e)){pops.push({ring:1,x:sx+e.w/2,y:e.y+e.h/2,t:.45,max:.45,col:team?'#ff8a7a':'#9fd0ff',r:22});burst(sx+e.w/2,e.y+e.h,team?'#ff9a8a':'#9fd0ff',10,30,-60,.9)}
   ents.push(e);if(team===0&&!free){stats.recruited++;qAdd('recruit');if(kind==='golem')unlock('golem');if(ents.filter(o=>o.type==='unit'&&o.team===0&&!o.dead).length>=10)unlock('army10');stats.rk=stats.rk||{};stats.rk[kind]=(stats.rk[kind]||0)+1;sfx.buy()}return e}
 // un mineur en fuite détale (+35 %) : sinon le guerrier rouge en raid, plus rapide, le rattrapait toujours
-const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed+(e.team===0?relV('drum')/100:0))*(e.boost||1)*(e.chgT>time?1.9:1)*(e.kind==='miner'&&e.fleeT>time?1.35:1);
+const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed+(e.team===0?relV('drum')/100:0))*(e.boost||1)*(e.chgT>time?1.9:1)*(e.kind==='miner'&&e.fleeT>time?1.35:1)*(e.pace||1);
 const CTR={warrior:'golem',golem:'archer',archer:'warrior'};
 const udmg=e=>UNITS[e.kind].dmg*(1+.25*bases[e.team].upg.dmg);
 const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*5*T;
@@ -1225,7 +1225,7 @@ function updateUnit(e,dt){
     e.raid=false}
   if(e.strike){const ec=bases[1-e.team].core;const near=pickTarget(e,u,u.ranged?90:34);const tg=Math.abs(ec.x-e.x)<110?ec:near;if(tg)return engage(e,u,tg,dt);
     const dtx2=clamp(Math.floor((ec.x+11)/T),0,WW-1);if(Math.abs(ec.x+11-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx2]+1.5)return climbUp(e,dt,ec.x+11);navigate(e,ec.x+11,dt,e.stuck>=2?'climb':'auto');return}
-  const follow=b.order==='follow'&&e.team===0&&!player.dead;
+  e.pace=1;const follow=b.order==='follow'&&e.team===0&&!player.dead;
   let tgt=pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
   // en défense on tient sous la tour : pas de poursuite au-delà de sa portée (sauf si on est soi-même au contact)
   if(tgt&&b.order==='defend'&&!underTower(b,tgt)&&Math.hypot(tgt.x-e.x,tgt.y-e.y)>40)tgt=null;
@@ -1270,7 +1270,9 @@ function updateUnit(e,dt){
   if(b.order==='attack'&&!follow&&armyMid[e.team]!=null){const fwd=e.team===0?1:-1,ahead=(e.x-armyMid[e.team])*fwd,toCore=Math.abs(bases[1-e.team].core.x-e.x);
     // seuil propre à chaque unité (3 à 9 blocs) : la tête s'étale en colonne au lieu de s'empiler sur un pixel
     // on attend l'arrière-garde 12 s au plus, puis on repart sans se ré-arrêter avant 25 s (sinon l'armée piétine indéfiniment)
-    if(ahead>(6+e.offs*3)*T&&toCore>28*T&&time>(e.waitCool||0)){e.waitT=(e.waitT||0)+dt;if(e.waitT<12){e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}e.waitCool=time+25}
+    // en avance de quelques blocs : on ralentit au pas des golems (marche fluide) ; arrêt complet seulement si l'écart se creuse
+    if(ahead>(2+e.offs*2)*T&&toCore>28*T)e.pace=.55;
+    if(ahead>(10+e.offs*3)*T&&toCore>28*T&&time>(e.waitCool||0)){e.waitT=(e.waitT||0)+dt;if(e.waitT<12){e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}e.waitCool=time+25}
     e.waitT=0;
     // point de ralliement juste avant la base adverse : la tête attend l'arrière-garde (15 s max, une fois par assaut),
     // sinon l'armée arrive en file indienne et chaque guerrier se fait encercler seul en haut de la pente
