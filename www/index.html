@@ -461,7 +461,7 @@ function genWorld(seed){
   for(let k=0,n=0;k<4000&&n<16;k++){const x=RI(50,WW-51),y=RI(surf[x]+14,WH-6);if(fg[idx(x,y)]!==AIR&&fg[idx(x,y)]!==CPLANT)continue;const dn=fg[idx(x,y+1)];if(!TD[dn].solid||dn===BEDROCK)continue;fg[idx(x,y)]=CHEST;n++}
   // fondations des bases
   for(const side of[0,1]){for(let i=0;i<30;i++){const x=side?WW-1-i:i;for(let y=0;y<BASE_GY;y++){fg[idx(x,y)]=AIR}
-      if(i>=4&&i<=16){fg[idx(x,BASE_GY)]=CASTLE;fg[idx(x,BASE_GY+1)]=CASTLE;}}}
+      if(i>=13&&i<=26){fg[idx(x,BASE_GY)]=CASTLE;fg[idx(x,BASE_GY+1)]=CASTLE;}}}
   for(let x=0;x<WW;x++){let s=0;while(s<WH&&!TD[fg[idx(x,s)]].solid)s++;surf[x]=s}
   lightSky=new Float32Array(WW*WH);lightTorch=new Float32Array(WW*WH);lightDirty=true;
   wActive=new Set();mmC=mk(WW,WH);mmG=mmC.getContext('2d');for(let y=0;y<WH;y++)for(let x=0;x<WW;x++)mmPix(x,y);
@@ -513,7 +513,8 @@ function newGame(d,dly=null,sv=false){
   bases=[0,1].map(t=>{const coreTx=t===0?19:WW-20;const core={type:'core',team:t,x:coreTx*T-3,y:BASE_GY*T-34,w:22,h:34,hp:0,maxhp:0,flash:0,anim:0};
     core.maxhp=core.hp=Math.round(1600*(t===1?DIFFS[d].core:1)*(dly&&dly.mod.id==='glass'?.5:1));
     const b={team:t,order:'defend',core,storage:{wood:20,stone:20,coal:0,copper:6,iron:0,silver:0,gold:0,diamond:0},upg:{core:0,speed:0,dmg:0,tower:0,saw:0,mine:0},
-      castleX:(t===0?4:WW-16)*T-8,tower:{x:t===0?(4*T-8)+155:(WW-16)*T-8+21,y:BASE_GY*T-128,cd:2}};
+      // le cœur trône au centre du château (sprite de 176 px), la tour de guet sur la tourelle côté front
+      castleX:core.x+11-88,tower:{x:core.x+11-88+(t===0?155:21),y:BASE_GY*T-128,cd:2}};
     ents.push(core);return b});
   player={type:'player',team:0,x:22*T,y:BASE_GY*T-24,w:10,h:22,vx:0,vy:0,hp:100,maxhp:100,dir:1,onGround:false,anim:0,flash:0,
     inv:new Array(36).fill(null),sel:0,swing:0,swingDir:1,useCd:0,pwCd:0,frenzy:0,dead:false,respawn:0,iframes:0,stepOff:0,coyote:0,jumpBuf:0};
@@ -2371,7 +2372,7 @@ const tEnd=ev=>{for(const t of ev.changedTouches)activeTouches.delete(t.identifi
 //  DÉMARRAGE
 // =====================================================================
 buildTextures();buildSprites();buildBackdrops();genWorld(4242);
-bases=[0,1].map(t=>({team:t,core:{x:(t===0?19:WW-20)*T-3,y:BASE_GY*T-34,w:22,h:34,dead:false},castleX:(t===0?4:WW-16)*T-8}));computeLight();
+bases=[0,1].map(t=>({team:t,core:{x:(t===0?19:WW-20)*T-3,y:BASE_GY*T-34,w:22,h:34,dead:false},castleX:(t===0?19:WW-20)*T+8-88}));computeLight();
 // ---------- intégration Android (Capacitor) : bouton retour, pause en arrière-plan ----------
 const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
 if(NATIVE){const App=window.Capacitor.Plugins.App;
