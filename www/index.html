@@ -1104,6 +1104,8 @@ function updateUnit(e,dt){
   e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-6)/10,1,2.2)*(u.big?1.5:1):u.big?1.5:1;
   // en défense, on court intercepter tout intrus qui approche du cœur
   if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else return engage(e,u,e.hunt,dt)}
+  // en défense, l'archer achève un blessé en repli qui se soigne près du cœur (sinon il revient plein de vie à la vague suivante)
+  if(b.order==='defend'&&u.ranged&&!e.retreat){const fl=ents.find(o=>o.type==='unit'&&o.team!==e.team&&!o.dead&&o.retreat&&o.hp<o.maxhp*.7&&Math.abs(o.x-home.x)<24*T&&Math.abs(o.y-e.y)<5*T);if(fl)return engage(e,u,fl,dt)}
   const intr=intruder[e.team];if(b.order==='defend'&&intr&&!intr.dead&&underTower(b,intr)&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
   let dest=follow?player.x+player.w/2-player.dir*20+e.offs*36:b.order==='defend'?rallyX(e.team)+e.offs*30:bases[1-e.team].core.x+11+e.offs*6;
   if(e.team===1&&b.order==='attack'&&!massed)dest=bases[0].core.x+11+(STAGE+e.offs*6)*T;
