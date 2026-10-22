@@ -1289,7 +1289,7 @@ function updateAI(dt){
   // avant de lancer la vague, on jauge la défense adverse (unités au cœur, joueur, tour) : trop forte, on grossit encore
   // l'armée, au plus 90 s ou jusqu'au plafond d'effectif, puis on attaque quand même pour ne jamais rester passif
   // cœur bleu sous 30 % : l'armée rouge revient l'achever avec un effectif réduit, sans hésiter
-  const pcore=bases[0].core,kill=!surv&&pcore.hp<pcore.maxhp*.3&&time>firstWave()&&time-(ai.lastWave||0)>40;
+  const pcore=bases[0].core,kill=!surv&&pcore.hp<pcore.maxhp*(diff>=2?.75:.3)&&time>firstWave()&&time-(ai.lastWave||0)>40;
   const ready=b.order==='defend'&&(kill?fighters.length>=Math.max(4,Math.ceil(ai.wave*.5)):fighters.length>=ai.wave&&(surv?time-(ai.lastWave||0)>firstWave():time>firstWave()));
   if(ready){const pc=bases[0].core.x,guard=teamPow(0,pc,45*T)+1.5+bases[0].upg.tower*.8,mine2=fighters.reduce((a,e)=>a+POW[e.kind]*e.hp/e.maxhp,0);
     ai.holdT=ai.holdT||time;const capped=fighters.length>=survCap();
