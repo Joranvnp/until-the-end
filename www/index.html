@@ -138,7 +138,16 @@ const UPG=[
 const genLoot=(id,l)=>id==='saw'?{wood:2+2*l,stone:1+l}:Object.assign({coal:l,copper:1+l},l>=2?{iron:l-1}:{},l>=3?{silver:1}:{});
 // le cycle raccourcit avec le niveau : 10 / 8 / 6 s pour la scierie, 15 / 12 / 9 s pour la mine
 const genT=(u,l)=>u.gen.t*(1-.2*(l-1));
-function updateGens(dt){for(const b of bases){if(b.core.dead)continue;b.genT=b.genT||{};
+// remblai : les abords du château (60 cases de chaque côté) se rebouchent en terre, du bas vers le haut, sur les 4 rangs sous la surface
+// d'origine (le rang du bas sert de plancher au-dessus des galeries, qui restent en dessous) ; les mines et escaliers creusés devant le cœur ne laissent plus de cratère où le joueur tombe à chaque passage
+function repairGround(b){const home=Math.floor((b.core.x+11)/T),fd=b.team===0?1:-1;
+  for(let k=7;k<=60;k++)for(const sd of[-1,1]){if(sd!==fd&&k<14)continue;const x=home+sd*k;if(x<2||x>WW-3)continue;
+    const s0=surf0[x];for(let y=s0+3;y>=s0;y--){if(solidAt(x,y)||y<s0+3&&!solidAt(x,y+1)||getT(x,y)===WATER)continue;
+      const px=x*T,py=y*T,near=(e,m)=>e.x<px+T+m&&e.x+e.w>px-m&&e.y<py+T+m&&e.y+e.h>py-m;
+      // un être vivant à côté : on attend qu'il parte ; un objet tombé dans le trou est simplement soulevé sur la terre remise
+      if(ents.some(e=>!e.dead&&(e.type==='unit'||e.type==='monster'||e.type==='player')&&near(e,20))||player&&near(player,8))break;
+      for(const e of ents)if(e.type==='item'&&near(e,0))e.y=py-e.h-.1;setT(x,y,DIRT);if(y<surf[x])surf[x]=y;return}}}
+function updateGens(dt){for(const b of bases){if(b.core.dead)continue;b.genT=b.genT||{};b.fixT=(b.fixT||0)+dt;if(b.fixT>.3){b.fixT=0;repairGround(b)}
   for(const u of UPG){const l=b.upg[u.id]||0;if(!u.gen||!l)continue;b.genT[u.id]=(b.genT[u.id]||0)+dt;if(b.genT[u.id]<genT(u,l))continue;b.genT[u.id]=0;
     const loot=genLoot(u.id,l);addLoot(b.storage,loot);
     if(b.team===0&&onScreen(b.core))floatText(bldX(b,u.id)+28,BASE_GY*T-60,Object.entries(loot).map(([k,n])=>'+'+n+' '+tr(IT[k].n).toLowerCase()).join(' '),'#bfe8a0')}}}
@@ -433,7 +442,7 @@ function buildSprites(){
 //  MONDE
 // =====================================================================
 let visualDebris=[];
-let trees=[],fg,bg,surf,lightSky,lightTorch,lightDirty=true,lastLight=0,mmC,mmG;
+let trees=[],fg,bg,surf,surf0,lightSky,lightTorch,lightDirty=true,lastLight=0,mmC,mmG;
 const BASE_GY=64;
 const idx=(x,y)=>y*WW+x;
 const getT=(x,y)=>(x<0||x>=WW||y<0||y>=WH)?(y<0?AIR:BEDROCK):fg[idx(x,y)];
@@ -494,6 +503,7 @@ function genWorld(seed){
   for(const side of[0,1]){for(let i=0;i<30;i++){const x=side?WW-1-i:i;for(let y=0;y<BASE_GY;y++){fg[idx(x,y)]=AIR}
       if(i>=13&&i<=26){fg[idx(x,BASE_GY)]=CASTLE;fg[idx(x,BASE_GY+1)]=CASTLE;}else if(i>=2&&i<13&&!TD[fg[idx(x,BASE_GY)]].solid)fg[idx(x,BASE_GY)]=DIRT;}}
   for(let x=0;x<WW;x++){let s=0;while(s<WH&&!TD[fg[idx(x,s)]].solid)s++;surf[x]=s}
+  surf0=Int16Array.from(surf); // surface d'origine (surf suit le creusage) : repère du remblai autour des châteaux
   lightSky=new Float32Array(WW*WH);lightTorch=new Float32Array(WW*WH);lightDirty=true;
   wActive=new Set();mmC=mk(WW,WH);mmG=mmC.getContext('2d');for(let y=0;y<WH;y++)for(let x=0;x<WW;x++)mmPix(x,y);
 }
@@ -569,12 +579,12 @@ const b64u8=s=>{const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.lengt
 function hasSave(){try{return!!localStorage.getItem(SAVE_KEY)}catch(e){return false}}
 function saveGame(){if(state!=='play'||endT>0)return;try{
   const units=ents.filter(e=>e.type==='unit'&&!e.dead).map(e=>({k:e.kind,t:e.team,x:e.x,y:e.y,hp:e.hp,mh:e.maxhp,c:e.carry,n:e.carryN,s:e.state}));
-  const data={v:1,seed:SEED,diff,time,stats,fg:u8b64(fg),bg:u8b64(bg),surf:Array.from(surf),trees:trees.map(t=>[t.x,t.top,t.r]),
+  const data={v:1,seed:SEED,diff,time,stats,fg:u8b64(fg),bg:u8b64(bg),surf:Array.from(surf),surf0:Array.from(surf0),trees:trees.map(t=>[t.x,t.top,t.r]),
     player:{x:player.x,y:player.y,hp:player.hp,inv:player.inv,sel:player.sel},
     bases:bases.map(b=>({st:b.storage,up:b.upg,o:b.order,hp:b.core.hp,mh:b.core.maxhp})),units,ai:{style:ai.style,wave:ai.wave,sent:ai.sent,champT:ai.champT},daily,surv,rel:REL,hero:HERO};
   localStorage.setItem(SAVE_KEY,JSON.stringify(data))}catch(e){}}
 function loadGame(){let d;try{d=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){return false}if(!d||d.v!==1)return false;
-  newGame(d.diff,d.daily||null,!!d.surv);PROF.games--;tut=-1;firstRun=false;REL=d.rel||{};HERO=d.hero||'miner';msgs=[];SEED=d.seed;fg=b64u8(d.fg);bg=b64u8(d.bg);surf=Int16Array.from(d.surf);trees=d.trees.map(([x,top,r])=>({x,top,r,img:makeCanopy(r,SEED+x)}));
+  newGame(d.diff,d.daily||null,!!d.surv);PROF.games--;tut=-1;firstRun=false;REL=d.rel||{};HERO=d.hero||'miner';msgs=[];SEED=d.seed;fg=b64u8(d.fg);bg=b64u8(d.bg);surf=Int16Array.from(d.surf);surf0=Int16Array.from(d.surf0||d.surf);trees=d.trees.map(([x,top,r])=>({x,top,r,img:makeCanopy(r,SEED+x)}));
   for(let y=0;y<WH;y++)for(let x=0;x<WW;x++)mmPix(x,y);
   time=d.time;stats=Object.assign({obj:0,rk:{}},d.stats);Object.assign(player,{x:d.player.x,y:d.player.y,hp:d.player.hp,maxhp:100+relV('life'),inv:d.player.inv,sel:d.player.sel});
   d.bases.forEach((s,i)=>{const b=bases[i];b.storage=s.st;b.upg={saw:0,mine:0,...s.up};b.order=s.o;b.core.hp=s.hp;b.core.maxhp=s.mh});
