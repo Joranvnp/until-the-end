@@ -1791,7 +1791,7 @@ function drawHUD(cx=cam.x,cy=cam.y){
   // One-line objective tag; no wide framed banner.
   const ob=tut>=0?{t:TUT[tut].t()+' ('+(tut+1)+'/'+TUT.length+')'}:OBJ[stats.obj];if(ob&&!panel){const label=uiFit(ob.t,VW-48,7),ow=uiWidth(label,7)+18,ox=Math.round((VW-ow)/2),oy=top-14;
     ctx.fillStyle='#05050ccc';ctx.fillRect(ox,oy,ow,11);txt('◇',ox+3,oy+3,COL.gold,7);txt(label,ox+12,oy+3,COL.txt,7);top=oy-3}
-  if(!isTouch&&player&&!panel){const h=heroDef(HERO),cd=Math.max(0,player.pwCd),lab='F '+tr(h.p)+(cd>0?' '+Math.ceil(cd)+'s':''),w=uiWidth(lab,7)+8,px=6,py=top-13;
+  if(!isTouch&&player&&!panel){const h=heroDef(HERO),cd=Math.max(0,player.pwCd),lab='F '+tr(h.p)+(cd>0?' '+Math.ceil(cd)+'s':''),w=uiWidth(lab,7)+8,low=!same&&hx-w-8>=6,px=low?hx-w-8:6,py=low?hy+Math.round((sw-2-11)/2):top-13; // à gauche de la barre d'objets quand la place est libre
     ctx.fillStyle='#05050ccc';ctx.fillRect(px,py,w,11);if(cd>0){ctx.fillStyle='#ffffff18';ctx.fillRect(px,py,Math.round(w*(1-cd/h.cd)),11)}txt(lab,px+4,py+3,cd>0?COL.dim:COL.gold,7)}
   // souris sur une case : nom de l'objet et ce qu'il fait, au-dessus de la barre
   if(hotTip&&!panel){const it=IT[hotTip.s.id],d=it.tool==='sword'||it.tool==='bow'?'Dégâts '+it.dmg+(it.tool==='bow'?' · tire à distance':''):it.tool==='pick'?'Minage x'+it.pow:it.place?'Clic gauche : poser':it.use==='heal'?'Rend des PV':it.use==='bomb'?'Se lance et explose':'Ressource';
