@@ -1064,8 +1064,10 @@ function checkOdds(){if(time-oddsT<.5&&time>=oddsT)return;oddsT=time;const m=arm
     if(e.team===0&&Math.abs(d)<30*T)bp+=v;else if(e.team===1&&d>-10*T&&d<80*T)rp+=v}
   // calibré en partie : 26 contre 21 perd encore, 41 contre 26 gagne, l'attaquant doit nettement dominer
   if(rp>=8&&rp*1.3>bp){oddsWarnT=time;toast('Armée rouge trop forte devant tes troupes ('+Math.round(rp)+' contre '+Math.round(bp)+') : renforce-toi ou passe en Défense.',5,'#ff9a8a');sfx.alarm&&sfx.alarm()}}
-function retreatSpot(e,home){const hx=home.x+11+(e.team===0?24:-24),cx=e.x+e.w/2,d=hx-cx;
-  return Math.abs(d)<=18*T?hx:clamp(cx+Math.sign(d)*18*T,T,(WW-1)*T)}
+// au pied du cœur ennemi en Assaut : on ne recule que de 6 cases (derrière ses archers), sinon l'assaut se vide
+const siegeOf=e=>bases[e.team].order==='attack'&&!lateRed(e)&&Math.abs(e.x-bases[1-e.team].core.x)<30*T;
+function retreatSpot(e,home){const hx=home.x+11+(e.team===0?24:-24),cx=e.x+e.w/2,d=hx-cx,r=siegeOf(e)?6:18;
+  return Math.abs(d)<=r*T?hx:clamp(cx+Math.sign(d)*r*T,T,(WW-1)*T)}
 function updateUnit(e,dt){
   const u=UNITS[e.kind];e.boost=1;e.anim+=Math.abs(e.vx)*dt*.12;if(e.flash>0)e.flash-=dt;if(e.atk>0)e.atk-=dt;if(e.swing>0)e.swing-=dt;
   if(e.y>WH*T){e.dead=true;return}
@@ -1082,8 +1084,9 @@ function updateUnit(e,dt){
   // hors combat depuis 8 s : on récupère lentement où qu'on soit (sinon les blessés traversent toute la carte en boucle)
   else if(time-(e.hitT||0)>8)e.hp=Math.min(e.maxhp,e.hp+dt*2.5);
   // blessé : il recule ~18 cases vers chez lui pour souffler (pas jusqu'au cœur, sinon il traverse toute la carte et l'assaut le perd)
-  if(e.hp<e.maxhp*.28&&!e.retreat&&e.kind!=='golem'){e.retreat=true;e.retX=retreatSpot(e,home)}
-  if(e.retreat){if(e.hp>e.maxhp*.85){e.retreat=false;e.retX=null}else{const near=nearestHostile(e,26);if(near&&e.atk<=0)meleeOrShoot(e,u,near);if(e.retX==null)e.retX=retreatSpot(e,home);
+  const sg=siegeOf(e);
+  if(e.hp<e.maxhp*(sg?.2:.28)&&!e.retreat&&e.kind!=='golem'){e.retreat=true;e.retX=retreatSpot(e,home)}
+  if(e.retreat){if(e.hp>e.maxhp*(sg?.6:.85)){e.retreat=false;e.retX=null}else{const near=nearestHostile(e,26);if(near&&e.atk<=0)meleeOrShoot(e,u,near);if(e.retX==null)e.retX=retreatSpot(e,home);
     // encore talonné à son point de repli : on recule d'un cran
     if(near&&Math.abs(e.retX-(e.x+e.w/2))<=8)e.retX=retreatSpot(e,home);
     if(time-(e.hitT||0)>4)e.hp=Math.min(e.maxhp,e.hp+dt*1.5);
@@ -1150,7 +1153,11 @@ function updateUnit(e,dt){
     // seuil propre à chaque unité (3 à 9 blocs) : la tête s'étale en colonne au lieu de s'empiler sur un pixel
     // on attend l'arrière-garde 12 s au plus, puis on repart sans se ré-arrêter avant 25 s (sinon l'armée piétine indéfiniment)
     if(ahead>(6+e.offs*3)*T&&toCore>28*T&&time>(e.waitCool||0)){e.waitT=(e.waitT||0)+dt;if(e.waitT<12){e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}e.waitCool=time+25}
-    e.waitT=0}
+    e.waitT=0;
+    // point de ralliement juste avant la base adverse : la tête attend l'arrière-garde (15 s max, une fois par assaut),
+    // sinon l'armée arrive en file indienne et chaque guerrier se fait encercler seul en haut de la pente
+    if(!e.staged&&toCore<36*T&&toCore>24*T){if(ahead>3*T&&(e.stageT=(e.stageT||0)+dt)<15){e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}e.staged=true}}
+  if(b.order!=='attack')e.staged=false,e.stageT=0;
   if(e.team===1&&b.order==='attack'&&sapper(e))return;
   if(navigate(e,dest,dt,e.stuck>=2?'climb':'auto')){e.wantMove=false;
     // arrivée au pied du cœur adverse mais en contrebas (fosse creusée dessous) : on remonte en pilier
