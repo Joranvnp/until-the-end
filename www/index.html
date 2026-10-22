@@ -2030,11 +2030,11 @@ function drawAchPanel(close){const two=VW>=380,cols=two?2:1,rowsN=Math.ceil(ACH.
   const cw=(W-12)/cols;ACH.forEach((a,i)=>{const c=Math.floor(i/rowsN),r=i%rowsN,xx=Math.round(x+6+c*cw),yy=y+34+r*RH,on=!!PROF.ach[a.id];
     txt(on?'★':'☆',xx+2,yy+2,on?COL.gold:'#e8ecff40',7);txt(uiFit(a.n,cw-16,7),xx+12,yy+1,on?COL.txt:COL.dim,7);if(RH>=17)txt(uiFit(a.d,cw-16,6),xx+12,yy+9,on?COL.dim:'#e8ecff50',6)});
   button(x+W/2-40,y+H-19-RX(),80,15+RX(),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
-function drawQuestPanel(close){const q=questsToday(),W=Math.min(VW-16,250),H=150+RX(),x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
+function drawQuestPanel(close){const q=questsToday(),W=Math.min(VW-16,250),H=166+RX(),x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   const an=panelAnim(x,y,W,H);box(x,y,W,H);txt('Quêtes du jour',x+W/2,y+8,COL.gold,10,'center');
-  q.list.forEach((e,i)=>{const yy=y+26+i*28,bw=W-24;txt(e.done?'★':'☆',x+10,yy+1,e.done?COL.gold:'#e8ecff60',7);txt(uiFit(qName(e),bw-50,7),x+20,yy,e.done?COL.dim:COL.txt,7);
+  q.list.forEach((e,i)=>{const yy=y+26+i*34,bw=W-24;if(i){ctx.fillStyle='#ffffff10';ctx.fillRect(x+10,yy-7,W-20,1)}txt(e.done?'★':'☆',x+10,yy+1,e.done?COL.gold:'#e8ecff60',7);txt(uiFit(qName(e),bw-50,7),x+20,yy,e.done?COL.dim:COL.txt,7);
     txt(e.p+'/'+e.g,x+W-10,yy,e.done?COL.ok:COL.dim,7,'right');ctx.fillStyle='#ffffff14';ctx.fillRect(x+20,yy+10,bw-8,3);if(e.p){ctx.fillStyle=e.done?COL.ok:COL.gold;ctx.fillRect(x+20,yy+10,Math.round((bw-8)*e.p/e.g),3)}
-    txt(uiFit(lootTxt(QLOOT[e.tier]),bw-8,6),x+20,yy+16,'#e8ecff70',6)});
+    txt(uiFit(lootTxt(QLOOT[e.tier]),bw-8,6),x+20,yy+17,'#e8ecff80',6)});
   const today=q.login===dayKey(),s=today?q.streak:(q.login===dayKey(new Date(Date.now()-864e5))?Math.min(7,q.streak+1):1);
   txt(uiFit((today?'Récompense du jour reçue · série ':'Lance une partie pour la récompense du jour · série ')+s+'/7',W-16,6),x+W/2,y+H-36-RX(),COL.dim,6,'center');
   button(x+W/2-40,y+H-22-RX(),80,16+RX(),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
