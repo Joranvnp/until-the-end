@@ -1877,13 +1877,14 @@ function logo(cx,y,size){const z=uiScale(size),L=uiLetters('UNTIL THE END');let 
 function drawTitle(){
   ctx.fillStyle='rgba(5,5,12,.55)';ctx.fillRect(0,0,VW,VH);
   if(menuPanel)return drawMenuPanel(()=>{menuPanel=null});
-  const tsz=VW<360?21:28,ty=Math.max(14,Math.round(VH*(VH>VW*1.2?.25:.1)));logo(VW/2,ty,tsz);
-  txt('Mine. Forge. Détruis leur cœur.',VW/2,ty+uiScale(tsz)*5+9,COL.dim,7,'center');
-  const bw=Math.min(210,VW-24),bx=Math.round(VW/2-bw/2),y0=ty+uiScale(tsz)*5+24,
-    // tactile : boutons plus hauts tant que la hauteur le permet ; portrait : menu centré sous le logo
-    BH=isTouch?clamp(Math.floor((VH-y0-64)/6)-4,20,30):20,SH=isTouch?BH-4:18,blk=4*(BH+4)+(SH+4)*2+12+40;
-  let y=VH>VW*1.2?Math.max(y0,Math.round(y0+(VH-y0-blk)/4)):y0,k=0;
-  const sv=hasSave();if(sv){button(bx-slideIn(k++),y,bw,BH,'Continuer la partie',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)},true,true);y+=BH+4}
+  const tsz=VW<360?21:28,lh=uiScale(tsz)*5+24,port=VH>VW*1.2,sv=hasSave();let ty=Math.max(14,Math.round(VH*(port?.25:.1)));
+  const bw=Math.min(210,VW-24),bx=Math.round(VW/2-bw/2),
+    // tactile : boutons plus hauts tant que la hauteur le permet
+    BH=isTouch?clamp(Math.floor((VH-ty-lh-64)/6)-4,20,port?34:30):20,SH=isTouch?BH-4:18,blk=(sv?4:3)*(BH+4)+(SH+4)*2+12+39;
+  // portrait : logo + menu centrés ensemble (avant, tout le tiers bas de l'écran restait vide)
+  if(port)ty=Math.max(14,Math.round((VH-lh-blk)*.5));
+  logo(VW/2,ty,tsz);txt('Mine. Forge. Détruis leur cœur.',VW/2,ty+lh-15,COL.dim,7,'center');
+  let y=ty+lh,k=0;if(sv){button(bx-slideIn(k++),y,bw,BH,'Continuer la partie',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)},true,true);y+=BH+4}
   const D=dailyInfo(),done=PROF.daily.won===D.key;
   button(bx+slideIn(k++),y,bw,BH,(done?'★ ':'')+'Défi du jour : '+D.mod.n,()=>{audioInit();newGame(1,D)},true,!sv&&false);y+=BH+4;
   const g3=Math.floor((bw-8)/3);// ▶ : ces trois boutons lancent la partie (sinon on cherche un bouton « Jouer » qui n'existe pas)
