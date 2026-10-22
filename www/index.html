@@ -1818,6 +1818,8 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;
   const bw=btns.reduce((a,b)=>a+b[1]+3,0);const same=hx>=bw+12;
   let bx=same?6:Math.round(VW/2-bw/2),by=same?hy-1:hy-sw-4;HL.left=Math.min(bx,hx);HL.right=Math.max(bx+bw,hx+9*sw);
   for(const[l,wd,fn,on]of btns){button(bx,by,wd,sw,l,fn,true,on);if(fn===btns[1][2]&&tutHL('base'))drawTutRing(bx,by,wd,sw);if(fn===toggleOrder&&b0.order==='defend'&&time<(b0.readyHint||0))drawTutRing(bx,by,wd,sw);
+    // petite étiquette « ordre » au-dessus : le bouton affiche l'ordre EN COURS de l'armée (pas une action à faire)
+    if(fn===toggleOrder){const l=tr('Ordre').toUpperCase(),w=uiWidth(l,7)+4;ctx.fillStyle='#05050cbb';ctx.fillRect(bx,by-10,w,9);txt(l,bx+2,by-9,COL.dim,7)}
     // pastille dorée sur Base quand une amélioration est payable (les générateurs remplissent la réserve sans qu'on regarde)
     if(fn===btns[1][2]&&panel!=='base'&&UPG.some(u=>b0.upg[u.id]<3&&canPay(b0.storage,upgCost(u,b0.upg[u.id])))){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2,2*r+2,2*r+2);ctx.fillStyle=COL.gold;ctx.fillRect(bx+wd-2*r-2,by-1,2*r,2*r)}bx+=wd+3}
   for(let i=0;i<9;i++){const x=hx+i*sw,s=p.inv[i],on=i===p.sel;box(x,hy,sw-2,sw-2,'rgba(5,5,12,.9)',on?'#ffffff':'#e8ecff44');
@@ -1828,7 +1830,8 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;
     if(s&&!isTouch&&mouse.inside&&mouse.x>=x&&mouse.x<x+sw-2&&mouse.y>=hy&&mouse.y<hy+sw-2)hotTip={s,x:x+(sw-2)/2}}
   // équerres aux deux coins opposés de la case choisie, tracées après toutes les cases pour ne pas être recouvertes par la voisine
   {const x=hx+p.sel*sw,e=sw-2;ctx.fillStyle=Math.sin(time*5)>0?'#ffffff':'#a0a4be';ctx.fillRect(x-2,hy-2,6,1);ctx.fillRect(x-2,hy-2,1,6);ctx.fillRect(x+e-4,hy+e+1,6,1);ctx.fillRect(x+e+1,hy+e-4,1,6)}
-  let top=Math.min(hy,by);HL.barTop=top;const ss=p.inv[p.sel],sa=2.5-(time-selT);if(ss&&sa>0){ctx.globalAlpha=Math.min(1,sa*2);txt(IT[ss.id].n,VW/2,top-11,COL.txt,8,'center');ctx.globalAlpha=1;top-=12} // nom de l'objet seulement juste après un changement de case
+  let top=Math.min(hy,by-10);HL.barTop=top; // -10 : étiquette « ordre » au-dessus des boutons
+  const ss=p.inv[p.sel],sa=2.5-(time-selT);if(ss&&sa>0){ctx.globalAlpha=Math.min(1,sa*2);txt(IT[ss.id].n,VW/2,top-11,COL.txt,8,'center');ctx.globalAlpha=1;top-=12} // nom de l'objet seulement juste après un changement de case
   {const og=ents.find(e=>e.kind==='ogre'&&!e.dead);if(og&&!panel){const w=Math.min(VW-40,220),x=Math.round((VW-w)/2),y=top-16;txt("Ogre de sang",VW/2,y,'#ff9a8a',7,'center');
     ctx.fillStyle='#120e1c';ctx.fillRect(x-1,y+8,w+2,5);ctx.fillStyle='#ff5a4a';ctx.fillRect(x,y+9,Math.max(1,Math.round(w*og.hp/og.maxhp)),3);top=y-3}}
   // One-line objective tag; no wide framed banner.
