@@ -1783,7 +1783,8 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;
     if(marching)txt('←',x+2,y+2,col,7);
     else{ctx.fillStyle=col;ctx.fillRect(x+2,y+2,1,6);ctx.fillRect(x+3,y+2,4,3)}
     if(gathering)bar(x+2,y+8,width-4,2,intel.need>0?clamp(intel.have/intel.need,0,1):0,col)},y0=y;
-    draw();HL.waveDraw={x,y,w:width,draw};
+    // panneau ouvert dessus (rectangle de l'image précédente) : il sera repeint dans sa ligne de titre, pas en fantôme sous le panneau translucide
+    const P=panel&&panelRect;if(!(P&&y<P.y+P.h&&y+11>P.y&&x<P.x+P.w&&x+width>P.x))draw();HL.waveDraw={x,y,w:width,draw};
     // toucher / cliquer le bandeau : la vague expliquée en clair
     if(!panel)uiHits.push({x:x-2,y:y-3,w:width+4,h:17,fn:()=>{sfx.place();toast(waveExplain(intel),6,col)}});
   }
