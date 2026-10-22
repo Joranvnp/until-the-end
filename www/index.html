@@ -141,7 +141,8 @@ const genT=(u,l)=>u.gen.t*(1-.2*(l-1));
 function updateGens(dt){for(const b of bases){if(b.core.dead)continue;b.genT=b.genT||{};
   for(const u of UPG){const l=b.upg[u.id]||0;if(!u.gen||!l)continue;b.genT[u.id]=(b.genT[u.id]||0)+dt;if(b.genT[u.id]<genT(u,l))continue;b.genT[u.id]=0;
     const loot=genLoot(u.id,l);addLoot(b.storage,loot);
-    if(b.team===0&&onScreen(b.core))floatText(b.core.x+b.core.w/2,b.core.y-8,Object.entries(loot).map(([k,n])=>'+'+n+' '+tr(IT[k].n).toLowerCase()).join(' '),'#bfe8a0')}}}
+    if(b.team===0&&onScreen(b.core))floatText(bldX(b,u.id)+28,BASE_GY*T-60,Object.entries(loot).map(([k,n])=>'+'+n+' '+tr(IT[k].n).toLowerCase()).join(' '),'#bfe8a0')}}}
+const bldX=(b,k)=>b.team===0?b.castleX-(k==='saw'?78:138):b.castleX+176+(k==='saw'?22:82);
 const upgCost=(u,l)=>Object.fromEntries(Object.entries(u.cost).map(([k,v])=>[k,Math.ceil(v*(1+.6*l))]));
 
 // =====================================================================
@@ -369,6 +370,35 @@ function castleSprite(team){const c=mk(176,150),g=c.getContext('2d'),P=pen(g),co
   for(const x of[45,123]){P(x,97,8,10,shade(col,-.6));P(x,97,1,12,col);P(x+3,99,2,5,col)}
   P(2,149,172,1,'#697cef');c.wins=wins;return c}
 
+function buildingSprite(kind,team,lvl){const c=mk(56,kind==='saw'?48:56),g=c.getContext('2d'),P=pen(g),col=team?'#e5534b':'#4f9df5';c.lights=[];
+  const masonry=(x,y,w,h)=>{P(x,y,w,h,INK);g.save();g.beginPath();g.rect(x,y,w,h);g.clip();for(let j=0;j<h;j+=16)for(let i=0;i<w;i+=16)g.drawImage(TEX[CASTLE][(i/16+j/16)&3],x+i,y+j);g.restore();P(x,y,w,1,'#8796ff');P(x,y,1,h,'#5364bb')};
+  const beam=(x,y,w,h)=>{P(x,y,w,h,'#7a5a48');P(x,y,w,1,'#a07a5a');P(x,y,1,h,'#a07a5a')},roof=(x,y,w)=>{for(let j=0;j<7;j++){P(x+6-j,y+j,w-12+j*2,1,INK);P(x+6-j,y+j,1,1,'#8796ff')}P(x,y+7,w,2,'#4055b4');P(x,y+7,w,1,'#798aff')};
+  const wheel=(x,y,r,saw=false)=>{for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){const d=dx*dx+dy*dy;if(d<=r*r)P(x+dx,y+dy,1,1,d>(r-2)*(r-2)?dx+dy<0?'#8796ff':'#5364bb':saw?'#4055b4':INK)}if(saw)for(const[dx,dy]of[[0,-r],[r,0],[0,r],[-r,0]])P(x+dx,y+dy,1,1,'#c9c9d9');P(x,y,1,1,'#c9c9d9');c.wheel=[x,y,r]};
+  const light=(x,y)=>{P(x-1,y-1,4,5,INK);P(x,y,2,3,'#ffce78');P(x,y,1,1,'#fff1ba');c.lights.push([x+1,y+1])},flag=(x,y)=>{P(x,y,1,12,'#8796ff');P(x+1,y+1,7,4,shade(col,-.4));P(x+1,y+1,7,1,col);P(x+1,y+2,5,2,col)};
+  if(kind==='saw'){
+    // Scierie : appentis, étage, cheminée.
+    if(lvl>=2)masonry(7,39,32,8);
+    P(9,26,28,lvl>=2?13:21,INK);for(const x of[9,20,34])beam(x,26,3,lvl>=2?13:21);beam(9,34,28,2);
+    if(lvl>=2){P(13,16,20,10,INK);beam(13,16,2,10);beam(31,16,2,10);roof(10,9,26);flag(35,10)}
+    if(lvl===3){masonry(5,8,6,20);P(4,7,8,2,'#798aff');P(6,8,4,2,INK);light(23,20)}
+    roof(5,20,36);wheel(30,35,6,true);beam(22,41,17,3);
+    const logs=lvl===3?[[40,43],[47,43],[37,38],[44,38],[41,33]]:[[40,43],[47,43],[44,38]];
+    for(const[x,y]of logs){P(x-2,y-1,7,4,'#7a5a48');P(x-2,y-1,6,1,'#a07a5a');P(x+3,y,2,3,'#a07a5a');P(x+3,y+1,1,1,INK)}
+    P(7,47,46,1,'#5364bb');
+  }else{
+    // Mine : chevalement, minerai, concasseur.
+    const top=lvl>=2?9:19;
+    P(12,39,21,16,INK);P(15,39,15,1,'#4055b4');for(const x of[13,30])beam(x,40,2,15);
+    for(const x of[10,30]){beam(x,top+6,3,49-top);if(lvl>=2)masonry(x-3,48,9,7)}
+    for(let i=0;i<17;i++){P(13+i,top+13+i,2,1,'#7a5a48');P(29-i,top+13+i,1,1,'#a07a5a')}
+    beam(9,top+6,25,3);roof(7,top-6,29);wheel(22,top+7,5);P(22,top+13,1,27-top,'#5364bb');
+    if(lvl>=2){for(const[x,y]of[[38,51],[43,48],[48,51],[40,46]]){P(x-2,y,6,3,'#4055b4');P(x,y-1,3,2,(x&1)?'#c9c9d9':'#d9844a')}}
+    if(lvl===3){masonry(37,29,15,16);P(39,32,11,10,INK);for(const[x,y]of[[42,32],[46,34],[46,38],[42,40],[39,36]])P(x,y,3,2,'#798aff');P(43,36,2,2,'#5364bb');flag(43,14);beam(7,20,8,2);P(7,22,1,3,'#8796ff');light(6,26)}
+    P(17,47,14,6,'#4055b4');P(16,46,16,1,'#8796ff');P(18,44,5,2,'#d9844a');P(24,43,4,3,'#c9c9d9');P(18,48,1,4,'#798aff');for(const x of[19,28]){P(x,53,3,2,INK);P(x,53,2,1,'#8796ff')}
+    P(7,55,46,1,'#5364bb');
+  }
+  return outline(c,INK)}
+
 function weaponSprite(kind,colA='#6c5baf',colB='#a8adff'){const c=mk(16,16),P=pen(c.getContext('2d'));
   if(kind==='sword'){for(let i=0;i<8;i++){P(6+i,9-i,1,2,colA);P(7+i,9-i,1,1,colB)}for(let i=0;i<4;i++)P(3+i,8+i,1,1,'#8c85ce');P(3,12,2,2,'#45396e');P(2,14,2,1,'#8c85ce')}
   else if(kind==='pick'){for(let i=0;i<10;i++)P(3+i,13-i,1,2,'#4e4e8b');for(const[x,y]of[[3,5],[4,4],[5,3],[6,2],[7,2],[8,2],[9,3],[10,3],[11,4],[12,5],[13,6],[13,7]])P(x,y,1,2,colA);P(6,2,3,1,colB);P(10,3,2,1,colB)}
@@ -381,7 +411,8 @@ function buildSprites(){
     SPR['warrior'+t]=charSet({...base,role:'warrior',helm:'#52647c',plume:tc,trim:'#a6bcc9'});
     SPR['archer'+t]=charSet({...base,role:'archer',hood:t?'#783e52':'#35587b'});
     SPR['miner'+t]=charSet({...base,role:'miner',hard:'#bb904f',beard:'#684b55'});
-    SPR['golem'+t]=golemSet(tc);SPR['core'+t]=coreSprite(tc);SPR['castle'+t]=castleSprite(t)}
+    SPR['golem'+t]=golemSet(tc);SPR['core'+t]=coreSprite(tc);SPR['castle'+t]=castleSprite(t);
+    for(const k of['saw','mine'])for(const l of[1,2,3])SPR[k+l+'_'+t]=buildingSprite(k,t,l)}
   SPR.champion0=charSet({role:'champion',tunic:'#4f9df5'});
   SPR.champion1=charSet({role:'champion',skin:'#ae8e93',tunic:'#e5534b',pants:'#302238',boots:'#161626',helm:'#43394f',plume:'#ff8666',cape:'#942f4c',belt:'#ceaa6b'});
   SPR.zombie=charSet({role:'zombie',skin:'#87a18b',hair:'#303d46',tunic:'#665575',pants:'#303047',boots:'#1b2130'});
@@ -461,7 +492,7 @@ function genWorld(seed){
   for(let k=0,n=0;k<4000&&n<16;k++){const x=RI(50,WW-51),y=RI(surf[x]+14,WH-6);if(fg[idx(x,y)]!==AIR&&fg[idx(x,y)]!==CPLANT)continue;const dn=fg[idx(x,y+1)];if(!TD[dn].solid||dn===BEDROCK)continue;fg[idx(x,y)]=CHEST;n++}
   // fondations des bases
   for(const side of[0,1]){for(let i=0;i<30;i++){const x=side?WW-1-i:i;for(let y=0;y<BASE_GY;y++){fg[idx(x,y)]=AIR}
-      if(i>=13&&i<=26){fg[idx(x,BASE_GY)]=CASTLE;fg[idx(x,BASE_GY+1)]=CASTLE;}}}
+      if(i>=13&&i<=26){fg[idx(x,BASE_GY)]=CASTLE;fg[idx(x,BASE_GY+1)]=CASTLE;}else if(i>=2&&i<13&&!TD[fg[idx(x,BASE_GY)]].solid)fg[idx(x,BASE_GY)]=DIRT;}}
   for(let x=0;x<WW;x++){let s=0;while(s<WH&&!TD[fg[idx(x,s)]].solid)s++;surf[x]=s}
   lightSky=new Float32Array(WW*WH);lightTorch=new Float32Array(WW*WH);lightDirty=true;
   wActive=new Set();mmC=mk(WW,WH);mmG=mmC.getContext('2d');for(let y=0;y<WH;y++)for(let x=0;x<WW;x++)mmPix(x,y);
@@ -1537,7 +1568,10 @@ function drawWorld(g,cx,cy){
       if(phase===4&&y%10===0){g.fillRect(px,py+2,5,1);g.fillRect(px,py+3,1,4)}
       if(phase===7){g.fillStyle='#12313b';g.fillRect(px+7+(y%3),py,1,T);g.fillRect(px+3,py+4,5,1);g.fillRect(px+9,py+11,4,1)}}}
   // château
-  for(const b of bases){const c=SPR['castle'+b.team];g.drawImage(c,Math.round(b.castleX+ox),Math.round(BASE_GY*T-c.height+oy+1))}
+  for(const b of bases){const c=SPR['castle'+b.team];g.drawImage(c,Math.round(b.castleX+ox),Math.round(BASE_GY*T-c.height+oy+1));
+    // le château grandit : scierie et mine apparaissent à côté et changent d'allure à chaque niveau
+    for(const k of['saw','mine']){const l=Math.min(3,b.upg&&b.upg[k]||0);if(!l)continue;const s=SPR[k+l+'_'+b.team],X=Math.round(bldX(b,k)+ox),Y=Math.round(BASE_GY*T-s.height+oy+1);if(X>VW+60||X+s.width<-60)continue;g.drawImage(s,X,Y);
+      if(s.wheel&&!b.core.dead){const[wx,wy,r]=s.wheel,a=time*(k==='saw'?6:1.5)*(b.team?-1:1);g.fillStyle='#c8d0ff';for(let i=0;i<4;i++){const q=a+i*Math.PI/2;g.fillRect(Math.round(X+wx+Math.cos(q)*(r-1)),Math.round(Y+wy+Math.sin(q)*(r-1)),1,1)}}}}
   // tuiles
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){let t=fg[idx(x,y)];if(!t)continue;const d=TD[t];const h=(x*7+y*13)&3;
     if(t===GRASS&&TD[getT(x,y-1)].solid)t=DIRT;
@@ -1683,6 +1717,7 @@ function drawGlows(g,cx,cy){g.save();g.globalCompositeOperation='lighter';
     if(bx>VW+60||bx+c.width<-60)continue;
     if(!b.core.dead){for(const[x,y]of c.wins)halo(g,bx+x+4,by+y+6,'#ffbd62',18,.45);
       halo(g,b.core.x-cx+11,b.core.y-cy+16,b.team?'#e5534b':'#4f9df5',38+2*Math.sin(time*2+b.team),.6+.08*Math.sin(time*2+b.team))}
+    for(const k of['saw','mine']){const l=Math.min(3,b.upg&&b.upg[k]||0);if(!l||b.core.dead)continue;const s=SPR[k+l+'_'+b.team],X=bldX(b,k)-cx,Y=BASE_GY*T-s.height+1-cy;for(const[x,y]of s.lights||[])halo(g,X+x,Y+y,'#ffbd62',14,.4)}
     for(const dx of[-12,188]){const x=Math.round(bx+dx),y=Math.round(by+95);g.globalAlpha=1;g.globalCompositeOperation='source-over';g.fillStyle='#404667';g.fillRect(x,y-65,1,65);g.drawImage(TEX[TORCH][0],x-8,y-4);g.globalCompositeOperation='lighter';halo(g,x,y+4,'#ffce78',40,.8)}}
   const x0=Math.max(0,Math.floor(cx/T)),x1=Math.min(WW-1,Math.floor((cx+VW)/T)+1),y0=Math.max(0,Math.floor(cy/T)),y1=Math.min(WH-1,Math.floor((cy+VH)/T)+1);
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const t=fg[idx(x,y)],X=x*T-cx+8,Y=y*T-cy+8;
