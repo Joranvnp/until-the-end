@@ -994,8 +994,9 @@ function climbUp(e,dt,cxT){const cx=e.x+e.w/2;e.vx=clamp((cxT-cx)*4,-uspd(e),usp
   if(!e.onGround)return;const o0=Math.floor(e.x/T),o1=Math.floor((e.x+e.w-.01)/T),y0=Math.floor(e.y/T),fy=Math.floor((e.y+e.h-.01)/T);
   for(let x=o0;x<=o1;x++)for(const y of[y0-1,y0-2]){const r=digStep(e,x,y,dt,e.kind==='miner'||e.kind==='champion');if(r===0)return;if(r<0){e.vy=-JUMP;return}}
   e.vy=-JUMP*.85;e.pillarY=fy;e.pillarX=Math.floor((e.x+e.w/2)/T)}
+// un champignon de grotte sous les pieds est recouvert aussi (sinon l'unité saute sur place sans jamais monter)
 function updatePillar(e){if(e.pillarY==null)return;
-  if(e.y+e.h<=e.pillarY*T-.5){const t=getT(e.pillarX,e.pillarY);if(flowable(t)||t===WATER){setT(e.pillarX,e.pillarY,DIRT);
+  if(e.y+e.h<=e.pillarY*T-.5){const t=getT(e.pillarX,e.pillarY);if(flowable(t)||t===WATER||t===MUSH){setT(e.pillarX,e.pillarY,DIRT);
       // les unités qui se trouvaient dans la case sont hissées dessus (sinon elles restent emmurées dans le pilier)
       const px=e.pillarX*T,py=e.pillarY*T;for(const o of ents)if(o!==e&&(o.type==='unit'||o.type==='monster')&&!o.dead&&o.x<px+T&&o.x+o.w>px&&o.y<py+T&&o.y+o.h>py){const ny=py-o.h-.01;if(!rectSolid(o.x,ny,o.w,o.h)){o.y=ny;o.vy=Math.min(o.vy,0)}}}e.pillarY=null}
   else if(e.onGround&&e.vy===0)e.pillarY=null}
