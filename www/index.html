@@ -2147,7 +2147,9 @@ function touchIcon(ic,size){
     for(let dy=-distance;dy<=distance;dy++)for(let dx=-distance;dx<=distance;dx++)r.drawImage(mask,3+dx,3+dy)}
   r.drawImage(light,3,3);sizes.set(size,result);return result;
 }
-function drawTouch(){touchBtns=touchLayout();const p=player,sel=p&&p.inv[p.sel];
+function drawTouch(){const R=panel&&panelRect;
+  // un panneau ouvert qui mord sur un bouton (★ sur tablette) : bouton masqué et inactif plutôt qu'à moitié recouvert
+  touchBtns=touchLayout().filter(b=>!R||b.x>=R.x+R.w||b.x+b.w<=R.x||b.y>=R.y+R.h||b.y+b.h<=R.y);const p=player,sel=p&&p.inv[p.sel];
   ctx.save();ctx.imageSmoothingEnabled=false;
   for(const b of touchBtns){const x=Math.round(b.x),y=Math.round(b.y),W=Math.round(b.w),H=Math.round(b.h),pressed=touch[b.k];
     const action=b.k==='a',cut=action?Math.round(W*.29):3,edge=pressed?COL.ok:'#e8ecffcc';
