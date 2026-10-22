@@ -2133,9 +2133,13 @@ function drawEnd(){if(!endShownT||endShownT<lastEndChange)endShownT=performance.
 const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;const touch={l:false,r:false,j:false,d:false,a:false,p:false};let touchBtns=[];
 // Pavé gauche ◀ ▶ (▼ au-dessus pour creuser vers le bas), à droite ▲ saut et gros bouton d'action (vise tout seul).
 function touchLayout(){const s=clamp(Math.floor(Math.min(VW,VH)/7),36,52),g=6,big=Math.round(s*1.3);
-  const free=HL.left>8+2*s+g+6&&HL.right<VW-big-s-g-14,y=free?VH-s-8:HL.touchY-s-6;const ay=y-big+s;
+  // chaque côté descend dans son coin si la barre du bas lui laisse la place (tablette : la barre n'en laisse souvent qu'à un seul)
+  const lf=PROF.set.lefty,spL=lf?VW-HL.right:HL.left,spR=lf?HL.left:VW-HL.right,up=HL.touchY-s-6;
+  const y=spL>8+2*s+g+6?VH-s-8:up,wide=spR>big+s+g+14,stack=!wide&&spR>big+14;
+  // à droite, place juste pour le gros bouton : ▲ et ★ s'empilent au-dessus de lui
+  const ay=wide?VH-big-8:stack?VH-big-8:up-big+s,jx=stack?VW-big-8+Math.round((big-s)/2):VW-big-8-s-g,jy=stack?ay-s-g:ay+big-s;
   return[{k:'l',x:8,y,w:s,h:s,t:'◀'},{k:'r',x:8+s+g,y,w:s,h:s,t:'▶'},{k:'d',x:8+Math.round((s+g)/2),y:y-s-g,w:s,h:s,t:'▼'},
-    {k:'a',x:VW-big-8,y:ay,w:big,h:big,t:''},{k:'j',x:VW-big-8-s-g,y:y,w:s,h:s,t:'▲'},{k:'p',x:VW-s-8,y:ay-s-g,w:s,h:s,t:'★'}].map(b=>PROF.set.lefty?{...b,x:VW-b.x-b.w}:b).map((b,i,A)=>PROF.set.lefty&&(b.k==='l'||b.k==='r')?{...b,x:A[b.k==='l'?1:0].x}:b)}
+    {k:'a',x:VW-big-8,y:ay,w:big,h:big,t:''},{k:'j',x:jx,y:jy,w:s,h:s,t:'▲'},{k:'p',x:VW-s-8,y:(stack?jy:ay)-s-g,w:s,h:s,t:'★'}].map(b=>PROF.set.lefty?{...b,x:VW-b.x-b.w}:b).map((b,i,A)=>PROF.set.lefty&&(b.k==='l'||b.k==='r')?{...b,x:A[b.k==='l'?1:0].x}:b)}
 // Action-button-only sprites: cool highlights, one-pixel outline and stepped halo.
 const touchIconCache=new WeakMap();
 function touchIcon(ic,size){
