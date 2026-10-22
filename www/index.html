@@ -1771,7 +1771,7 @@ function drawHUD(cx=cam.x,cy=cam.y){
   let bx=same?6:Math.round(VW/2-bw/2),by=same?hy-1:hy-sw-4;HL.left=Math.min(bx,hx);HL.right=Math.max(bx+bw,hx+9*sw);
   for(const[l,wd,fn,on]of btns){button(bx,by,wd,sw,l,fn,true,on);if(fn===btns[1][2]&&tutHL('base'))drawTutRing(bx,by,wd,sw);
     // pastille dorée sur Base quand une amélioration est payable (les générateurs remplissent la réserve sans qu'on regarde)
-    if(fn===btns[1][2]&&panel!=='base'&&UPG.some(u=>b0.upg[u.id]<3&&canPay(b0.storage,upgCost(u,b0.upg[u.id])))){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-r-3,by-2,2*r+2,2*r+2);ctx.fillStyle=COL.gold;ctx.fillRect(bx+wd-r-2,by-1,2*r,2*r)}bx+=wd+3}
+    if(fn===btns[1][2]&&panel!=='base'&&UPG.some(u=>b0.upg[u.id]<3&&canPay(b0.storage,upgCost(u,b0.upg[u.id])))){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2,2*r+2,2*r+2);ctx.fillStyle=COL.gold;ctx.fillRect(bx+wd-2*r-2,by-1,2*r,2*r)}bx+=wd+3}
   for(let i=0;i<9;i++){const x=hx+i*sw,s=p.inv[i],on=i===p.sel;box(x,hy,sw-2,sw-2,'rgba(5,5,12,.9)',on?'#ffffff':'#e8ecff44');
     if(on){ctx.fillStyle=Math.sin(time*5)>0?'#ffffff':'#a0a4be';ctx.fillRect(x,hy-2,4,1);ctx.fillRect(x-2,hy,1,4)}
     if(s){const bo=on&&time-selT<.2?-Math.round(Math.sin((time-selT)/.2*Math.PI)*3):0;ctx.drawImage(ICON[s.id],Math.round(x+(sw-18)/2),Math.round(hy+(sw-18)/2)+bo,16,16);if(s.n>1)qty(s.n,x+sw-4,hy+sw-11)}
