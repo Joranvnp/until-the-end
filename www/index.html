@@ -2006,10 +2006,11 @@ function touchIcon(ic,size){
 function drawTouch(){touchBtns=touchLayout();const p=player,sel=p&&p.inv[p.sel];
   ctx.save();ctx.imageSmoothingEnabled=false;
   for(const b of touchBtns){const x=Math.round(b.x),y=Math.round(b.y),W=Math.round(b.w),H=Math.round(b.h),pressed=touch[b.k];
-    const action=b.k==='a',cut=action?Math.round(W*.29):3,edge=pressed?COL.ok:COL.edge;
+    const action=b.k==='a',cut=action?Math.round(W*.29):3,edge=pressed?COL.ok:'#e8ecffcc';
     // Disjoint scanlines keep the translucent fill even at the stepped corners.
+    // fond assez opaque et contour franc : lisibles même devant le château bleu ou un ciel clair
     for(let row=0;row<H;row++){const inset=Math.max(0,cut-Math.min(row,H-1-row)),width=W-2*inset;
-      ctx.fillStyle=pressed?'#000000cc':'#00000070';ctx.fillRect(x+inset,y+row,width,1);
+      ctx.fillStyle=pressed?'#000000cc':'#000000a0';ctx.fillRect(x+inset,y+row,width,1);
       ctx.fillStyle=edge;
       if(row===0||row===H-1)ctx.fillRect(x+inset,y+row,width,1);
       else{ctx.fillRect(x+inset,y+row,1,1);ctx.fillRect(x+W-inset-1,y+row,1,1)}}
