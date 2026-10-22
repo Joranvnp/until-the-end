@@ -1779,6 +1779,8 @@ function drawHUD(cx=cam.x,cy=cam.y){
   let tipAt=null,hotTip=null;
   for(const k of RES){const v=b0.storage[k];if(resPrev[k]!==undefined&&v>resPrev[k])resPop[k]=time;resPrev[k]=v}
   const rc=k=>time-(resPop[k]||-9)<.6?(Math.sin(time*20)>0?COL.gold:'#ffffff'):COL.txt,rb=k=>time-(resPop[k]||-9)<.25?-1:0;
+  // fond sombre : les chiffres restaient illisibles par-dessus le château ou le ciel clair
+  ctx.fillStyle='rgba(5,5,12,.55)';if(narrow)ctx.fillRect(4,cy0+19,4*32-6,23);else ctx.fillRect(4,41,4*27,22);
   if(narrow){ry=cy0+21;RES.forEach((k,i)=>{const x=8+(i%4)*32,y=ry+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y+rb(k),10,10);txt(uiFit(''+b0.storage[k],20,7),x+11,y+2,rc(k),7);resCell(k,x,y,31)});ry+=24+(waveVisible?14:0)}
   else{ry=38;RES.forEach((k,i)=>{const x=8+(i%4)*27,y=ry+5+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y-2+rb(k),10,10);txt(''+b0.storage[k],x+11,y,rc(k),7);resCell(k,x,y-2,26)});ry=cy0+30+waveGap}
   let hudBottom=Math.max(62,my+mh+2,cy0+31,ry);hudLow=hudBottom;
