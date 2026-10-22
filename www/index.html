@@ -950,7 +950,9 @@ function buildTargets(){tgtList=ents.filter(o=>!o.dead&&o.hp&&o.type!=='item');t
     if(best&&!intruder[t]&&t===0&&time-(intruderT||0)>20){intruderT=time;toast('Ton cœur est attaqué ! Tes défenseurs accourent.',3,'#ff9a8a')}intruder[t]=best;
     // pillards qui chassent nos mineurs (à moins de 90 blocs du cœur) : les 3 défenseurs les plus proches partent les intercepter
     const rd=ents.filter(o=>!o.dead&&o.raid&&o.team!==t&&Math.abs(o.x-cx)<90*T).sort((a,c)=>Math.abs(a.x-cx)-Math.abs(c.x-cx))[0];
-    if(rd&&(!raider[t]||raider[t].dead)){if(t===0)toast('Des pillards attaquent tes mineurs : 3 défenseurs partent les intercepter.',3,'#ff9a8a');
+    // réassignation aussi quand la cible des chasseurs a fui en retraite (plus pillarde) : sinon son binôme restait seul à tuer les mineurs
+    const fresh=rd&&(!raider[t]||raider[t].dead);if(fresh&&t===0)toast('Des pillards attaquent tes mineurs : 3 défenseurs partent les intercepter.',3,'#ff9a8a');
+    if(rd&&!ents.some(o=>!o.dead&&o.team===t&&o.hunt&&!o.hunt.dead&&o.hunt.raid)){
       ents.filter(o=>!o.dead&&o.type==='unit'&&o.team===t&&o.kind!=='miner'&&o.kind!=='champion'&&!o.retreat&&!o.raid&&!o.strike).sort((a,c)=>Math.abs(a.x-rd.x)-Math.abs(c.x-rd.x)).slice(0,3).forEach(o=>o.hunt=rd)}
     raider[t]=rd||null}}
 let intruder=[null,null],intruderT=0,raider=[null,null];
@@ -1105,7 +1107,9 @@ function updateUnit(e,dt){
   // hors combat, le golem allonge le pas : sinon toute l'armée, qui l'attend, met plus de 4 min à traverser la carte
   e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-6)/10,1,2.2)*(u.big?1.5:1):u.big?1.5:1;
   // en défense, on court intercepter tout intrus qui approche du cœur
-  if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else return engage(e,u,e.hunt,dt)}
+  if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else{const h=e.hunt,vy=h.y+h.h-(e.y+e.h);
+    // pillard loin au-dessus (chasseurs restés au fond d'une galerie) : on remonte en pilier vers lui au lieu de piétiner dessous
+    if(vy<-4*T&&Math.abs(h.x-e.x)<8*T&&(!u.ranged||vy<-7*T))return climbUp(e,dt,h.x+h.w/2);return engage(e,u,h,dt)}}
   // en défense, l'archer achève un blessé en repli qui se soigne près du cœur (sinon il revient plein de vie à la vague suivante)
   // (jusqu'à 34 cases : le repli rouge s'arrête ~18 cases derrière le front, soit 25-30 cases du cœur)
   if(b.order==='defend'&&u.ranged&&!e.retreat){const fl=ents.find(o=>o.type==='unit'&&o.team!==e.team&&!o.dead&&o.retreat&&o.hp<o.maxhp*.7&&Math.abs(o.x-home.x)<34*T&&Math.abs(o.y-e.y)<5*T);if(fl)return engage(e,u,fl,dt)}
