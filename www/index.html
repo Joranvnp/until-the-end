@@ -602,7 +602,7 @@ let lastEndChange=0,confetti=[],panelT=1,craftFx=0,endInfo={},fade=0,bloodNight=
 let paused=false,pauseHelp=false,endT=0,endState=null,panel=null, cursorItem=null, stats, ai, titleCam=0, hoverTile=null, mining=null;
 const DIFFS=[{n:'Paisible',inc:.55,core:1.3},{n:'Normal',inc:1,core:1},{n:'Brutal',inc:1.6,core:.85}];
 function newGame(d,dly=null,sv=false){
-  daily=dly;diff=d;surv=sv&&!dly;genWorld(dly?dly.seed:(Math.random()*1e9)|0);fade=1;bloodNight=-1;weather={rain:0,target:0,t:20,flash:0};corpses=[];pops=[];bombs=[];visualDebris.length=0;caveSpores.length=0;caveSpawn=0;PROF.games++;saveProf();
+  daily=dly;diff=d;surv=sv&&!dly;genWorld(dly?dly.seed:(Math.random()*1e9)|0);fade=1;bloodNight=-1;weather={rain:0,target:0,t:20,flash:0};corpses=[];pops=[];bombs=[];visualDebris.length=0;caveSpores.length=0;caveDrips.length=0;caveSpawn=0;PROF.games++;saveProf();
   ents=[];parts=[];arrows=[];floats=[];msgs=[];time=dayLen*.08;regrowT=0;panel=null;cursorItem=null;
   stats={mined:0,recruited:0,kills:0,start:time,obj:0,rk:{},chests:0,waves:0};
   bases=[0,1].map(t=>{const coreTx=t===0?19:WW-20;const core={type:'core',team:t,x:coreTx*T-3,y:BASE_GY*T-34,w:22,h:34,hp:0,maxhp:0,flash:0,anim:0};
@@ -1508,20 +1508,38 @@ function updateFx(dt){if(state==='title')titleT+=dt;else titleT=0;if(fade>0)fade
 const nightNo=()=>Math.floor(time/dayLen);
 const isBlood=()=>daylight()<.25&&(daily&&daily.mod.id==='blood'||nightNo()%4===3);
 // spores des grottes : hasard visuel indépendant, population bornée autour de la caméra
-const caveSpores=[],caveRand=mulberry(73519),caveColors=['#38ffd0','#b07cff','#ffcf6a'];let caveSpawn=0;
-function caveAir(x,y){const tx=Math.floor(x/T),ty=Math.floor(y/T);return tx>=0&&tx<WW&&ty>surf[tx]&&ty<WH&&getT(tx,ty)===AIR}
-function updateCaveSpores(dt){const cap=lowFx?30:60;
+const caveSpores=[],caveDrips=[],caveRand=mulberry(73519),caveColors=['#38ffd0','#b07cff','#ffcf6a'];let caveSpawn=0;
+function caveAir(x,y){const tx=Math.floor(x/T),ty=Math.floor(y/T);return tx>=0&&tx<WW&&ty>surf[tx]+3&&ty<WH&&getT(tx,ty)===AIR}
+function updateCaveSpores(dt){if(lowFx){caveSpores.length=0;caveDrips.length=0;caveSpawn=0;return}dt=Math.min(dt,.1);const cap=60;
   for(let i=caveSpores.length-1;i>=0;i--){const p=caveSpores[i];p.t+=dt;
     p.x+=dt*(p.vx+Math.sin(p.t*.8+p.phase)*2);p.y+=dt*(p.vy+Math.cos(p.t*.6+p.phase));
     if(p.t>p.life||p.x<cam.x-16||p.x>cam.x+VW+16||p.y<cam.y-16||p.y>cam.y+VH+16||!caveAir(p.x,p.y))caveSpores.splice(i,1)}
-  if(caveSpores.length>cap)caveSpores.length=cap;
+  // Gouttes suspendues, chute bornée puis éclaboussure de 2 à 4 pixels, sans toucher au terrain.
+  for(let i=caveDrips.length-1;i>=0;i--){const p=caveDrips[i];p.t+=dt;
+    if(p.s>0){p.s-=dt;if(p.s<=0){caveDrips.splice(i,1);continue}}
+    else if(p.t>p.h){p.vy=Math.min(90,p.vy+100*dt);p.y+=p.vy*dt;const tx=Math.floor(p.x/T),ty=Math.floor((p.y+2)/T),t=getT(tx,ty);
+      if(TD[t].solid||t===WATER){p.y=ty*T-2;p.s=.25}}
+    if(p.t>6||p.x<cam.x||p.x>=cam.x+VW||p.y<cam.y||p.y>=cam.y+VH)caveDrips.splice(i,1)}
+  // spores flottantes dans l'air des grottes
   caveSpawn=Math.min(caveSpawn+dt*24,4);
   while(caveSpawn>=1){caveSpawn--;if(caveSpores.length>=cap)continue;
     const x=cam.x+caveRand()*VW,y=cam.y+caveRand()*VH;if(!caveAir(x,y))continue;
-    caveSpores.push({x,y,vx:(caveRand()-.5)*3,vy:-.5-caveRand(),t:0,life:18+caveRand()*16,phase:caveRand()*Math.PI*2,col:caveColors[Math.floor(caveRand()*3)],size:caveRand()<.2?2:1})}}
+    caveSpores.push({x,y,vx:(caveRand()-.5)*3,vy:-.5-caveRand(),t:0,life:18+caveRand()*16,phase:caveRand()*Math.PI*2,col:caveColors[Math.floor(caveRand()*3)],size:caveRand()<.2?2:1})}
+  // quatre tuiles visibles sondées par image : les champignons lâchent des spores qui montent, les plafonds des gouttes
+  for(let k=0;k<4;k++){const tx=Math.floor((cam.x+caveRand()*VW)/T),ty=Math.floor((cam.y+caveRand()*VH)/T);
+    if(tx<0||tx>=WW||ty<=surf[tx]+3||ty>=WH-1)continue;const t=getT(tx,ty);
+    if(t===MUSH&&caveSpores.length<cap+10){const x=(tx+.2+caveRand()*.6)*T,y=ty*T-1;
+      if(caveAir(x,y))caveSpores.push({x,y,vx:(caveRand()-.5)*2,vy:-3-caveRand()*2,t:0,life:6+caveRand()*6,phase:caveRand()*Math.PI*2,col:'#38ffd0',size:1})}
+    if(caveDrips.length<12&&TD[t].solid&&(ty+1)*T>=cam.y&&(ty+1)*T+2<cam.y+VH&&getT(tx,ty+1)===AIR&&caveRand()<.025){const x=(tx+.2+caveRand()*.6)*T;
+      if(x>=cam.x&&x<cam.x+VW)caveDrips.push({x,y:(ty+1)*T,vy:0,t:0,h:.3+caveRand()*.5,s:0,n:2+Math.floor(caveRand()*3)})}}}
+function drawCaveDrips(g,cx,cy){if(lowFx)return;g.save();g.globalCompositeOperation='lighter';g.fillStyle='#a2d9ee';
+  for(const p of caveDrips){g.globalAlpha=p.s>0?p.s/.25*.5:.5;
+    if(p.s>0){const k=1-p.s/.25;for(let j=0;j<p.n;j++){const dx=(j-(p.n-1)/2)*2;
+      g.fillRect(Math.round(p.x-cx+dx*k),Math.round(p.y-cy-2*Math.sin(k*Math.PI)),1,1)}}
+    else g.fillRect(Math.round(p.x-cx),Math.round(p.y-cy),1,p.t<p.h?1:2)}g.restore()}
 // même pulsation pour le point lumineux et son halo diffus, avec apparition douce
 function drawCaveSpores(g,cx,cy,glow=false){if(glow&&lowFx)return;g.save();g.globalCompositeOperation='lighter';
-  for(let i=0;i<Math.min(caveSpores.length,lowFx?30:60);i++){const p=caveSpores[i],x=Math.round(p.x-cx),y=Math.round(p.y-cy);
+  for(let i=0;i<caveSpores.length;i++){const p=caveSpores[i],x=Math.round(p.x-cx),y=Math.round(p.y-cy);
     if(x<-16||x>VW+16||y<-16||y>VH+16)continue;
     const a=Math.min(1,p.t,p.life-p.t)*(.5+.3*Math.sin(p.t*1.6+p.phase));
     if(glow)halo(g,x,y,p.col,13,a*.18);else{g.globalAlpha=a;g.fillStyle=p.col;g.fillRect(x,y,p.size,p.size)}}g.restore()}
@@ -1849,7 +1867,7 @@ function drawGlowPass(g,cx,cy,box){if(!glowLayer||glowLayer.width!==VW||glowLaye
   if(!lowFx)for(const[col,dx]of[['#ff3355',-1],['#38ffff',1]]){t.globalCompositeOperation='copy';t.drawImage(glowLayer,0,0);t.globalCompositeOperation='multiply';t.fillStyle=col;t.fillRect(0,0,VW,VH);t.globalCompositeOperation='destination-in';t.drawImage(glowLayer,0,0);g.globalAlpha=.15;g.drawImage(glowTint,dx,0)}
   g.globalAlpha=.8;g.drawImage(glowLayer,0,0);g.restore()}
 // effets par-dessus le monde : anneaux, éclairs de pose, pluie, éclair d'orage, vignettes (dégâts, lune de sang, PV bas)
-function drawOverlays(g,cx,cy){drawCaveSpores(g,cx,cy);g.save();
+function drawOverlays(g,cx,cy){drawCaveSpores(g,cx,cy);drawCaveDrips(g,cx,cy);g.save();
   for(const q of pops){const k=1-q.t/q.max;
     if(q.ring){g.globalCompositeOperation='lighter';g.globalAlpha=(1-k)*.9;g.strokeStyle=q.col;g.lineWidth=2-k;g.beginPath();g.arc(Math.round(q.x-cx),Math.round(q.y-cy),2+q.r*Math.sqrt(k),0,7);g.stroke()}
     else if(q.flash){g.globalCompositeOperation='lighter';halo(g,q.x-cx,q.y-cy,'#fff0c0',90,(1-k))}
