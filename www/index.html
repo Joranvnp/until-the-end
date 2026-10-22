@@ -196,7 +196,7 @@ function makeTex(id,v){const s=id*97+v*13+3,stone=rockFn(PAL.stone,v),deep=rockF
     case STONE:return pixTile(stone,s);
     case DEEP:return pixTile((x,y)=>y===0||x===0?'#493489':(x+y+v*3)%12===0?'#30225c':INK,s);
     case BEDROCK:return pixTile((x,y)=>(x+y)%9===0?'#19152f':INK,s);
-    case CASTLE:return pixTile((x,y)=>x===0||y===0||x===15||y===15?'#798aff':x===y||x===15-y?'#3d5bd9':INK,s);
+    case CASTLE:return pixTile((x,y,r)=>{const top=y<7,h=top?y:y-7,j=top?x===0||x===9+s%3:x===4||x===12+s%2;if(h===0)return INK;if(h===(top?6:8))return '#1e2a6e';if(j)return INK;if(h===1)return '#798aff';if(x>1&&x<14){if(s%4===3&&x===7&&(y===11||y===12))return '#38ffd0';if(top&&y>=3&&y<=5&&x===5+(s%2)+(y===5?1:0)||!top&&y===9&&x===10+s%2)return INK;if(r()<.035)return '#5364bb'}return h===2?'#5364bb':'#1e2a6e'},s);
     case BRICK:return pixTile((x,y)=>y%8===0||(x+(y<8?0:8))%16===0?'#5a7cff':y%8===1?'#1e2a6e':INK,s);
     case PLANK:return pixTile((x,y)=>y%8===0?'#6876cd':(x+y)%16===0?'#302756':INK,s);
     case LOG:return pixTile((x,y)=>x<3||x>12?null:x===3||x===12?'#254f68':x===6&&y%9<6?'#183346':INK,s);
