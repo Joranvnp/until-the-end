@@ -1166,19 +1166,21 @@ const oreNeed=(b,t)=>{const h=b.storage[TD[t].drop]||0;return h<4?3:h<10?1.8:h>4
 // minerai inaccessible par le haut : une tuile indestructible (sol du château, socle) bouche la colonne
 function sealedFromAbove(x,y){for(let yy=Math.max(0,surf[x]-1);yy<y;yy++)if(TD[getT(x,yy)].hard===Infinity)return true;return false}
 function findOre(e,far){const b=bases[e.team],home=Math.floor((b.core.x+11)/T),dir=e.team===0?1:-1,champ=e.kind==='champion';let best=null,bs=-1;
+  // jamais de mine au pied de son propre cœur : le trou piégeait les défenseurs 10 blocs sous la base, incapables de la protéger
+  const nearHome=(x,y)=>Math.abs(x-home)<=9+Math.max(0,y-surf[x]);
   // le champion vide d'abord le filon où il se trouve (balayage local) au lieu de traverser la carte à chaque cible perdue
   if(champ){const ex=Math.floor((e.x+e.w/2)/T),ey=Math.floor((e.y+e.h/2)/T);
     for(let y=Math.max(1,ey-14);y<=Math.min(WH-4,ey+14);y++)for(let x=Math.max(2,ex-22);x<=Math.min(WW-3,ex+22);x++){const v=ORE_VAL[getT(x,y)];if(!v)continue;
-      if(y<surf[x]||sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;const sc=v/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+4);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
+      if(y<surf[x]||nearHome(x,y)||sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;const sc=v/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+4);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
     if(best)return best}
   // réserve de bois basse (un mineur coûte 8 bois, un archer 12, et seul le joueur en rapportait) : un mineur à la fois va abattre l'arbre le plus proche côté base
   if(!champ&&e.team===0&&b.storage.wood<24&&!ents.some(o=>o!==e&&o.team===e.team&&o.kind==='miner'&&!o.dead&&o.tgt?.wood)){
     for(let k=3;k<60;k++){const x=home+dir*k;if(x<2||x>WW-3)break;const y=surf[x]-1;if(getT(x,y)===LOG&&!e.bad?.has(x+','+y))return{tx:x,ty:y,wood:true}}}
   // suivre le filon : un minerai à portée de pioche (rayon 4 blocs) passe avant tout, il ne coûte presque aucun creusage
-  if(!far&&!champ){const ex=Math.floor((e.x+e.w/2)/T),ey=Math.floor((e.y+e.h/2)/T);for(let y=ey-3;y<=ey+4;y++)for(let x=ex-4;x<=ex+4;x++){const t=getT(x,y),v=ORE_VAL[t];if(!v||TD[t].tier>2||y<surf[x]||e.bad?.has(x+','+y))continue;
+  if(!far&&!champ){const ex=Math.floor((e.x+e.w/2)/T),ey=Math.floor((e.y+e.h/2)/T);for(let y=ey-3;y<=ey+4;y++)for(let x=ex-4;x<=ex+4;x++){const t=getT(x,y),v=ORE_VAL[t];if(!v||TD[t].tier>2||y<surf[x]||nearHome(x,y)||e.bad?.has(x+','+y))continue;
     const sc=v*oreNeed(b,t)/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+2);if(sc>bs){bs=sc;best={tx:x,ty:y}}}if(best)return best}
   for(let i=0;i<700;i++){const x=clamp(home+dir*RI(5,champ||far?150:70),2,WW-3),y=RI(surf[x]+1,Math.min(WH-4,surf[x]+(champ||far?34:20)));const t=getT(x,y),v=ORE_VAL[t];if(!v)continue;
-    if(!champ&&TD[t].tier>2)continue;if(sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;
+    if(!champ&&TD[t].tier>2)continue;if(nearHome(x,y)||sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;
     // coût depuis la position du mineur : un minerai à pic sous lui demande un long escalier (on descend d'un bloc par bloc de côté)
     const mx=Math.floor((e.x+e.w/2)/T),my=Math.floor((e.y+e.h-1)/T),steep=Math.max(0,(y-my)-Math.abs(x-mx));
     const d=Math.abs(x-home)*(champ?.35:1)*.6+Math.abs(x-mx)*.4+Math.abs(y-surf[clamp(x,0,WW-1)])*1.6+steep*3;const sc=v*(champ?1:oreNeed(b,t))/(d+12);if(sc>bs){bs=sc;best={tx:x,ty:y}}}
