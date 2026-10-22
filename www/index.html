@@ -999,6 +999,7 @@ function digStep(e,tx,ty,dt,collect){const id=getT(tx,ty),d=TD[id];if(!d.solid&&
 function navigate(e,tx,dt,mode='auto'){
   const cx=e.x+e.w/2;if(Math.abs(tx-cx)<3){e.vx*=.5;moveEnt(e,dt);return true}
   const dir=Math.sign(tx-cx);e.dir=dir;e.wantMove=true;e.vx=dir*uspd(e);moveEnt(e,dt);
+  if(e.onGround)bridgeAhead(e,dir,tx);
   if(!e.blocked||!e.onGround)return false;
   const ax=Math.floor((dir>0?e.x+e.w+1:e.x-1)/T),y0=Math.floor(e.y/T),y1=Math.floor((e.y+e.h-.01)/T),o0=Math.floor(e.x/T),o1=Math.floor((e.x+e.w-.01)/T),rows=y1-y0+1;
   if(mode!=='flat'){let h=0;while(h<3&&solidAt(ax,y1-h))h++;
@@ -1009,6 +1010,13 @@ function navigate(e,tx,dt,mode='auto'){
   else for(let y=y0;y<=y1;y++)list.push([ax,y]);
   for(const[x,y]of list){const r=digStep(e,x,y,dt,e.kind==='miner'||e.kind==='champion');if(r===0)return false;if(r<0){e.vy=-JUMP;return false}}
   e.vy=-JUMP*.95;return false}
+// pont : un trou de 1 à 4 cases barre la route (puits, escalier, cratère) et la cible est au-delà : on pose un bloc de terre
+// devant ses pieds plutôt que de tomber au fond (et de creuser pour en ressortir, ce qui laissait des fosses béantes)
+function bridgeAhead(e,dir,tx){const fx=Math.floor((dir>0?e.x+e.w+2:e.x-2)/T),fy=Math.floor((e.y+e.h+1)/T);
+  if(fx<1||fx>=WW-1||fy>=WH-2||dir*(tx-(fx*T+8))<T*1.5)return;const t=getT(fx,fy);if(!flowable(t)&&t!==WATER)return;
+  if(solidAt(fx,fy+1)||solidAt(fx,fy+2))return;let land=false;for(let k=1;k<=4&&!land;k++)land=solidAt(fx+dir*k,fy)&&!solidAt(fx+dir*k,fy-1);if(!land)return;
+  const px=fx*T,py=fy*T;for(const o of ents)if(o!==e&&!o.dead&&o.w&&o.x<px+T&&o.x+o.w>px&&o.y<py+T&&o.y+o.h>py)return;
+  setT(fx,fy,DIRT)}
 // monter à la verticale : creuser au-dessus de la tête, sauter, poser un bloc sous ses pieds (pilier)
 function climbUp(e,dt,cxT){const cx=e.x+e.w/2;e.vx=clamp((cxT-cx)*4,-uspd(e),uspd(e));e.dir=Math.sign(e.vx)||e.dir;moveEnt(e,dt);e.wantMove=true;
   if(!e.onGround)return;const o0=Math.floor(e.x/T),o1=Math.floor((e.x+e.w-.01)/T),y0=Math.floor(e.y/T),fy=Math.floor((e.y+e.h-.01)/T);
@@ -1254,7 +1262,11 @@ function updateGatherer(e,u,dt){
   const hx=core.x+11+(e.team===0?16:-16);
   // le danger est entre lui et la base (raid sur le chemin, siège) : il s'éloigne du danger au lieu de foncer dedans
   if(fleeing&&e.fleeFrom&&!e.fleeFrom.dead){const mx=e.x+e.w/2,d=e.fleeFrom.x+e.fleeFrom.w/2-mx;if(Math.sign(d)===Math.sign(hx-mx)&&Math.abs(d)<Math.abs(hx-mx)+3*T){navigate(e,clamp(mx-Math.sign(d)*8*T,8*T,(WW-8)*T),dt,'flat');return}}
-  if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');
+  // sous terre près de la base : on remonte d'abord en pilier là où l'on est (il rebouche sous ses pieds) ; avant, l'escalier
+  // de retour débouchait juste devant le cœur et y laissait une tranchée où le joueur tombait à chaque passage
+  const gx=Math.floor((e.x+e.w/2)/T),gd=Math.floor((e.y+e.h-1)/T)-surf[clamp(gx,0,WW-1)],hm=Math.floor(hx/T);
+  if(gd>1&&Math.abs(gx-hm)<14+gd)climbUp(e,dt,gx*T+8);
+  else if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');
   if(Math.abs(e.x+e.w/2-hx)<22&&Math.abs(e.y-core.y)<60){for(const k in e.carry)if(b.storage[k]!==undefined)b.storage[k]+=e.carry[k];
     if(e.team===0){const parts2=Object.entries(e.carry).filter(([,v])=>v>0).map(([k,v])=>v+' '+tr(IT[k].n).toLowerCase());if(parts2.length){toast('Un mineur rapporte : '+parts2.join(', '),3,'#9fd0ff');floatText(core.x+11,core.y-4,'+'+(e.carryN+(e.junk||0)),'#9fd0ff');if(onScreen(e))sfx.pick()}}
     e.carry={};e.carryN=0;e.junk=0;e.state='seek';e.tgt=null}}
