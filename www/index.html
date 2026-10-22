@@ -1770,6 +1770,7 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;
   // Reserve 50 px below/around the map for cores and two resource rows.
   const mapH=narrow?Math.max(6,Math.min(41,Math.floor(VH*.22)-50)):0;
   const mw=narrow?Math.min(VW-heroW-16,120,Math.floor(mapH*WW/WH)):Math.min(176,Math.floor(VW*.28)),mh=Math.round(mw*WH/WW),mx=VW-mw-6,my=6;
+  HL.map={x:mx-2,y:my-2,w:mw+4,h:mh+4};
   box(mx-2,my-2,mw+4,mh+4,'#05050c');ctx.imageSmoothingEnabled=false;ctx.drawImage(mmC,mx,my,mw,mh);
   const sc=mw/(WW*T);ctx.strokeStyle='#e8ecff99';ctx.lineWidth=1;ctx.strokeRect(mx+cam.x*sc,my+cam.y*sc,VW*sc,VH*sc);
   for(const e of ents){if(e.dead||(e.type!=='unit'&&e.type!=='player'&&e.type!=='core'&&e.type!=='monster'))continue;ctx.fillStyle=e.type==='player'?'#fff':e.team===0?COL.blue:e.team===1?COL.red:'#7ddf6a';const z=e.type==='core'?3:e.type==='player'?2:1.5;ctx.fillRect(mx+(e.x+e.w/2)*sc-z/2,my+(e.y+e.h/2)*sc-z/2,z,z)}
@@ -1929,7 +1930,11 @@ function toggleOrder(){const b=bases[0];b.order=b.order==='attack'?'defend':b.or
   toast({attack:'Tes troupes partent à l\'assaut du cœur rouge.',defend:'Tes troupes se regroupent devant ta base.',follow:'Tes troupes t\'escortent.'}[b.order],2.5,'#9fd0ff');sfx.place()}
 function togglePanel(n){panel=panel===n?null:n;cursorItem=null;panelT=0;sfx.place()}
 // le panneau reste au-dessus de la barre d'actions et, sur tactile, des boutons qu'il chevaucherait en largeur (si la place le permet)
-const panelY=(H,y,x,W)=>{let b=HL.barTop||VH;if(isTouch&&W)for(const t of touchLayout())if(t.x<x+W&&t.x+t.w>x&&t.y-H-3>=2)b=Math.min(b,t.y);return b-H-3>=2?Math.max(2,Math.min(y,b-H-3)):y};
+// petit panneau centré qui mord sur la minicarte : décalé vers la gauche s'il reste de la marge
+const panelX=(x,W,y)=>{const m=HL.map,o=m&&y<m.y+m.h?x+W+3-m.x:0;return o>0&&x-o>=4?x-o:x};
+// le panneau évite la minicarte (coin haut droit) s'il tient en dessous
+const panelY=(H,y,x,W)=>{let b=HL.barTop||VH;if(isTouch&&W)for(const t of touchLayout())if(t.x<x+W&&t.x+t.w>x&&t.y-H-3>=2)b=Math.min(b,t.y);if(b-H-3<2)return y;y=Math.max(2,Math.min(y,b-H-3));const m=HL.map;
+  if(m&&W&&x<m.x+m.w&&x+W>m.x&&y<m.y+m.h&&m.y+m.h+3+H<=b-3)y=m.y+m.h+3;return y};
 // tablette tactile : espace libre entre les commandes de gauche et de droite, pour y caler un panneau au lieu de les recouvrir
 function touchGap(){if(!isTouch)return null;const T=touchLayout();return{L:Math.max(0,...T.filter(t=>t.x<VW/2).map(t=>t.x+t.w)),R:Math.min(VW,...T.filter(t=>t.x>=VW/2).map(t=>t.x))}}
 function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
@@ -1972,7 +1977,7 @@ function drawCraftPanel(){const CW=250,av=(HL.barTop||VH)-6-30,
     const go=()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n,2,COL.gold)};cardHit(X+6,yy,CW-12,RH-2,go,ok);button(X+CW-46,yy+1,38,RH-4,'Créer',go,ok)})}
 function drawInvPanel(){
   // tactile : cases agrandies (36 px réels au lieu de 27 sur téléphone), icône centrée à sa taille nette
-  const sw=isTouch?clamp(Math.floor(Math.min((VW-24)/9,((HL.barTop||VH)-44)/4)),20,27):20,io=Math.floor((sw-18)/2),W=9*sw+12,H=4*sw+34,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-10,x,W);panelRect={x,y,w:W,h:H};
+  const sw=isTouch?clamp(Math.floor(Math.min((VW-24)/9,((HL.barTop||VH)-44)/4)),20,27):20,io=Math.floor((sw-18)/2),W=9*sw+12,H=4*sw+34,x=panelX(Math.round(VW/2-W/2),W,Math.round(VH/2-H/2)-10),y=panelY(H,Math.round(VH/2-H/2)-10,x,W);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Sac',x+8,y+6,COL.txt,10);txt(isTouch?'touche pour déplacer':'clique pour déplacer',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('inv'));
   for(let i=0;i<36;i++){const r=i<9?3:Math.floor((i-9)/9),c=i%9,xx=x+6+c*sw,yy=y+22+r*sw+(i<9?6:0),s=player.inv[i];
     box(xx,yy,sw-2,sw-2,i<9?'#0a0a14':COL.panel2,'#e8ecff33');if(s){ctx.drawImage(ICON[s.id],xx+1+io,yy+1+io);if(s.n>1)qty(s.n,xx+sw-4,yy+sw-11)}
