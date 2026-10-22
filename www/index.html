@@ -1648,6 +1648,28 @@ function drawGlows(g,cx,cy){g.save();g.globalCompositeOperation='lighter';
       halo(g,X,Y,ORE[t][1],t===CRYSTAL?28:16,exposed?.4:.07)}
     else if(t===CPLANT||t===PLANT||t===GRASS&&!TD[getT(x,y-1)].solid){halo(g,X,Y-(t===GRASS?16:0),t===PLANT&&(x*3+y)%4===1?'#ff6fae':'#38e5c8',16,.16)}}
   g.restore()}
+// Bancs de brume précalculés, dérive lente et teinte des lumières voisines.
+let mistSprites=null;
+function drawCaveMist(g,cx,cy){if(state==='title'||!fg||!surf)return;
+  if(!mistSprites)mistSprites=['#1a6f7a','#3b2a6e','#786044','#644582','#365b83','#327b70'].map((col,i)=>{
+    const c=mk(192,80),q=c.getContext('2d');q.scale(2.4,1);
+    const gr=q.createRadialGradient(36+i,40,0,40,40,40);gr.addColorStop(0,col);gr.addColorStop(.4,col+'aa');gr.addColorStop(1,col+'00');q.fillStyle=gr;q.fillRect(0,0,80,80);return c});
+  const reach=18*T,cap=lowFx?3:8;let n=0;
+  g.save();g.beginPath();
+  for(let tx=Math.max(0,Math.floor(cx/T));tx<=Math.min(WW-1,Math.floor((cx+VW)/T));tx++){const top=Math.max(0,(surf[tx]+1)*T-cy);if(top<VH)g.rect(tx*T-cx,top,T,Math.min(VH,WH*T-cy)-top)}
+  g.clip();g.globalCompositeOperation='screen';g.imageSmoothingEnabled=true;
+  for(let gy=Math.max(0,Math.floor((cy-reach)/(24*T)));gy<=Math.min(Math.floor((WH-1)/24),Math.floor((cy+VH+reach)/(24*T)))&&n<cap;gy++){
+    for(let gx=Math.max(0,Math.floor((cx-reach)/(24*T)));gx<=Math.min(Math.floor((WW-1)/24),Math.floor((cx+VW+reach)/(24*T)))&&n<cap;gx++){
+      const h=hash2(gx,gy+1703),tx=gx*24+Math.floor(h*24),ty=gy*24+Math.floor(hash2(gx+719,gy)*24);
+      if(tx>=WW||ty>=WH||ty<=surf[tx]+2||getT(tx,ty)!==AIR)continue;
+      const x=((tx+.5)*T-cx)*.85+Math.sin(time*.035+h*30)*T*1.5,y=(ty+.5)*T-cy;
+      const rx=(9+h*4)*T,ry=(3+h*2)*T;if(x+rx<0||x-rx>VW||y+ry<0||y-ry>VH)continue;
+      let open=0;for(let dy=-3;dy<=3;dy+=3)for(let dx=-3;dx<=3;dx+=3)if(getT(tx+dx,ty+dy)===AIR)open++;
+      const fade=clamp((ty-surf[tx]-2)/14,0,1);if(open<3)continue;
+      const k=idx(tx,ty),lit=lightTorch[k]>.12,ci=LCI[k],sprite=lit?(ci===0||ci===4?2:ci===1?3:ci===5?5:4):(h<.5?0:1);
+      g.globalAlpha=(.10+.08*open/9)*fade*(open/9);g.drawImage(mistSprites[sprite],x-rx,y-ry,rx*2,ry*2);n++;
+    }
+  }g.restore()}
 let VG=null,CRT=null,glowLayer=null,glowTint=null;
 function drawAtmos(g,cx,cy){
   // World-anchored, deterministic fireflies; no particle allocations or RNG mutations.
@@ -1698,7 +1720,7 @@ function render(){
     LWg.clearRect(0,0,VW,VH);LWg.imageSmoothingEnabled=false;
     drawWorld(LWg,cx,cy);if(player)drawEnts(LWg,cx,cy);drawParts(LWg,cx,cy);
     const box=buildLight(cx,cy);applyLight(LW,LMg,box);g.drawImage(LW,0,0);
-    drawGlowPass(g,cx,cy,box);drawAtmos(g,cx,cy);drawOverlays(g,cx,cy);
+    drawCaveMist(g,cx,cy);drawGlowPass(g,cx,cy,box);drawAtmos(g,cx,cy);drawOverlays(g,cx,cy);
     if(state==='play'&&hoverTile&&!panelBlocks()){g.strokeStyle='rgba(255,236,170,.75)';g.lineWidth=1;g.strokeRect(hoverTile.tx*T-cx+.5,hoverTile.ty*T-cy+.5,T-1,T-1)}
     // nombres flottants : petit saut à l'apparition, puis fondu
     for(const f of floats){const age=1-f.t,hop=age<.15?Math.sin(age/.15*Math.PI)*3:0;g.globalAlpha=clamp(f.t*2,0,1);wtxt(g,f.s,Math.round(f.x-cx+(f.dx||0)*age*14),Math.round(f.y-cy-hop),f.col,f.big?14:7)}g.globalAlpha=1}
