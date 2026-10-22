@@ -1108,7 +1108,12 @@ function updateUnit(e,dt){
   // armée en marche tombée dans une grotte : elle remonte vers la surface au lieu de traverser la carte sous terre
   // (sinon les deux armées se croisent à 50 blocs d'écart sans jamais se battre et chacune rase un cœur sans défense)
   if(b.order==='attack'&&!follow){const col=clamp(Math.floor((e.x+e.w/2)/T),0,WW-1),fwd=e.team===0?1:-1;
-    if((e.y+e.h)/T>surf[col]+6&&Math.abs(bases[1-e.team].core.x-e.x)>30*T)return climbUp(e,dt,e.x+e.w/2+fwd*T*1.5)}
+    const deep=(e.y+e.h)/T-surf[col];
+    if(deep>3.5&&Math.abs(bases[1-e.team].core.x-e.x)>30*T){
+      // pas de progrès vers la surface : on tente de l'autre côté, puis l'unité déserte (sinon elle sautille au fond pour toujours)
+      if(e.cBest==null||time-e.cLast>3||deep<e.cBest-1){e.cBest=deep;e.cT=0}else e.cT+=dt;e.cLast=time;
+      if(e.cT>30&&e.kind!=='champion'){e.dead=true;burst(e.x+e.w/2,e.y+e.h/2,'#c9c0d8',8,50,200,.6);return}
+      return climbUp(e,dt,e.x+e.w/2+(e.cT>12?-fwd:fwd)*T*1.5)}}
   if(b.order==='attack'&&!follow&&armyMid[e.team]!=null){const fwd=e.team===0?1:-1,ahead=(e.x-armyMid[e.team])*fwd,toCore=Math.abs(bases[1-e.team].core.x-e.x);
     // seuil propre à chaque unité (3 à 9 blocs) : la tête s'étale en colonne au lieu de s'empiler sur un pixel
     // on attend l'arrière-garde 12 s au plus, puis on repart sans se ré-arrêter avant 25 s (sinon l'armée piétine indéfiniment)
