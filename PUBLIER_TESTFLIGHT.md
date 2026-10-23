@@ -1,7 +1,7 @@
 # Publier Until The End sur TestFlight (iPhone / iPad)
 
 L'appli iOS est un projet **Capacitor 8** (dossier `ios/`, Swift Package Manager, pas de CocoaPods) qui embarque le jeu web (`www/`).
-Identifiant : `com.joranvnp.untiltheend` (le même que sur Android). Version **1.2.0**, build **3**.
+Identifiant : `com.joranvnp.untiltheend` (le même que sur Android). Version **1.2.0**, build **4**.
 Déjà créés le 2026-10-23 : l'identifiant de lot sur developer.apple.com et l'app « Until The End » sur App Store Connect (Team `BN6HZGJYZL`, réglé dans le projet).
 
 Déjà réglé dans le projet :
