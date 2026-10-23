@@ -1,7 +1,7 @@
 # Until The End — version web
 
 Jeu 2D pixel art façon Terraria, en un seul fichier `www/index.html` (HTML + JavaScript, aucune dépendance, aucun build).
-Emballé pour Android avec Capacitor (`android/`, `capacitor.config.json`) : voir `PUBLIER_PLAY_STORE.md`.
+Emballé avec Capacitor pour Android (`android/`, voir `PUBLIER_PLAY_STORE.md`) et iOS (`ios/`, voir `PUBLIER_TESTFLIGHT.md`). La toile respecte la zone sûre iPhone (CSS `env(safe-area-inset-*)`, `resize()` mesure la toile).
 Inspiré du projet LÖVE2D d'origine (`3 - Projets/until-the-end` sur Google Drive) et de son document `UNTIL_THE_END_Reference_Complète.md`.
 
 ## Lancer

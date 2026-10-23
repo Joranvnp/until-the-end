@@ -7,5 +7,12 @@
     "backgroundColor": "#0b0a16",
     "allowMixedContent": false,
     "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "backgroundColor": "#0b0a16",
+    "contentInset": "never",
+    "scrollEnabled": false,
+    "allowsLinkPreview": false,
+    "preferredContentMode": "mobile"
   }
 }
