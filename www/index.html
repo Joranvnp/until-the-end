@@ -218,7 +218,8 @@ function makeTex(id,v){const s=id*97+v*13+3,stone=rockFn(PAL.stone,v),deep=rockF
       if(y===5||y===15||x===2||x===13)return '#3a2140';if(y===9)return '#ffcf47';
       if(x>=7&&x<=8&&y>=8&&y<=11)return y===10?'#05050c':'#fff6ad';
       return y<9?(y===6?'#c0795a':'#9a5440'):(x%4===0?'#6b3a3a':'#8a4a44')},s),INK);
-    case CRYSTAL:return pixTile((x,y)=>orePixel(id,x,y,v)||deep(x,y),s);
+    // Cristal posé sur la roche profonde à facettes (plus de cadre violet).
+    case CRYSTAL:return pixTile((x,y)=>orePixel(id,x,y,v)||((x+Math.floor(y/3)+v*5)%13===0&&y>2&&y<14?'#21182f':(y+v*3)%11===3&&x>2&&x<12?'#56406f':'#271d3b'),s);
     default:return pixTile((x,y)=>orePixel(id,x,y,v)||(id===GOLD||id===DIAMOND?deep(x,y):stone(x,y)),s);
   }
 }
