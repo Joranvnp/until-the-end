@@ -383,7 +383,7 @@ function charSet(o){const fr={walk:[],idle:[],jump:null,atk:null},lf=[1,2,1,-1,-
   for(let i=0;i<6;i++)fr.walk.push(humanoid(o,{lf:lf[i],bob:bob[i]}));
   fr.idle=[0,1].map(b=>humanoid(o,{lf:0,bob:b}));fr.jump=humanoid(o,{lf:1,bob:0,jump:true});fr.wind=humanoid(o,{lf:-1,bob:0,wind:true});fr.atk=humanoid(o,{lf:0,bob:1,atk:true});
   return{R:fr,L:{walk:fr.walk.map(flipC),idle:fr.idle.map(flipC),jump:flipC(fr.jump),atk:flipC(fr.atk),wind:flipC(fr.wind)}}}
-function golemSet(eye){const mkF=(f,attack=false,jump=false)=>{const c=mk(20,26),P=pen(c.getContext('2d')),rim='#b5a0ffa8',body='#6658b5ad',lo='#40346b99';
+function golemSet(eye,team){const mkF=(f,attack=false,jump=false)=>{const c=mk(20,26),P=pen(c.getContext('2d')),rim=team?'#ffa0a8a8':'#9fd0ffa8',body=team?'#a8404fad':'#3f6fc0ad',lo=team?'#5f243099':'#24406f99';
   const x=3+(attack?1:0),y=jump?8:11+Math.abs(f),w=14,h=24-y;
   for(let j=0;j<h;j++){const inset=j===0||j===h-1?3:j===1||j===h-2?1:0;
     P(x+inset,y+j,w-inset*2,1,j>h-4?lo:body);P(x+inset,y+j,1,1,rim);P(x+w-inset-1,y+j,1,1,rim)}
@@ -486,7 +486,7 @@ function buildSprites(){
     SPR['warrior'+t]=charSet({...base,role:'warrior',helm:'#52647c',plume:tc,trim:'#a6bcc9'});
     SPR['archer'+t]=charSet({...base,role:'archer',hood:t?'#783e52':'#35587b'});
     SPR['miner'+t]=charSet({...base,role:'miner',hard:'#bb904f',beard:'#684b55'});
-    SPR['golem'+t]=golemSet(tc);SPR['core'+t]=coreSprite(tc);SPR['castle'+t]=castleSprite(t);
+    SPR['golem'+t]=golemSet(tc,t);SPR['core'+t]=coreSprite(tc);SPR['castle'+t]=castleSprite(t);
     for(const k of['saw','mine'])for(const l of[1,2,3])SPR[k+l+'_'+t]=buildingSprite(k,t,l);
     for(const k of['tower','core','dmg','speed'])for(const l of[1,2,3])SPR['add_'+k+l+'_'+t]=castleAddon(k,t,l)}
   SPR.champion0=charSet({role:'champion',tunic:'#4f9df5'});
