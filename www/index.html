@@ -240,11 +240,19 @@ function buildTextures(){
   // Cache exposed/buried terrain separately: bury the host rock, not its ore.
   SPR.buried={};SPR.oreGlint={};
   const minerals=[COAL,COPPER,IRON,SILVER,GOLD,DIAMOND];
-  const terrain=[DIRT,GRASS,STONE,DEEP,...minerals];
+  const terrain=[DIRT,GRASS,STONE,SNOW,DEEP,...minerals];
   for(const id of terrain){SPR.buried[id]=[];
     for(let v=0;v<4;v++){
       const earthy=id===DIRT||id===GRASS,deep=id===DEEP||id===GOLD||id===DIAMOND;
       const host=pixTile((x,y)=>{
+        // Roche glacée sans cadre ; givre réservé à la surface.
+        if(id===SNOW){
+          if(x>1&&x<14){
+            if(x===4+v&&y===5+v%2||x===11-v&&y===11-v%3)return '#7fa6c8';
+            if((x+Math.floor(y/3)+v*5)%13===0&&y>3&&y<14)return '#1b293e';
+            if((y+v*3)%11===3&&x>3&&x<12)return '#4a6488';
+          }return '#2b3a55';
+        }
         if(earthy){
           const seam=(y+((x+v*3)>>2)%3)%7;
           if(seam===0&&((x+v*5)%11)<8)return '#624538';
@@ -261,6 +269,10 @@ function buildTextures(){
       for(let buried=0;buried<2;buried++){
         const c=mk(16,16),q=c.getContext('2d'),P=pen(q);q.drawImage(host,0,0);
         if(buried){q.fillStyle='rgba(6,6,15,.48)';q.fillRect(0,0,16,16)}
+        if(id===SNOW&&!buried)for(let x=0;x<16;x++){
+          const h=x<2||x>13?2:1+((x+v*3)/3|0)%3;
+          P(x,0,1,h,'#88e5ec');P(x,0,1,1,'#c9f3ff');P(x,h,1,1,'#467caa');
+        }
         if(id===GRASS){P(0,0,16,1,'#63ebca');for(let x=v;x<16;x+=4)P(x,1,1,1,'#236f72')}
         if(minerals.includes(id)){
           const p=id===COAL?['#161922','#657180','#b1bdc7']:ORE[id];
