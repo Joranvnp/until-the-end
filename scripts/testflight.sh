@@ -10,3 +10,13 @@ npx cap sync ios
 cd ios/App
 xcodebuild -project App.xcodeproj -scheme App -configuration Release -destination generic/platform=iOS -archivePath build/UntilTheEnd.xcarchive $AUTH archive
 xcodebuild -exportArchive -archivePath build/UntilTheEnd.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath build/export $AUTH
+
+# Une fois le build traité par Apple, le donner au groupe de testeurs internes « Moi » (outil asc, déjà connecté avec la même clé).
+BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION' App.xcodeproj/project.pbxproj | tr -dc '0-9')
+command -v asc >/dev/null || { echo "asc absent : ajoute le build $BUILD au groupe « Moi » dans App Store Connect > TestFlight"; exit 0; }
+echo "Attente du traitement du build $BUILD par Apple…"
+for i in $(seq 60); do
+  asc builds add-groups --app 6826313116 --build-number "$BUILD" --platform IOS --group Moi >/dev/null 2>&1 && { echo "Build $BUILD disponible dans TestFlight."; exit 0; }
+  sleep 30
+done
+echo "Toujours en traitement : ajoute le build $BUILD au groupe « Moi » dans App Store Connect > TestFlight."
