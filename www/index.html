@@ -1018,7 +1018,12 @@ function hurt(e,dmg,src){
   // cœur bleu : dégâts plafonnés par seconde (une vague ne le rase plus en 10 s) et onde de choc sous la moitié des PV
   if(e.type==='core'&&e.team===0&&src&&src.type!=='player'){if(!(e.capT>time-1)){e.capT=time;e.capD=0}const cap=[45,60,75][diff];dmg=Math.min(dmg,Math.max(0,cap-e.capD));e.capD+=dmg;
     if(e.hp-dmg<e.maxhp*.5&&!(e.waveT>time-90)){e.waveT=time;coreShock(e)}if(dmg<=0)return}
-  dmg=Math.round(dmg);e.hp-=dmg;e.flash=.12;e.hitVisualDir=src?(Math.sign(e.x-src.x)||1):0;{const ft=e.dmgFt,fy=e.y-(e.kind==='champion'?19:2);if(ft&&ft.t>.55){ft.n+=dmg;ft.s='-'+ft.n;ft.big=ft.n>=30;ft.x=e.x+e.w/2;ft.y=clamp(ft.y,fy-8,fy);ft.t=Math.min(1,ft.t+.2)}else{floatText(e.x+e.w/2,fy,'-'+dmg,e.team===0?'#ff8a7a':'#ffe08a',dmg>=30);e.dmgFt=floats[floats.length-1];e.dmgFt.n=dmg}}if(src===player&&e.type!=='core')hitStop=Math.max(hitStop,dmg>=30?.07:.035);
+  dmg=Math.round(dmg);e.hp-=dmg;e.flash=.12;e.hitVisualDir=src?(Math.sign(e.x-src.x)||1):0;{const fy=e.y-(e.kind==='champion'?19:2),col=e.team===0?'#ff8a7a':'#ffe08a',pl=src===player,ex=e.x+e.w/2;let ft=e.dmgFt;
+    // mêlée entre unités : on additionne au chiffre récent le plus proche du même camp au lieu d'empiler un chiffre par unité ;
+    // seuls les coups du joueur gardent le grand format
+    if(!(ft&&ft.t>.55)&&!pl){ft=null;let bd=22;for(const f of floats)if(f.n&&!f.pl&&f.col===col&&f.t>.45){const d=Math.abs(f.x-ex)+Math.abs(f.y-fy)*.7;if(d<bd){bd=d;ft=f}}}
+    if(ft&&ft.t>.45){ft.n+=dmg;ft.s='-'+ft.n;ft.big=ft.pl&&ft.n>=30;if(ft===e.dmgFt)ft.x=ex;ft.y=clamp(ft.y,fy-8,fy);ft.t=Math.min(1,ft.t+.2);e.dmgFt=ft}
+    else{floatText(ex,fy,'-'+dmg,col,pl&&dmg>=30);e.dmgFt=floats[floats.length-1];e.dmgFt.n=dmg;e.dmgFt.pl=pl}}if(src===player&&e.type!=='core')hitStop=Math.max(hitStop,dmg>=30?.07:.035);
   if(src&&e.type!=='core'){const dir=Math.sign((e.x+e.w/2)-(src.x+(src.w||0)/2))||1;const kb=(src.type==='player'?120:src.kind==='golem'?150:30)*(e.kind==='golem'?.3:1);e.vx+=dir*kb;if(kb>60)e.vy=Math.min(e.vy,-110)}
   burst(e.x+e.w/2,e.y+e.h/2,e.type==='core'?(e.team?'#ff8a7a':'#8ac4ff'):'#e8364b',4,50,300,.4);
   if(e.type==='core'){shake=Math.max(shake,2);if(e.team===0&&(!e.alertT||e.alertT<time)){e.alertT=time+12;toast('Ton cœur est attaqué !',3,'#ff8a7a');buzz(120)}}
