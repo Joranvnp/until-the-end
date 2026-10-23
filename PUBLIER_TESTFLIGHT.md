@@ -2,6 +2,7 @@
 
 L'appli iOS est un projet **Capacitor 8** (dossier `ios/`, Swift Package Manager, pas de CocoaPods) qui embarque le jeu web (`www/`).
 Identifiant : `com.joranvnp.untiltheend` (le même que sur Android). Version **1.2.0**, build **3**.
+Déjà créés le 2026-10-23 : l'identifiant de lot sur developer.apple.com et l'app « Until The End » sur App Store Connect (Team `BN6HZGJYZL`, réglé dans le projet).
 
 Déjà réglé dans le projet :
 - l'icône (1024 px, sans transparence) et l'écran de démarrage, générés par `npm run assets` ;
@@ -39,11 +40,11 @@ Le mode développeur doit être activé : sur l'iPhone, **Réglages > Confidenti
 3. Clique **Distribute App**, puis **TestFlight & App Store** (ou **App Store Connect > Upload**).
 4. Laisse les options par défaut et clique **Upload**.
 
-En ligne de commande (même résultat, une fois le Team réglé dans Xcode) :
+En ligne de commande, une fois ton identifiant Apple ajouté dans Xcode > Settings > Accounts :
 ```bash
-npm run ipa        # produit ios/App/build/UntilTheEnd.xcarchive
+npm run testflight # archive puis envoie le build sur App Store Connect
 ```
-Ensuite, ouvre l'archive dans Xcode (**Window > Organizer**) et clique **Distribute App**.
+(`npm run ipa` fait seulement l'archive `ios/App/build/UntilTheEnd.xcarchive`.)
 
 ## 4. Inviter des testeurs
 App Store Connect > ton app > **TestFlight**. Le build apparaît après 5 à 30 min de traitement.
