@@ -2096,6 +2096,13 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;
      lab=Math.round(c.hp/c.maxhp*100)+' % · '+Math.round(Math.abs(c.x-player.x)/T)+' CASES',w=Math.max(70,uiWidth(lab,7)+32,uiWidth(tr('CŒUR ATTAQUÉ'),7)+32),mx=x0=>x0+w/2+(left?5:-5),y=Math.round(VH*.42),x=left?6:VW-6-w;
     box(x,y,w,26,COL.panel,col);txt(left?'◀':'▶',left?x+5:x+w-5,y+9,col,7,left?'left':'right');txt('CŒUR ATTAQUÉ',mx(x),y+4,col,7,'center');txt(lab,mx(x),y+14,COL.txt,7,'center');
     if(!panel)uiHits.push({x,y,w,h:26,fn:()=>{sfx.place();toast(waveExplain(ai?.intel||{}),5,col)}})}}
+  // ennemis hors champ (≤ 60 cases) : repère au bord avec leur nombre et la distance du plus proche (en portrait, on ne voit que ~16 cases)
+  if(!panel&&!(b0.core.hitT&&time-b0.core.hitT<3)){const sides=[{n:0,d:1e9,y:0},{n:0,d:1e9,y:0}];
+    for(const e of ents){if(e.dead||e.type!=='unit'||e.team!==1)continue;const sx=e.x+e.w/2-cx;if(sx>=-2&&sx<=VW+2)continue;
+      const s=sides[sx<0?0:1],d=sx<0?-sx:sx-VW;if(d>60*T)continue;s.n++;if(d<s.d){s.d=d;s.y=e.y+e.h/2-cam.y}}
+    sides.forEach((s,i)=>{if(!s.n)return;const tiles=Math.max(1,Math.round(s.d/T)),near=tiles<=12,col=near&&Math.sin(time*8)>0?'#ff9a8a':COL.red,
+      lab=s.n+' · '+tiles+' CASES',w=uiWidth(lab,7)+14,y=Math.round(clamp(s.y-5,VH*.3,VH*.62)),x=i?VW-4-w:4;
+      box(x,y,w,11,COL.panel,col);txt(i?'▶':'◀',i?x+w-3:x+3,y+2,col,7,i?'right':'left');txt(lab,i?x+w-11:x+11,y+2,col,7,i?'right':'left')})}
   // Read-only enemy intel; measure bitmap text and anchor the strip to the HUD margin.
   const intel=ai?.intel,waveVisible=intel&&['gather','march','defend'].includes(intel.phase),waveGap=waveVisible?6:0;
   if(waveVisible){const gathering=intel.phase==='gather',marching=intel.phase==='march';
