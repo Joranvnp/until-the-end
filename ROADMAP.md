@@ -28,6 +28,11 @@
 - [x] Défi du jour : monde et règle spéciale communs (filons généreux, nuits rouges, rouge enragé, trésor royal, cœurs de verre) + série de jours
 - [x] Réglages : son, musique, vibrations, secousses, effet rétro, commandes gaucher
 
+### iOS / App Store
+- [x] Projet iOS Capacitor 8 (iPhone + iPad), zone sûre (encoche), barre de statut masquée, son relancé après interruption, haptique iPhone
+- [x] GitHub Actions : compilation à chaque push + envoi TestFlight sans Mac (clé d'API App Store Connect)
+- [x] Captures App Store iPhone 6,9" et iPad 13" (français et anglais), guide `PUBLIER_APP_STORE.md`
+
 ### Mobile / Play Store
 - [x] Projet Android Capacitor 8 (SDK 36), plein écran immersif, écran toujours allumé
 - [x] Bouton retour Android (ferme panneau → pause → menu → quitter), pause + sauvegarde en arrière-plan

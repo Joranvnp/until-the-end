@@ -1,11 +1,11 @@
 # Until The End — version web
 
 Jeu 2D pixel art façon Terraria, en un seul fichier `www/index.html` (HTML + JavaScript, aucune dépendance, aucun build).
-Emballé pour Android avec Capacitor (`android/`, `capacitor.config.json`) : voir `PUBLIER_PLAY_STORE.md`.
+Emballé pour Android et iOS avec Capacitor (`android/`, `ios/`, `capacitor.config.json`) : voir `PUBLIER_PLAY_STORE.md` et `PUBLIER_APP_STORE.md`.
 Inspiré du projet LÖVE2D d'origine (`3 - Projets/until-the-end` sur Google Drive) et de son document `UNTIL_THE_END_Reference_Complète.md`.
 
 ## Lancer
-Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx cap sync android` (fait aussi par la CI). Pour les tests headless : `npx playwright` avec Chromium.
+Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx cap sync` (fait aussi par la CI, workflows Android et iOS). Pour les tests headless : `npx playwright` avec Chromium.
 
 ## Priorités de l'auteur
 1. Fonctionnalités et interface : tout lisible et utilisable sur téléphone (portrait/paysage), tablette et ordinateur.
@@ -23,7 +23,7 @@ Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx ca
 - INTERFACE : HUD adaptatif (drawHUD, mode large/étroit), panneaux Base/Forge/Sac, menu pause, contrôles tactiles.
 
 ## Visuels
-`npm run art` régénère icônes, écran de démarrage et visuels Play Store (`tools/gen-art.mjs`), puis `npm run assets` pour Android.
+`npm run art` régénère icônes, écran de démarrage et visuels Play Store (`tools/gen-art.mjs`), puis `npm run assets` pour Android et iOS (captures App Store dans `store/ios/`, anglais dans `store/en/`).
 
 ## Tests utilisés
 - Simulation accélérée : `__game.newGame(1)` puis `__game.step(n)` (exposé sur window pour les tests ; `__game.dbg` donne accès à la météo, aux bombes, aux succès et aux panneaux).

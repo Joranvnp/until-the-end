@@ -11,6 +11,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_KEYSTORE: ${{ secrets.UTE_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -34,7 +36,7 @@ jobs:
       - name: Clé de signature (si configurée)
         env:
           KEYSTORE_BASE64: ${{ secrets.UTE_KEYSTORE_BASE64 }}
-        if: env.KEYSTORE_BASE64 != ''
+        if: env.HAS_KEYSTORE == 'true'
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
           echo "UTE_KEYSTORE_PATH=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
