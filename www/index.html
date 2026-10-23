@@ -2252,19 +2252,21 @@ function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0
   const units=['Mineur : creuse et rapporte le minerai. Fuit les pillards vers la tour.','Guerrier : mêlée solide. Archer : tire de loin, recule au contact.','Golem : colosse lent qui brise tout, idéal contre le cœur.','Contres (+40 % dégâts) : guerrier > golem > archer > guerrier.','Tour de guet : tire sur les ennemis proches de ton cœur. Améliore-la à la base.','',
     'Défense : tes troupes tiennent une ligne devant le cœur, sous la tour, archers en retrait derrière les guerriers. 3 d\'entre elles chassent les pillards.','Assaut : l\'armée marche groupée vers le cœur rouge.','Suivre : tes troupes t\'escortent partout.','Blessées, les unités reculent pour souffler, puis reviennent au combat (sauf le golem).'];
   const lines=pauseHelp?(pauseHelp===2?units:[...goal,'',...help]).flatMap(l=>l?wrapLines(l,W-16,7):['']):[];
-  const PB=menuBH(6,64),H=pauseHelp?30+lines.length*10+24:24+6*(PB+4)+40,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
+  const PB=menuBH(6,64),H=pauseHelp?30+lines.length*10+24:24+5*(PB+4)+40,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   box(x,y,W,H);txt(pauseHelp===2?'Unités et ordres':pauseHelp?'Aide':'Pause',x+W/2,y+7,COL.txt,10,'center');
   if(pauseHelp){lines.forEach((l,i)=>txt(l,x+8,y+24+i*10,COL.txt,7));
     button(x+W/2-78,y+H-20,76,15,pauseHelp===2?'← Commandes':'Unités →',()=>{pauseHelp=pauseHelp===2?1:2;sfx.place()});button(x+W/2+2,y+H-20,76,15,'Retour',()=>{pauseHelp=false})}
   else{const bw=W-24,bx=x+12;
+    // triche (dev) cachée : touche F9, ou 5 tapes rapides sur le titre « Pause » (tactile)
+    uiHits.push({x:x+W/2-30,y,w:60,h:20,fn:()=>{const nw=performance.now()/1000;cheatTaps=nw-cheatTapT<1.5?cheatTaps+1:1;cheatTapT=nw;if(cheatTaps>=5){cheatTaps=0;openCheat()}}});
     button(bx,y+24,bw,PB,'Reprendre',()=>{paused=false});
     button(bx,y+24+(PB+4),bw,PB,'Réglages',()=>{menuPanel='set';panelT=0;sfx.place()});
     button(bx,y+24+2*(PB+4),bw,PB,'Aide et commandes',()=>{pauseHelp=1});
     button(bx,y+24+3*(PB+4),bw,PB,'Succès '+Object.keys(PROF.ach).length+'/'+ACH.length,()=>{menuPanel='ach';panelT=0;sfx.place()});
-    button(bx,y+24+4*(PB+4),bw,PB,'Triche (dev)',()=>{menuPanel='cheat';panelT=0;sfx.place()});
-    button(bx,y+24+5*(PB+4),bw,PB,'Sauvegarder et quitter',()=>{saveGame();paused=false;panel=null;state='title'});
+    button(bx,y+24+4*(PB+4),bw,PB,'Sauvegarder et quitter',()=>{saveGame();paused=false;panel=null;state='title'});
     txt(daily?'Défi du jour : '+daily.mod.n:surv?'Siège · vague '+(stats.waves+1):'Difficulté '+DIFFS[diff].n,x+W/2,y+H-36,daily?COL.gold:COL.dim,6,'center');
     txt('Partie sauvegardée toutes les 20 s',x+W/2,y+H-22,COL.dim,6,'center')}}
+let cheatTaps=0,cheatTapT=-9;const openCheat=()=>{paused=true;pauseHelp=false;menuPanel='cheat';panelT=0;sfx.place()};
 const ORDERS={attack:'Assaut',defend:'Défense',follow:'Suivre'};
 // ton assaut tourne mal (comme l'IA rouge qui se replie à 30 %) : on te le dit une fois, avec quoi faire
 let aslT=0;
@@ -2612,6 +2614,7 @@ cv.addEventListener('wheel',ev=>{if(state!=='play')return;ev.preventDefault();pl
 addEventListener('keydown',ev=>{keys[ev.code]=true;audioInit();
   if(ev.code==='Escape'&&menuPanel){menuPanel=null;return}
   if(state!=='play')return;
+  if(ev.code==='F9'){ev.preventDefault();if(menuPanel==='cheat'){menuPanel=null;paused=false}else openCheat();return}
   if(ev.code.startsWith('Digit')){const n=+ev.code.slice(5);if(n>=1&&n<=9)player.sel=n-1}
   if(paused&&ev.code!=='Escape'&&ev.code!=='KeyP')return;
   if(ev.code==='KeyB')togglePanel('base');if(ev.code==='KeyC')togglePanel('craft');if(ev.code==='KeyE'||ev.code==='KeyI')togglePanel('inv');
