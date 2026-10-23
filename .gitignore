@@ -11,3 +11,7 @@ keystore.properties
 
 # iOS (généré)
 ios/App/build/
+
+# Clé d API App Store Connect (locale)
+ios/asc.env
+*.p8

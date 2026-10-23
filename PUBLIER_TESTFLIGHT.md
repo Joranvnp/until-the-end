@@ -40,10 +40,12 @@ Le mode développeur doit être activé : sur l'iPhone, **Réglages > Confidenti
 3. Clique **Distribute App**, puis **TestFlight & App Store** (ou **App Store Connect > Upload**).
 4. Laisse les options par défaut et clique **Upload**.
 
-En ligne de commande, une fois ton identifiant Apple ajouté dans Xcode > Settings > Accounts :
+En ligne de commande, sans compte dans Xcode, avec une clé d'API App Store Connect :
+crée `ios/asc.env` (non versionné) avec `ASC_KEY_PATH` (chemin du fichier .p8), `ASC_KEY_ID` et `ASC_ISSUER_ID`, puis :
 ```bash
 npm run testflight # archive puis envoie le build sur App Store Connect
 ```
+Le build arrive dans le groupe de testeurs internes « Moi » de TestFlight après le traitement par Apple.
 (`npm run ipa` fait seulement l'archive `ios/App/build/UntilTheEnd.xcarchive`.)
 
 ## 4. Inviter des testeurs
