@@ -1272,9 +1272,9 @@ function updateUnit(e,dt){
   // en défense on tient sous la tour : pas de poursuite au-delà de sa portée (sauf si on est soi-même au contact)
   if(tgt&&b.order==='defend'&&!underTower(b,tgt)&&Math.hypot(tgt.x-e.x,tgt.y-e.y)>40)tgt=null;
   if(tgt)return engage(e,u,tgt,dt);
-  // escorte distancée : elle sprinte pour rattraper le joueur (il court 2× plus vite qu'une unité)
+  // escorte distancée : elle sprinte pour rattraper le joueur (il court 2× plus vite qu’une unité ; à fond dès 11 cases d’écart, sinon elle traîne hors de l’écran)
   // hors combat, le golem allonge le pas : sinon toute l'armée, qui l'attend, met plus de 4 min à traverser la carte
-  e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-6)/10,1,2.2)*(u.big?1.5:1):u.big?1.5:1;
+  e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-4)/4,1,2.8)*(u.big?1.5:1):u.big?1.5:1;
   // en défense, on court intercepter tout intrus qui approche du cœur
   if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else{const h=e.hunt,vy=h.y+h.h-(e.y+e.h);
     // pillard loin au-dessus (chasseurs restés au fond d'une galerie) : on remonte en pilier vers lui au lieu de piétiner dessous
