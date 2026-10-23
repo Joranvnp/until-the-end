@@ -1202,7 +1202,7 @@ function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-
     if(vy<-T*.8)return climbUp(e,dt,tgt.x+tgt.w/2)}
   navigate(e,tgt.x+tgt.w/2,dt,e.stuck>=2?(tgt.y<e.y-20?'climb':'flat'):'auto');
   if(e.stuck>=3){e.ignore=tgt;e.ignoreT=time+10;e.stuck=1}}
-let armyMid=[null,null],armyN=[0,0],massed=false,massN=0,massNeed=0,stageT=0,oddsT=0,oddsWarnT=-99;
+let armyMid=[null,null],armyN=[0,0],massed=false,massN=0,massNeed=0,stageT=0,fewT=0,oddsT=0,oddsWarnT=-99;
 // assaut rouge : l'armée se rassemble à ~45 cases de ton cœur et ne donne l'assaut qu'en masse
 // (sinon elle arrive au compte-gouttes, chaque groupe se fait raser par la tour et le siège s'éternise)
 const STAGE=45;
@@ -1213,6 +1213,8 @@ function computeArmies(){const rc=bases[0].core.x+11,red=ents.filter(e=>e.type==
   // traînards coincés loin derrière : au bout de 25 s au ralliement avec au moins 4 unités, l'avant-garde n'attend plus
   if(bases[1].order!=='attack'||near<4)stageT=0;else if(!stageT)stageT=time;
   if(bases[1].order!=='attack')massed=false;else if(!massed&&red.length>=4&&(near>=Math.max(4,red.length*.6)||stageT&&time-stageT>25)){massed=true;toast('L\'armée rouge est rassemblée : assaut sur ton cœur !',3,'#ff9a8a');sfx.alarm&&sfx.alarm()}else if(massed&&near<3)massed=false;
+  // vague décimée avant d'être rassemblée (moins de 4) : les survivants n'attendent plus pour toujours au ralliement, l'IA les rappelle (voir updateAI)
+  if(bases[1].order==='attack'&&!massed&&red.length<4)fewT=fewT||time;else fewT=0;
   for(const t of[0,1]){const xs=ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.retreat&&!e.raid&&!e.strike&&e.stuck<1&&!lateRed(e)).map(e=>e.x).sort((a,b)=>a-b);armyN[t]=xs.length;if(xs.length<3){armyMid[t]=null;continue}const med=xs[Math.floor(xs.length/2)],fwd=t===0?1:-1;
     // arrière-garde : l'unité la plus en retard, sans compter celles restées très loin derrière (renforts tout juste recrutés)
     let rear=med;for(const x of xs)if((med-x)*fwd>0&&(med-x)*fwd<40*T&&(x-rear)*fwd<0)rear=x;armyMid[t]=rear}
@@ -1515,7 +1517,7 @@ function updateAI(dt){
   // cœur bleu presque à terre et quelques rouges dessus, plus forts que ce qui le garde : pas de retraite, on achève
   const fin=b.order==='attack'&&!surv&&pcore.hp<pcore.maxhp*.4&&(()=>{const nr=fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat&&Math.abs(e.x-pcore.x)<15*T);return nr.length>=2&&nr.reduce((a,e)=>a+POW[e.kind]*e.hp/e.maxhp,0)>teamPow(0,pcore.x,15*T)})();
   if(ready&&!ai.wait){b.order='attack';ai.waveNo=(ai.waveNo||0)+1;for(const e of fighters)e.waveNo=ai.waveNo;ai.holdT=0;ai.holdMsg=false;ai.sent=fighters.length;ai.lastWave=time;ai.wave=Math.min(surv?44:28,ai.wave+2+diff);toast(kill?'Ton cœur faiblit : l\'armée rouge revient l\'achever ('+fighters.length+' unités) !':'L\'armée rouge marche sur ta base ('+fighters.length+' unités) !',4,'#ff9a8a')}
-  else if(b.order==='attack'&&!fin&&(surv?(time-ai.lastWave>200?0:fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat).length):fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat&&!e.raid).length)<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';if(surv){qAdd('wave');stats.waves++;if(stats.waves%5===0)findRelic();if(stats.waves>=10)unlock('siege10');toast('Vague '+stats.waves+' repoussée ! La suivante sera plus forte.',4,COL.gold);sfx.buy()}else toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
+  else if(b.order==='attack'&&!fin&&(fewT&&time-fewT>15||(surv?(time-ai.lastWave>200?0:fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat).length):fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat&&!e.raid).length)<=Math.max(1,Math.floor(ai.sent*.3)))){b.order='defend';fewT=0;if(surv){qAdd('wave');stats.waves++;if(stats.waves%5===0)findRelic();if(stats.waves>=10)unlock('siege10');toast('Vague '+stats.waves+' repoussée ! La suivante sera plus forte.',4,COL.gold);sfx.buy()}else toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
 function applyUpg(team,id){const b=bases[team];if(id==='core'){b.core.maxhp+=300;b.core.hp+=300}}
 function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw=b.tower;tw.cd-=dt;if(tw.cd>0)continue;const lv=b.upg.tower;
   const fake={x:tw.x,y:tw.y,w:0,h:0,team:b.team},rng=220+lv*18;let t=null,bd=rng;
