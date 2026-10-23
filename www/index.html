@@ -1118,8 +1118,16 @@ function bridgeAhead(e,dir,tx){const fx=Math.floor((dir>0?e.x+e.w+2:e.x-2)/T),fy
   if(solidAt(fx,fy+1)||solidAt(fx,fy+2))return;let land=false;for(let k=1;k<=4&&!land;k++)land=solidAt(fx+dir*k,fy)&&!solidAt(fx+dir*k,fy-1);if(!land)return;
   const px=fx*T,py=fy*T;for(const o of ents)if(o!==e&&!o.dead&&o.w&&o.x<px+T&&o.x+o.w>px&&o.y<py+T&&o.y+o.h>py)return;
   setT(fx,fy,DIRT)}
-// monter à la verticale : creuser au-dessus de la tête, sauter, poser un bloc sous ses pieds (pilier)
-function climbUp(e,dt,cxT){const cx=e.x+e.w/2;e.vx=clamp((cxT-cx)*4,-uspd(e),uspd(e));e.dir=Math.sign(e.vx)||e.dir;moveEnt(e,dt);e.wantMove=true;
+// monter : d'abord en escalier diagonal (marches praticables par le joueur, au lieu d'un puits avec un pilier au milieu),
+// côté cible ou côté où le terrain est le plus bas ; sans progrès (bloquée, trop de chemin à plat, bord de carte) : pilier vertical
+// (creuser au-dessus de la tête, sauter, poser un bloc sous ses pieds)
+function climbUp(e,dt,cxT){let cx=e.x+e.w/2;
+  if(time-(e.stLast??-9)>1.5){e.stX=cx;e.stY=e.y;e.stDir=0;e.stPil=e.stFlip=false;e.stuck=0}e.stLast=time;
+  if(!e.stPil){if(!e.stDir){const c=clamp(Math.floor(cx/T),4,WW-5);e.stDir=Math.abs(cxT-cx)>T?Math.sign(cxT-cx):surf[c-4]!==surf[c+4]?(surf[c-4]>surf[c+4]?-1:1):e.dir||1}
+    const nx=Math.floor((cx+e.stDir*T)/T);
+    // sans progrès d'un côté, on retente une fois de l'autre côté avant le pilier
+    if(e.stuck>=2||Math.abs(cx-e.stX)/T>(e.stY-e.y)/T+8||nx<2||nx>=WW-2){if(e.stFlip)e.stPil=true;else{e.stFlip=true;e.stDir=-e.stDir;e.stX=cx;e.stY=e.y;e.stuck=0}}else{navigate(e,cx+e.stDir*3*T,dt,'climb');return}}
+  e.vx=clamp((cxT-cx)*4,-uspd(e),uspd(e));e.dir=Math.sign(e.vx)||e.dir;moveEnt(e,dt);e.wantMove=true;
   if(!e.onGround)return;const o0=Math.floor(e.x/T),o1=Math.floor((e.x+e.w-.01)/T),y0=Math.floor(e.y/T),fy=Math.floor((e.y+e.h-.01)/T);
   for(let x=o0;x<=o1;x++)for(const y of[y0-1,y0-2]){const r=digStep(e,x,y,dt,e.kind==='miner'||e.kind==='champion');if(r===0)return;if(r<0){e.vy=-JUMP;return}}
   e.vy=-JUMP*.85;e.pillarY=fy;e.pillarX=Math.floor((e.x+e.w/2)/T)}
