@@ -1412,7 +1412,10 @@ function updateGatherer(e,u,dt){
   // sous terre près de la base : on remonte d'abord en pilier là où l'on est (il rebouche sous ses pieds) ; avant, l'escalier
   // de retour débouchait juste devant le cœur et y laissait une tranchée où le joueur tombait à chaque passage
   const gx=Math.floor((e.x+e.w/2)/T),gd=Math.floor((e.y+e.h-1)/T)-surf[clamp(gx,0,WW-1)],hm=Math.floor(hx/T);
-  if(gd>1&&Math.abs(gx-hm)<14+gd)climbUp(e,dt,gx*T+8);
+  // remontée engagée : on la poursuit (sinon, pile à la limite, l'escalier le décalait d'une case hors de la zone, il repartait
+  // à pied, revenait dans la zone… et oscillait des minutes avec son minerai sans jamais rentrer)
+  const up=gd>1&&(time-(e.upT??-9)<1||Math.abs(gx-hm)<14+gd);if(up)e.upT=time;
+  if(up)climbUp(e,dt,gx*T+8);
   else if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');
   if(Math.abs(e.x+e.w/2-hx)<22&&Math.abs(e.y-core.y)<60){for(const k in e.carry)if(b.storage[k]!==undefined)b.storage[k]+=e.carry[k];
     if(e.team===0){const parts2=Object.entries(e.carry).filter(([,v])=>v>0).map(([k,v])=>v+' '+tr(IT[k].n).toLowerCase());if(parts2.length){toast('Un mineur rapporte : '+parts2.join(', '),3,'#9fd0ff');floatText(core.x+11,core.y-4,'+'+(e.carryN+(e.junk||0)),'#9fd0ff');if(onScreen(e))sfx.pick()}}
