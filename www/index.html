@@ -2423,12 +2423,13 @@ function drawSettings(close){const S2=PROF.set,W=Math.min(VW-16,220),rows=[['sou
 // hauteur des boutons de menu : plus hauts au doigt quand l'écran a la place (n boutons + marge fixe)
 const RX=()=>isTouch?10:0;// bouton Retour plus haut au tactile
 const menuBH=(n,fix)=>isTouch?clamp(Math.floor((VH-fix)/n)-4,18,28):18;
+// verrouillé : l'objectif reste lisible sur téléphone (avant 25-30 % d'opacité, gris presque noir sur le panneau)
 function drawAchPanel(close){const two=VW>=380,cols=two?2:1,rowsN=Math.ceil(ACH.length/cols),RH=Math.min(20,Math.floor((VH-70-RX())/rowsN)),W=Math.min(VW-12,two?400:240),H=48+rowsN*RH+20+RX(),x=Math.round(VW/2-W/2),y=Math.max(2,Math.round(VH/2-H/2));
   const an=panelAnim(x,y,W,H);box(x,y,W,H);const na=Object.keys(PROF.ach).length;txt('Succès '+na+'/'+ACH.length,x+W/2,y+7,COL.gold,10,'center');
   const rec=[0,1,2].map(i=>PROF.rec[i]?DIFFS[i].n+' '+fmtT(PROF.rec[i]):null).filter(Boolean);
   txt(uiFit('Parties '+PROF.games+' · Victoires '+PROF.wins+(rec.length?' · Records : '+rec.join(', '):''),W-12,6),x+W/2,y+22,COL.dim,6,'center');
   const cw=(W-12)/cols;ACH.forEach((a,i)=>{const c=Math.floor(i/rowsN),r=i%rowsN,xx=Math.round(x+6+c*cw),yy=y+34+r*RH,on=!!PROF.ach[a.id];
-    txt(on?'★':'☆',xx+2,yy+2,on?COL.gold:'#e8ecff40',7);txt(uiFit(a.n,cw-16,7),xx+12,yy+1,on?COL.txt:COL.dim,7);if(RH>=17)txt(uiFit(a.d,cw-16,6),xx+12,yy+9,on?COL.dim:'#e8ecff50',6)});
+    txt(on?'★':'☆',xx+2,yy+2,on?COL.gold:'#e8ecff66',7);txt(uiFit(a.n,cw-16,7),xx+12,yy+1,on?COL.txt:COL.dim,7);if(RH>=17)txt(uiFit(a.d,cw-16,6),xx+12,yy+9,on?COL.dim:'#e8ecff8c',6)});
   button(x+W/2-40,y+H-19-RX(),80,15+RX(),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
 // ==== TRICHE (outil de test, à retirer avant publication) ====
 function drawCheatPanel(close){const b=bases[0],R=[['wood',200],['stone',200],['coal',100],['copper',100],['iron',100],['silver',50],['gold',50],['diamond',20]],
@@ -2466,7 +2467,7 @@ function drawRelicPanel(close){const W=Math.min(VW-16,300),wide=W>=260,cols=wide
   const cw=Math.floor((W-12-(cols-1)*4)/cols);
   RELICS.forEach((r,i)=>{const lv=Math.min(3,PROF.relics[r.id]||0),cx=x+6+(i%cols)*(cw+4),cy=y+30+Math.floor(i/cols)*rh,on=eq.includes(r.id);
     ctx.fillStyle=on?'#c9a7ff22':'#ffffff0a';ctx.fillRect(cx,cy,cw,rh-3);if(on){ctx.fillStyle='#c9a7ff';ctx.fillRect(cx,cy,2,rh-3)}
-    if(!lv){txt('???',cx+6,cy+4,'#e8ecff50',7);txt(uiFit('Coffres, champion rouge, Siège',cw-10,6),cx+6,cy+14,'#e8ecff40',6);return}
+    if(!lv){txt('???',cx+6,cy+4,'#e8ecff73',7);txt(uiFit('Coffres, champion rouge, Siège',cw-10,6),cx+6,cy+14,'#e8ecff8c',6);return}
     txt(uiFit(r.n,cw-30,7),cx+6,cy+4,on?'#e9dcff':COL.txt,7);stars(lv,cx+cw-4,cy+4,'#c9a7ff',7,'right');
     txt(uiFit(relDesc(r,lv),cw-10,6),cx+6,cy+14,COL.dim,6);
     uiHits.push({x:cx,y:cy,w:cw,h:rh-3,fn:()=>{const j=eq.indexOf(r.id);if(j>=0)eq.splice(j,1);else{if(eq.length>=sl)eq.shift();eq.push(r.id)}saveProf();sfx.place()}})});
