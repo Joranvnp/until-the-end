@@ -1194,6 +1194,9 @@ function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-
     if(!u.ranged){const g=(e.offs+1)/2*(u.range-2)-gap;if(Math.abs(g)>1.5)e.vx=-Math.sign(dx)*Math.sign(g)*uspd(e)*.5}
     // archer : recule en tirant quand un ennemi de mêlée arrive au contact (pas pendant qu'elle monte un pilier)
     else if(tgt.type==='unit'&&!UNITS[tgt.kind].ranged&&gap<34&&e.pillarY==null)e.vx=-Math.sign(dx)*uspd(e);
+    // archer face à un cœur ou un tireur : chacun sa distance de tir (55 à 95 % de la portée), une ligne en profondeur
+    // au lieu de 20 archers empilés sur le pixel où la cible entre à portée
+    else if(e.pillarY==null&&(tgt.type==='core'||tgt.type==='unit'&&UNITS[tgt.kind].ranged)){const d=gap-u.range*(.55+.2*(e.offs+1));if(Math.abs(d)>6)e.vx=Math.sign(dx)*Math.sign(d)*uspd(e)*.5}
     moveEnt(e,dt);return}
   // cible juste en dessous ou au-dessus : creuser vers le bas ou monter en pilier
   if(Math.abs(dx)<T*1.2&&!u.ranged){const vy=tgt.y+tgt.h-(e.y+e.h);
