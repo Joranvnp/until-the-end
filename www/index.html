@@ -1482,7 +1482,10 @@ function updateAI(dt){
      if(I.danger&&I.eta<=75&&!I.dangerSaid&&I.phase==='gather'){I.dangerSaid=true;toast('La vague rouge ('+ai.wave+' unités) dépasse ta défense : recrute des troupes ou améliore la tour (Base).'+mixTip(),6,'#ff9a8a')}}
    if(b.order==='attack'){I.warned=false;I.dangerSaid=false}}
   // contre la composition bleue : golems → guerriers en nombre, guerriers → archers, archers en masse → golems (qui encaissent les flèches) sinon guerriers qui foncent au contact
-  const counter=()=>{if(fk('golem')>=2)return'warrior';if(fk('archer')>=4&&fk('archer')>fk('warrior'))return rnd()<.5&&canPay(st,UNITS.golem.cost)?'golem':'warrior';if(fk('warrior')>fk('archer')*1.5+1)return'archer';if(rnd()<(ai.style==='rush'?.08:.18)&&st.gold>=2)return'golem';return rnd()<.6?'warrior':'archer'};
+  // jamais une armée d'un seul type (avant : 10 guerriers bleus → 22 archers rouges sans ligne de front) : au-delà de 65 % du contre,
+  // on recrute son complément (guerriers devant les archers, archers derrière les guerriers et les golems)
+  const counter=()=>{const c=pickCounter(),n=fighters.length;if(n>=5&&fighters.filter(e=>e.kind===c).length>n*.65)return c==='warrior'?'archer':'warrior';return c};
+  const pickCounter=()=>{if(fk('golem')>=2)return'warrior';if(fk('archer')>=4&&fk('archer')>fk('warrior'))return rnd()<.5&&canPay(st,UNITS.golem.cost)?'golem':'warrior';if(fk('warrior')>fk('archer')*1.5+1)return'archer';if(rnd()<(ai.style==='rush'?.08:.18)&&st.gold>=2)return'golem';return rnd()<.6?'warrior':'archer'};
   const wantMiners=(ai.style==='eco'?4:ai.style==='rush'?2:3)+(diff>1?1:0);
   // 1. défense : on rappelle tout le monde si la base est menacée
   // défense d'urgence : même plafond que le recrutement normal et 4 s entre deux recrues (sinon +30 unités par minute pendant un siège)
