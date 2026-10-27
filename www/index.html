@@ -2056,7 +2056,9 @@ function box(x,y,wd,ht,fill=COL.panel,edge=COL.edge){x=Math.round(x);y=Math.roun
   ctx.fillStyle=edge;ctx.fillRect(x+1,y,wd-2,1);ctx.fillRect(x+1,y+ht-1,wd-2,1);ctx.fillRect(x,y+1,1,ht-2);ctx.fillRect(x+wd-1,y+1,1,ht-2)}
 function button(x,y,wd,ht,label,fn,on=true,hot=false){const hov=mouse.inside&&mouse.x>=x&&mouse.x<x+wd&&mouse.y>=y&&mouse.y<y+ht;box(x,y,wd,ht,COL.panel,on?(hov||hot?'#ffffff':COL.edge):'#e8ecff25');
   if(on&&(hov||hot)){ctx.fillStyle='#e8ecff35';ctx.fillRect(Math.round(x)+2,Math.round(y)+2,Math.round(wd)-4,1)}
-  txt(uiFit(label,wd-4),x+wd/2,y+(ht-5)/2,on?COL.txt:COL.dim,8,'center');uiHits.push({x,y,w:wd,h:ht,fn:on?fn:()=>sfx.deny()})}
+  // libellé collé aux bords (téléphone portrait) : sur deux lignes si le bouton est assez haut, sinon tronqué
+  const tc=on?COL.txt:COL.dim,lw=wd-10;let ls=null;if(ht>=20&&uiWidth(label)>lw){ls=wrapLines(label,lw,8,true);if(ls.length!==2||ls.some(l=>l.length<3||uiWidth(l)>lw))ls=null}
+  if(ls)ls.forEach((l,i)=>txt(l,x+wd/2,y+(ht-13)/2+i*8,tc,8,'center'));else txt(uiFit(label,wd-4),x+wd/2,y+(ht-5)/2,tc,8,'center');uiHits.push({x,y,w:wd,h:ht,fn:on?fn:()=>sfx.deny()})}
 // tactile : toute la carte (ligne de recrue, amélioration) réagit au doigt, pas seulement son petit bouton
 // (poussée avant le bouton : uiHitAt prend la dernière zone touchée, le bouton reste prioritaire)
 function cardHit(x,y,w,h,fn,on){if(isTouch)uiHits.push({x,y,w,h,fn:on?fn:()=>sfx.deny()})}
