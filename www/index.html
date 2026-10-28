@@ -1358,7 +1358,9 @@ function findOre(e,far){const b=bases[e.team],home=Math.floor((b.core.x+11)/T),d
   // suivre le filon : un minerai à portée de pioche (rayon 4 blocs) passe avant tout, il ne coûte presque aucun creusage
   if(!far&&!champ){const ex=Math.floor((e.x+e.w/2)/T),ey=Math.floor((e.y+e.h/2)/T);for(let y=ey-3;y<=ey+4;y++)for(let x=ex-4;x<=ex+4;x++){const t=getT(x,y),v=ORE_VAL[t];if(!v||TD[t].tier>2||y<surf[x]||nearHome(x,y)||e.bad?.has(x+','+y))continue;
     const sc=v*oreNeed(b,t)/(Math.abs(x-ex)+Math.abs(y-ey)*1.3+2);if(sc>bs){bs=sc;best={tx:x,ty:y}}}if(best)return best}
-  for(let i=0;i<700;i++){const x=clamp(home+dir*RI(5,champ||far?150:70),2,WW-3),y=RI(surf[x]+1,Math.min(WH-4,surf[x]+(champ||far?34:20)));const t=getT(x,y),v=ORE_VAL[t];if(!v)continue;
+  // recherche lointaine plafonnée à 90 blocs : au-delà, les défenseurs n'interceptent plus les pillards (avant 150 blocs,
+  // la plupart des mineurs tués l'étaient seuls de l'autre côté de la carte, et les allers-retours coûtaient du minerai)
+  for(let i=0;i<700;i++){const x=clamp(home+dir*RI(5,champ?150:far?90:70),2,WW-3),y=RI(surf[x]+1,Math.min(WH-4,surf[x]+(champ||far?34:20)));const t=getT(x,y),v=ORE_VAL[t];if(!v)continue;
     if(!champ&&TD[t].tier>2)continue;if(nearHome(x,y)||sealedFromAbove(x,y)||e.bad?.has(x+','+y))continue;
     // coût depuis la position du mineur : un minerai à pic sous lui demande un long escalier (on descend d'un bloc par bloc de côté)
     const mx=Math.floor((e.x+e.w/2)/T),my=Math.floor((e.y+e.h-1)/T),steep=Math.max(0,(y-my)-Math.abs(x-mx));
