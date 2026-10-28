@@ -1109,6 +1109,9 @@ function buildTargets(){tgtList=ents.filter(o=>!o.dead&&o.hp&&o.type!=='item');t
 let intruder=[null,null],intruderT=0,raider=[null,null];
 function* tgtNear(x,r){let lo=0,hi=tgtList.length;const a=x-r-32;while(lo<hi){const m=(lo+hi)>>1;if(tgtList[m].x<a)lo=m+1;else hi=m}
   for(let i=lo;i<tgtList.length;i++){const o=tgtList[i];if(o.x>x+r+8)break;yield o}}
+// ennemi au contact du héros (calculé une fois par image) : l'escorte en ordre Suivre le prend en priorité
+let hfT=-1,hfO=null;function heroFoe(){if(hfT===time)return hfO;hfT=time;hfO=null;if(player.dead)return null;let bd=3.5*T;const px=player.x+player.w/2,py=player.y+player.h/2;
+  for(const o of tgtNear(px,4*T)){if(o.dead||!o.hp||(o.type!=='unit'&&o.type!=='monster')||o.team===0)continue;const d=Math.abs(o.x+o.w/2-px);if(d<bd&&Math.abs(o.y+o.h/2-py)<3*T){bd=d;hfO=o}}return hfO}
 function nearestHostile(e,range){let best=null,bd=range;for(const o of tgtNear(e.x,range)){if(o.dead||!o.hp||!hostile(e,o))continue;
     const d=Math.hypot(o.x+o.w/2-(e.x+e.w/2),(o.y+o.h/2-(e.y+e.h/2))*1.6);if(d<bd){bd=d;best=o}}return best}
 // cible atteignable : on ignore ce qui est trop haut/bas pour la mêlée, et ce qu'on a renoncé à poursuivre
@@ -1279,6 +1282,9 @@ function updateUnit(e,dt){
   if(e.strike){const ec=bases[1-e.team].core;const near=pickTarget(e,u,u.ranged?90:34);const tg=Math.abs(ec.x-e.x)<110?ec:near;if(tg)return engage(e,u,tg,dt);
     const dtx2=clamp(Math.floor((ec.x+11)/T),0,WW-1);if(Math.abs(ec.x+11-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx2]+1.5)return climbUp(e,dt,ec.x+11);navigate(e,ec.x+11,dt,e.stuck>=2?'climb':'auto');return}
   e.pace=1;const follow=b.order==='follow'&&e.team===0&&!player.dead;
+  // escorte : l'ennemi qui frappe le héros d'abord, sauf si l'unité est elle-même au corps à corps
+  // (avant : elle se retournait contre ce qui arrivait derrière elle, le héros perdait ~90 PV sur 100 en 20 s face à 3 guerriers)
+  if(follow){const hf=heroFoe();if(hf&&Math.abs(hf.x-e.x)<12*T&&!nearestHostile(e,u.ranged?3*T:1.2*T))return engage(e,u,hf,dt)}
   let tgt=pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
   // en défense on tient sous la tour : pas de poursuite au-delà de sa portée (sauf si on est soi-même au contact)
   if(tgt&&b.order==='defend'&&!underTower(b,tgt)&&Math.hypot(tgt.x-e.x,tgt.y-e.y)>40)tgt=null;
