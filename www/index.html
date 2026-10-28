@@ -1535,10 +1535,13 @@ function updateAI(dt){
   else if(b.order==='attack'&&!fin&&(fewT&&time-fewT>15||(surv?(time-ai.lastWave>200?0:fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat).length):fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat&&!e.raid).length)<=Math.max(1,Math.floor(ai.sent*.3)))){b.order='defend';fewT=0;if(surv){qAdd('wave');stats.waves++;if(stats.waves%5===0)findRelic();if(stats.waves>=10)unlock('siege10');toast('Vague '+stats.waves+' repoussée ! La suivante sera plus forte.',4,COL.gold);sfx.buy()}else toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
 function applyUpg(team,id){const b=bases[team];if(id==='core'){b.core.maxhp+=300;b.core.hp+=300}}
 function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw=b.tower;tw.cd-=dt;if(tw.cd>0)continue;const lv=b.upg.tower;
-  const fake={x:tw.x,y:tw.y,w:0,h:0,team:b.team},rng=220+lv*18;let t=null,bd=rng;
+  const fake={x:tw.x,y:tw.y,w:0,h:0,team:b.team},rng=220+lv*18,cc=b.core.x+11,fdir=Math.sign(tw.x-cc),
+    // côté front, même limite que la zone tenue par la garnison (underTower) : avant, la tour s'arrêtait ~100 px plus tôt
+    // et les archers adverses postés là décimaient la ligne de défense hors de sa portée (2 à 4 flèches tirées par assaut)
+    rngF=Math.abs(tw.x-cc)+250+lv*18;let t=null,bd=rng;
   // portée comptée depuis le cœur (la tour est d'un côté, les archers adverses se postent souvent de l'autre)
   // priorité : ce qui tire de loin ou frappe déjà le cœur, le plus blessé (tir concentré), puis le plus proche (les archers fondent sous la tour au lieu des colosses)
-  let bs=-1;for(const o of ents){if(o.dead||!o.hp||o.type==='item'||o.team===b.team)continue;const d=Math.hypot(o.x+o.w/2-b.core.x-11,(o.y+o.h/2-tw.y)*.5);if(d>=rng)continue;
+  let bs=-1;for(const o of ents){if(o.dead||!o.hp||o.type==='item'||o.team===b.team)continue;const dx=o.x+o.w/2-cc,lim=Math.sign(dx)===fdir?rngF:rng,d=Math.hypot(dx,(o.y+o.h/2-tw.y)*.5);if(d>=lim)continue;
     const sc=(o.type==='unit'&&UNITS[o.kind].ranged?2:1)*(Math.abs(o.x+o.w/2-b.core.x-11)<3*T?1.6:1)*(o.kind==='golem'?.6:1)*(2-o.hp/(o.maxhp||o.hp))/(1+d/rng);if(sc>bs){bs=sc;bd=d;t=o}}
   if(!t){tw.cd=.3;continue}
   tw.cd=1.5/(1+.25*lv);const tx=t.x+t.w/2,ty=t.y+t.h/2,dx=tx-tw.x,v=300,tt=Math.abs(dx)/v;
