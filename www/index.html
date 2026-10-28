@@ -1435,7 +1435,9 @@ function updateGatherer(e,u,dt){
   else if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');
   if(Math.abs(e.x+e.w/2-hx)<22&&Math.abs(e.y-core.y)<60){for(const k in e.carry)if(b.storage[k]!==undefined)b.storage[k]+=e.carry[k];
     if(e.team===0){const parts2=Object.entries(e.carry).filter(([,v])=>v>0).map(([k,v])=>v+' '+tr(IT[k].n).toLowerCase());if(parts2.length){toast('Un mineur rapporte : '+parts2.join(', '),3,'#9fd0ff');floatText(core.x+11,core.y-4,'+'+(e.carryN+(e.junk||0)),'#9fd0ff');if(onScreen(e))sfx.pick()}}
-    e.carry={};e.carryN=0;e.junk=0;e.state='seek';e.tgt=null}}
+    // champion blessé (< 60 %) : il reste se soigner au cœur avant de repartir (avant, il ne s'y arrêtait qu'une seconde
+    // et errait des minutes à 30-45 % de ses PV, proie facile pour le héros)
+    e.carry={};e.carryN=0;e.junk=0;e.state=e.kind==='champion'&&e.hp<e.maxhp*.6?'heal':'seek';e.tgt=null}}
 
 // =====================================================================
 //  MONSTRES DE LA NUIT
