@@ -1998,7 +1998,14 @@ let VR=null;
 function drawConfetti(){for(const c of confetti){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.r);ctx.fillStyle=c.col;ctx.fillRect(-1,-2,2,4);ctx.restore()}}
 // bannière de succès qui glisse depuis le haut
 function drawAch(){const a=achPop[0];if(!a)return;const k=a.t<.35?a.t/.35:a.t>3.5?1-(a.t-3.5)/.5:1,e=1-Math.pow(1-k,3);
-  const W=Math.min(VW-16,Math.max(uiWidth('SUCCÈS : '+a.a.n,8),uiWidth(a.a.d,7))+28),x=Math.round(VW/2-W/2),y=Math.round(-30+e*(36));
+  const W=Math.min(VW-16,Math.max(uiWidth('SUCCÈS : '+a.a.n,8),uiWidth(a.a.d,7))+28),x=Math.round(VW/2-W/2);
+  // en partie, la bannière descend sous la mini-carte et l'alerte de vague qu'elle chevauche (avant : « Vague rouge · dans 65 s »
+  // masqué en paysage, mini-carte en portrait)
+  let y0=6;if(state==='play')for(let i=0;i<2;i++)for(const r of[HL.map,HL.waveDraw&&{x:HL.waveDraw.x,y:HL.waveDraw.y,w:HL.waveDraw.w,h:11}])
+    if(r&&x<r.x+r.w&&x+W>r.x&&y0<r.y+r.h&&y0+24>r.y)y0=r.y+r.h+3;
+  // portrait : sous la mini-carte viennent les barres d'armée et les ressources, on passe directement sous l'alerte de vague
+  const wd=HL.waveDraw,m=HL.map;if(state==='play'&&wd&&m&&y0===m.y+m.h+3&&wd.y>y0)y0=wd.y+14;
+  const y=Math.round(-30+e*(30+y0));
   box(x,y,W,24,'#05050cf0',COL.gold);ctx.globalAlpha=.7+.3*Math.sin(a.t*8);txt('★',x+6,y+5,COL.gold,8);ctx.globalAlpha=1;
   txt('Succès : '+a.a.n,x+18,y+4,COL.gold,8);txt(uiFit(a.a.d,W-24,7),x+18,y+14,COL.txt,7)}
 function drawCRT(){if(!CRT||CRT.width!==cv.width||CRT.height!==cv.height){CRT=mk(cv.width,cv.height);const q=CRT.getContext('2d');q.fillStyle='rgba(0,0,8,.16)';for(let y=1;y<CRT.height;y+=2)q.fillRect(0,y,CRT.width,1)}ctx.drawImage(CRT,0,0)}
