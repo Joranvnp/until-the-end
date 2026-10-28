@@ -1282,6 +1282,8 @@ function updateUnit(e,dt){
   // escorte distancée : elle sprinte pour rattraper le joueur (il court 2× plus vite qu’une unité ; à fond dès 11 cases d’écart, sinon elle traîne hors de l’écran)
   // hors combat, le golem allonge le pas : sinon toute l'armée, qui l'attend, met plus de 4 min à traverser la carte
   e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-4)/4,1,2.8)*(u.big?1.5:1):u.big?1.5:1;
+  // chasseur de pillards encore loin : il court (avant, les 3 défenseurs arrivaient 25 à 70 blocs trop tard, le mineur déjà tué)
+  if(e.hunt&&!e.hunt.dead&&Math.abs(e.hunt.x-e.x)>12*T)e.boost=Math.max(e.boost,1.7);
   // en défense, on court intercepter tout intrus qui approche du cœur
   if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else{const h=e.hunt,vy=h.y+h.h-(e.y+e.h);
     // pillard loin au-dessus (chasseurs restés au fond d'une galerie) : on remonte en pilier vers lui au lieu de piétiner dessous
