@@ -2361,9 +2361,11 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
     // le bandeau de vague se repeint dans la ligne de titre : libellé court pour lui laisser la place
     dl=ov?'Déposer':'Déposer pierre/bois',dw=ov?uiWidth(dl,7)+10:86;panelTitleHi=x+W-22-dw-3;button(x+W-22-dw,y+4,dw,12,dl,()=>{let n=0;for(const k of['stone','wood']){const c=countItem(k);takeItem(k,c);b.storage[k]+=c;n+=c}toast(n?('Déposé : '+n):'Rien à déposer.',2,'#9fd0ff');if(n)sfx.buy()},nearB);
 }
-function drawCraftPanel(){const CW=250,av=(HL.barTop||VH)-6-30,
+function drawCraftPanel(){const av=(HL.barTop||VH)-6-30,tight=av/RECIPES.length<17,
+  // colonnes resserrées (216 à 250) : le petit paysage (568x320) passe aussi en deux colonnes, avant ses lignes faisaient 12 px
+  CW=tight?clamp(Math.floor((VW-2)/2),216,250):250,
   // paysage bas : deux colonnes de recettes, lignes plus hautes et panneau qui ne monte plus sur la minicarte
-  wide=VW>=CW*2+8&&av/RECIPES.length<17,rows=wide?Math.ceil(RECIPES.length/2):RECIPES.length,W=wide?CW*2-6:CW,RH=clamp(Math.floor(av/rows),12,wide?21:isTouch?22:17),H=30+rows*RH,gp=!wide&&touchGap(),x=Math.round((gp&&gp.R-gp.L>=W+4&&gp.R-gp.L<W+16?(gp.L+gp.R)/2:VW/2)-W/2),y=panelY(H,Math.max(30,Math.round(VH/2-H/2)-6),x,W);panelRect={x,y,w:W,h:H};
+  wide=tight&&VW>=CW*2+2,rows=wide?Math.ceil(RECIPES.length/2):RECIPES.length,W=wide?CW*2-6:CW,RH=clamp(Math.floor(av/rows),12,wide?21:isTouch?22:17),H=30+rows*RH,gp=!wide&&touchGap(),x=Math.round((gp&&gp.R-gp.L>=W+4&&gp.R-gp.L<W+16?(gp.L+gp.R)/2:VW/2)-W/2),y=panelY(H,Math.max(30,Math.round(VH/2-H/2)-6),x,W);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Forge',x+8,y+6,COL.txt,10);
   // bandeau de vague repeint dans la ligne de titre : on lui cède la place du sous-titre pour qu'il ne cache pas le ×
   const wd=HL.waveDraw;if(wd&&wd.y<y+H&&wd.y+11>y&&wd.x<x+W&&wd.x+wd.w>x)panelTitleHi=x+W-22;else txt('sac puis réserve de la base',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('craft'));
