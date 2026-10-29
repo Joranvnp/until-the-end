@@ -1540,7 +1540,8 @@ function updateAI(dt){
   // jamais une armée d'un seul type (avant : 10 guerriers bleus → 22 archers rouges sans ligne de front) : au-delà de 65 % du contre,
   // on recrute son complément (guerriers devant les archers, archers derrière les guerriers et les golems)
   const counter=()=>{const c=pickCounter(),n=fighters.length;if(n>=5&&fighters.filter(e=>e.kind===c).length>n*.65)return c==='warrior'?'archer':'warrior';return c};
-  const pickCounter=()=>{if(fk('golem')>=2)return'warrior';if(fk('archer')>=4&&fk('archer')>fk('warrior'))return rnd()<.5&&canPay(st,UNITS.golem.cost)?'golem':'warrior';if(fk('warrior')>fk('archer')*1.5+1)return'archer';if(rnd()<(ai.style==='rush'?.08:.18)&&st.gold>=2)return'golem';return rnd()<.6?'warrior':'archer'};
+  const pickCounter=()=>{if(fk('golem')>=2)return'warrior';if(fk('archer')>=4&&fk('archer')>fk('warrior'))return rnd()<.5&&canPay(st,UNITS.golem.cost)?'golem':'archer';// sans golem abordable : archer (neutre), pas guerrier, que ses archers contrent (+40 %)
+    if(fk('warrior')>fk('archer')*1.5+1)return'archer';if(rnd()<(ai.style==='rush'?.08:.18)&&st.gold>=2)return'golem';return rnd()<.6?'warrior':'archer'};
   const wantMiners=(ai.style==='eco'?4:ai.style==='rush'?2:3)+(diff>1?1:0);
   // 1. défense : on rappelle tout le monde si la base est menacée
   // défense d'urgence : même plafond que le recrutement normal et 4 s entre deux recrues (sinon +30 unités par minute pendant un siège)
