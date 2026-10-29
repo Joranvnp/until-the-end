@@ -2380,8 +2380,10 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
   const wide=VW>=RW*2+8&&(HL.barTop||VH)-4<221+30;
   const gp=!wide&&touchGap();if(gp&&gp.R-gp.L<RW+6&&gp.R-gp.L>=252){RW=Math.min(262,gp.R-gp.L-4);cx=(gp.L+gp.R)/2}
   // tactile sur écran haut (téléphone debout, tablette) : lignes de 30 au lieu de 24, cibles d'environ 40 px réels sous le doigt
-  const tall=isTouch&&!wide&&(HL.barTop||VH)-40>=300,RP=tall?30:24,UP=tall?30:25,p=tall?3:0,bh=tall?2:0;
-  const cw=Math.floor((RW-15)/2),W=wide?RW*2:RW,H=wide?132:50+4*RP+3*UP,ux=wide?x0=>x0+RW-4:x0=>x0,uy=wide?32:45+4*RP,x=Math.round(cx-W/2),y=panelY(H,Math.round(VH/2-H/2)-6,x,W);panelRect={x,y,w:W,h:H};
+  // écran bas sans place pour la version large (ordinateur 1366x768) : lignes resserrées (20/22 au lieu de 24/25) et calé sous cette bande,
+  // sinon le panneau couvrait la bande du haut (barres d'équipe) et mordait sur la barre d'objets
+  const tall=isTouch&&!wide&&(HL.barTop||VH)-40>=300,cmp=!wide&&!tall&&(HL.barTop||VH)-3-32<221,RP=tall?30:cmp?20:24,UP=tall?30:cmp?22:25,p=tall?3:0,bh=tall?2:0;
+  const cw=Math.floor((RW-15)/2),W=wide?RW*2:RW,H=wide?132:50+4*RP+3*UP,ux=wide?x0=>x0+RW-4:x0=>x0,uy=wide?32:45+4*RP,x=Math.round(cx-W/2),y=panelY(H,Math.max(cmp?32:0,Math.round(VH/2-H/2)-6),x,W);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Ta base',x+8,y+6,COL.txt,10,'left');button(x+W-18,y+4,14,12,'×',()=>togglePanel('base'));
   txt('Recruter',x+8,y+22,COL.dim,7);
   // troc : la pierre s'entasse par centaines (déblais des mineurs) alors que bois et cuivre manquent pour recruter
