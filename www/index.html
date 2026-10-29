@@ -1276,7 +1276,9 @@ function updateUnit(e,dt){
     e.pinT=Math.abs(e.x-x0)<uspd(e)*dt*.3?(e.pinT||0)+dt:0;e.dir=Math.sign(th.x-e.x)||e.dir;return}
     if(!th)e.pinT=0;else if(e.pinT>=.5)e.pinT+=dt;if(e.pinT>3)e.pinT=0}
   // raid : chasser les mineurs adverses
-  if(e.raid){const prey=ents.filter(o=>o.type==='unit'&&o.team!==e.team&&o.kind==='miner'&&!o.dead).sort((a,c)=>Math.abs(a.x-e.x)-Math.abs(c.x-e.x))[0];
+  // un mineur réfugié sous la tour de son camp est à l'abri (l'aide le promet : « fuit les pillards vers la tour ») ;
+  // avant, le pillard le suivait jusqu'au pied du cœur et, sans défenseurs, raflait tous les mineurs en une minute, même en Paisible
+  if(e.raid){const prey=ents.filter(o=>o.type==='unit'&&o.team!==e.team&&o.kind==='miner'&&!o.dead&&!underTower(bases[o.team],o)).sort((a,c)=>Math.abs(a.x-e.x)-Math.abs(c.x-e.x))[0];
     if(prey){const dx=prey.x-e.x,dy=prey.y-e.y;if(Math.abs(dx)<u.range+8&&Math.abs(dy)<30){meleeOrShoot(e,u,prey);moveEnt(e,dt);return}
       if(Math.abs(dx)<T*1.5&&dy>T*2){e.vx=0;moveEnt(e,dt);if(e.onGround){const o0=Math.floor(e.x/T),fy=Math.floor((e.y+e.h-.01)/T);digStep(e,o0,fy+1,dt,false)}return}
       if(Math.abs(dx)<T*1.5&&dy<-T*2)return climbUp(e,dt,prey.x+prey.w/2);
@@ -1407,6 +1409,9 @@ function updateGatherer(e,u,dt){
   if(e.kind==='champion'&&e.state!=='heal'){const cx=core.x+11;if(teamPow(1-e.team,cx,40*T)>1.5){const d=cx-(e.x+e.w/2);
     if(Math.abs(d)>3*T){if(Math.abs(d)<T*1.5&&e.y>core.y+40)climbUp(e,dt,cx);else navigate(e,cx,dt,'climb')}else{e.vx=0;moveEnt(e,dt)}return}}
   if(e.state==='seek'&&fleeing){const hx=core.x+11+(e.team===0?16:-16);if(Math.abs(hx-(e.x+e.w/2))>10)navigate(e,hx,dt,'climb');else{e.vx=0;moveEnt(e,dt)}return}
+  // pillards adverses en chasse : le mineur à l'abri sous sa tour y attend la fin du raid (avant, 6 s après la fuite il repartait
+  // vers son filon, retombait sur le pillard qui rôdait encore et y passait ; sans défenseurs, tous les mineurs en une minute)
+  if(e.kind==='miner'&&e.state==='seek'&&underTower(b,e)&&ents.some(o=>o.raid&&!o.dead&&o.team!==e.team)){e.vx=0;e.wantMove=false;moveEnt(e,dt);return}
   if(e.state==='seek'){
     // cible bloquée ou poursuivie plus de 20 s : on la met de côté pour ne pas y revenir en boucle
     if(e.tgt&&(e.stuck>=3||time-(e.tgtT||0)>20)){(e.bad=e.bad||new Set()).add(e.tgt.tx+','+e.tgt.ty);if(e.bad.size>40)e.bad=new Set();e.tgt=null}
