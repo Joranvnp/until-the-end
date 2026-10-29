@@ -2320,7 +2320,8 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;
     // alerte rouge active pendant qu'un panneau est ouvert : le panneau recouvre souvent les messages (téléphone debout),
     // on la recopie dans un bandeau juste sous le panneau (au-dessus s'il n'y a pas la place) pour ne pas la rater en recrutant
     {const al=panelRect&&msgs.filter(toastAlert).pop();if(al&&al.t>0){const w=Math.min(VW-8,Math.max(panelRect.w,160)),ls=wrapLines(al.s,w-10,7,true).slice(0,2),h=ls.length*9+4;
-      let y=panelRect.y+panelRect.h+2;if(y+h>(HL.touchY||VH)-2)y=panelRect.y-h-2;if(y>=0){const x=Math.round(VW/2-w/2);ctx.globalAlpha=Math.min(1,al.t*2);box(x,y,w,h,'rgba(30,6,10,.94)',al.col);ls.forEach((l,i)=>txt(l,VW/2,y+3+i*9,al.col,7,'center'));ctx.globalAlpha=1}}}
+      let y=panelRect.y+panelRect.h+2;const x=Math.round(VW/2-w/2),bot=isTouch?touchLayout().reduce((m,b)=>b.x<x+w&&b.x+b.w>x?Math.min(m,b.y):m,HL.touchY||VH):HL.touchY||VH; // sous le panneau, sauf s'il couvrirait ▼ ou ★ : alors au-dessus
+      if(y+h>bot-2)y=panelRect.y-h-2;if(y>=0){ctx.globalAlpha=Math.min(1,al.t*2);box(x,y,w,h,'rgba(30,6,10,.94)',al.col);ls.forEach((l,i)=>txt(l,VW/2,y+3+i*9,al.col,7,'center'));ctx.globalAlpha=1}}}
     // paysage téléphone : le panneau recouvre le bandeau de vague ; on le repeint dans sa ligne de titre (milieu libre) pour garder l'arrivée de l'ennemi visible
     const wd=HL.waveDraw;if(wd&&panelRect&&wd.y<panelRect.y+panelRect.h&&wd.y+11>panelRect.y&&wd.x<panelRect.x+panelRect.w&&wd.x+wd.w>panelRect.x){
       // sur la ligne de titre du panneau, entre le titre et ses boutons (Déposer, ×) plutôt que par-dessus
