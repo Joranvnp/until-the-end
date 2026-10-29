@@ -2489,7 +2489,10 @@ function drawTitle(){
 // panneaux Réglages / Succès, partagés par l'écran titre et le menu pause
 function drawMenuPanel(close){if(menuPanel==='set')return drawSettings(close);if(menuPanel==='quest')return drawQuestPanel(close);if(menuPanel==='relic')return drawRelicPanel(close);if(menuPanel==='cheat')return drawCheatPanel(close);return drawAchPanel(close)}
 function panelAnim(x,y,W,H){const k=1-Math.pow(1-panelT,3);if(k>=1)return false;ctx.save();ctx.globalAlpha=k;const cx=x+W/2,cy=y+H/2,z=.9+.1*k;ctx.translate(cx,cy+(1-k)*8);ctx.scale(z,z);ctx.translate(-cx,-cy);return true}
-function drawSettings(close){const S2=PROF.set,W=Math.min(VW-16,220),rows=[['sound','Son'],['music','Musique'],['vib','Vibrations'],['shake','Secousses de l\'écran'],['crt','Effet rétro (lignes)'],['lefty','Commandes'],['en','Langue / Language']],RB=menuBH(rows.length,60),H=30+rows.length*(RB+4)+26+(RB-18),x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
+function drawSettings(close){const S2=PROF.set,W=Math.min(VW-16,220),rows=[['sound','Son'],['music','Musique'],['vib','Vibrations'],['shake','Secousses de l\'écran'],['crt','Effet rétro (lignes)'],['lefty','Commandes'],['en','Langue / Language']].filter(([k])=>isTouch||k!=='vib'&&k!=='lefty'),
+    // sans écran tactile, vibrations et main des commandes n'ont pas d'effet : lignes masquées. Hauteur des boutons tirée de
+    // la hauteur réelle du panneau (38 + n×(RB+4) + RB) : en 568x320 il débordait et le bouton Retour sortait de l'écran
+    RB=isTouch?clamp(Math.floor((VH-46-4*rows.length)/(rows.length+1)),18,28):18,H=30+rows.length*(RB+4)+26+(RB-18),x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   const an=panelAnim(x,y,W,H);box(x,y,W,H);txt('Réglages',x+W/2,y+8,COL.txt,10,'center');
   rows.forEach(([k,l],i)=>{const on=S2[k];button(x+10,y+26+i*(RB+4),W-20,RB,l+' : '+(k==='lefty'?(on?'gaucher':'droitier'):k==='en'?(on?'English':'français'):on?'oui':'non'),()=>{S2[k]=!S2[k];if(k==='sound'){muted=!S2.sound;if(!muted)audioInit()}if(k==='vib'&&S2.vib)buzz(30);saveProf();sfx.click()},true,on)});
   button(x+W/2-40,y+H-22-(RB-18),80,16+(RB-18),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
