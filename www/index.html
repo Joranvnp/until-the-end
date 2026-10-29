@@ -1124,7 +1124,8 @@ function scanTarget(e,u,aggro){let best=null,bd=1e9;
     const dx=o.x+o.w/2-(e.x+e.w/2),dy=o.y+o.h/2-(e.y+e.h/2);if(Math.abs(dx)>aggro)continue;
     // le cœur se tire presque à niveau : depuis une grotte en dessous, la flèche finit dans le sol du château
     if(o.type==='core'?vgap(e,o)>(u.ranged?40:52):Math.abs(dy)>(u.ranged?130:52))continue;
-    let d=Math.abs(dx)+Math.abs(dy)*1.5;if(o.type==='core')d-=(Math.abs(dx)<110?400:60);if(o.type==='monster')d+=40;
+    let d=Math.abs(dx)+Math.abs(dy)*1.5;if(o.type==='core')d-=(Math.abs(dx)<110?400:60);if(o.type==='monster')d+=40;if(o.type==='unit'&&Math.abs(dx)<22&&Math.abs(dy)<20)d-=500;
+    // ennemi au contact : prioritaire même sur le cœur (avant, l'assaut frappait le cœur en tournant le dos aux défenseurs et fondait : 0 victoire sur 16 assauts, 1 à 2 sur 8 après)
     if(d<bd){bd=d;best=o}}return best}
 function digStep(e,tx,ty,dt,collect){const id=getT(tx,ty),d=TD[id];if(!d.solid&&id!==LOG)return 1;if(d.hard===Infinity)return -1;
   e.digVisualUntil=time+.08;e.digVisualPhase=(e.digVisualPhase||0)+dt*5;
