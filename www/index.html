@@ -1519,13 +1519,13 @@ function updateAI(dt){
      // en plein assaut : les rouges au pied du cœur l'emportent nettement sur ce qui le garde → on le dit (une fois par vague)
      // avec quoi faire (avant : seule l'alerte d'avant-vague existait, des sièges de 4-6 min finissaient sans un mot)
      const nr=teamPow(1,pc,25*T),nb=teamPow(0,pc,25*T)+bases[0].upg.tower*.8;
-     if(!I.yieldSaid&&nr>3&&nr>nb*1.2){I.yieldSaid=true;toast(bases[0].order==='attack'?'Ta défense cède ! Rappelle ton armée (Défense) ou recrute vite.':'Ta défense cède ! Recrute des troupes (Base) ou améliore la tour.',5,'#ff5a5a');buzz(200)}}
+     if(!I.yieldSaid&&nr>3&&nr>nb*1.2){I.yieldSaid=true;if(bases[0].order==='attack')bases[0].recallHint=time+8;toast(bases[0].order==='attack'?'Ta défense cède ! Rappelle ton armée (Défense) ou recrute vite.':'Ta défense cède ! Recrute des troupes (Base) ou améliore la tour.',5,'#ff5a5a');buzz(200)}}
    else I.yieldSaid=false}
   // assaut bleu qui s'enlise au pied du cœur rouge : la moitié de la force arrivée est tombée et les rouges dominent → on le dit
   // une fois (avant : l'armée fondait en 40-60 s sans un mot, 5 assauts sur 6 anéantis jusqu'au dernier soldat)
   {const B=ai.bw||(ai.bw={peak:0,said:false});if(bases[0].order==='attack'){const ax=armyMid[0]!=null&&Math.abs(armyMid[0]-coreX)>45*T?armyMid[0]:coreX,bp=teamPow(0,ax,45*T),rp=teamPow(1,ax,45*T)+(ax===coreX?b.upg.tower*.8:0);// mesuré autour de l'armée bleue (aussi détruite en rase campagne par une vague)
      B.peak=Math.max(B.peak,bp);
-     if(!B.said&&B.peak>3&&bp<B.peak*.5&&rp>bp*1.2){B.said=true;toast('Ton assaut s\'enlise ! Rappelle ton armée (Défense) pour sauver les survivants.',5,'#ff6a5a')}}
+     if(!B.said&&B.peak>3&&bp<B.peak*.5&&rp>bp*1.2){B.said=true;bases[0].recallHint=time+8;toast('Ton assaut s\'enlise ! Rappelle ton armée (Défense) pour sauver les survivants.',5,'#ff6a5a')}}
    else{B.peak=0;B.said=false}}
   // contre la composition bleue : golems → guerriers en nombre, guerriers → archers, archers en masse → golems (qui encaissent les flèches) sinon guerriers qui foncent au contact
   // jamais une armée d'un seul type (avant : 10 guerriers bleus → 22 archers rouges sans ligne de front) : au-delà de 65 % du contre,
@@ -2280,6 +2280,8 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;
   const bh=isTouch?sw:Math.min(sw,15);
   let bx=same?6:Math.round(VW/2-bw/2),by=same?hy-1+sw-2-bh+1:hy-bh-3;HL.left=Math.min(bx,hx);HL.right=Math.max(bx+bw,hx+9*sw);
   for(const[l,wd,fn,on]of btns){button(bx,by,wd,bh,l,fn,true,on);if(fn===btns[1][2]&&tutHL('base'))drawTutRing(bx,by,wd,bh);if(fn===toggleOrder&&b0.order==='defend'&&time<(b0.readyHint||0))drawTutRing(bx,by,wd,bh);
+    // alerte « rappelle ton armée » : le bouton Ordre clignote tant que l'armée est encore en Assaut
+    if(fn===toggleOrder&&b0.order==='attack'&&time<(b0.recallHint||0))drawTutRing(bx,by,wd,bh);
     // petite étiquette « ordre » au-dessus : le bouton affiche l'ordre EN COURS de l'armée (pas une action à faire)
     if(fn===toggleOrder){const l=tr('Ordre').toUpperCase(),w=uiWidth(l,7)+4;ctx.fillStyle='#05050cbb';ctx.fillRect(bx,by-10,w,9);txt(l,bx+2,by-9,COL.dim,7)}
     // pastille dorée sur Base quand une amélioration est payable (les générateurs remplissent la réserve sans qu'on regarde)
