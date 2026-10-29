@@ -1399,6 +1399,9 @@ function updateGatherer(e,u,dt){
   if(e.kind==='miner'){const foe=nearestHostile(e,7*T);if(foe&&(foe.type==='monster'||foe.kind!=='miner')){if(time>(e.fleeT||0)&&e.team===0&&onScreen(e))floatText(e.x+e.w/2,e.y-6,'!','#ff9a8a');e.fleeT=time+6;e.fleeFrom=foe;e.state='home';e.tgt=null}}
   const fleeing=e.kind==='miner'&&time<(e.fleeT||0);
   if(thr&&!fleeing){if(e.kind==='champion')return engage(e,u,thr,dt);if(e.atk<=0)meleeOrShoot(e,u,thr)}
+  // cœur assiégé : le champion lâche le filon et rentre le défendre (avant, il minait à 30-57 cases pendant que l'armée adverse rasait son cœur)
+  if(e.kind==='champion'&&e.state!=='heal'){const cx=core.x+11;if(teamPow(1-e.team,cx,40*T)>1.5){const d=cx-(e.x+e.w/2);
+    if(Math.abs(d)>3*T){if(Math.abs(d)<T*1.5&&e.y>core.y+40)climbUp(e,dt,cx);else navigate(e,cx,dt,'climb')}else{e.vx=0;moveEnt(e,dt)}return}}
   if(e.state==='seek'&&fleeing){const hx=core.x+11+(e.team===0?16:-16);if(Math.abs(hx-(e.x+e.w/2))>10)navigate(e,hx,dt,'climb');else{e.vx=0;moveEnt(e,dt)}return}
   if(e.state==='seek'){
     // cible bloquée ou poursuivie plus de 20 s : on la met de côté pour ne pas y revenir en boucle
