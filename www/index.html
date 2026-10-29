@@ -1523,7 +1523,8 @@ function updateAI(dt){
    else I.yieldSaid=false}
   // assaut bleu qui s'enlise au pied du cœur rouge : la moitié de la force arrivée est tombée et les rouges dominent → on le dit
   // une fois (avant : l'armée fondait en 40-60 s sans un mot, 5 assauts sur 6 anéantis jusqu'au dernier soldat)
-  {const B=ai.bw||(ai.bw={peak:0,said:false});if(bases[0].order==='attack'){const bp=teamPow(0,coreX,45*T),rp=teamPow(1,coreX,45*T)+b.upg.tower*.8;B.peak=Math.max(B.peak,bp);
+  {const B=ai.bw||(ai.bw={peak:0,said:false});if(bases[0].order==='attack'){const ax=armyMid[0]!=null&&Math.abs(armyMid[0]-coreX)>45*T?armyMid[0]:coreX,bp=teamPow(0,ax,45*T),rp=teamPow(1,ax,45*T)+(ax===coreX?b.upg.tower*.8:0);// mesuré autour de l'armée bleue (aussi détruite en rase campagne par une vague)
+     B.peak=Math.max(B.peak,bp);
      if(!B.said&&B.peak>3&&bp<B.peak*.5&&rp>bp*1.2){B.said=true;toast('Ton assaut s\'enlise ! Rappelle ton armée (Défense) pour sauver les survivants.',5,'#ff6a5a')}}
    else{B.peak=0;B.said=false}}
   // contre la composition bleue : golems → guerriers en nombre, guerriers → archers, archers en masse → golems (qui encaissent les flèches) sinon guerriers qui foncent au contact
