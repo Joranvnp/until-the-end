@@ -1296,6 +1296,9 @@ function updateUnit(e,dt){
   e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-4)/4,1,2.8)*(u.big?1.5:1):u.big?1.5:1;
   // chasseur de pillards encore loin : il court (avant, les 3 défenseurs arrivaient 25 à 70 blocs trop tard, le mineur déjà tué)
   if(e.hunt&&!e.hunt.dead&&Math.abs(e.hunt.x-e.x)>12*T)e.boost=Math.max(e.boost,1.7);
+  // rappel en Défense alors que la base est attaquée : retour au pas de course (au pas, depuis le camp adverse, ~150 s,
+  // bien après la chute du cœur ; l'alerte « Ta défense cède » arrive 40 à 55 s avant)
+  if(b.order==='defend'&&!follow&&Math.abs(e.x-home.x)>30*T&&(bases[1-e.team].order==='attack'||intruder[e.team]))e.boost=Math.max(e.boost,2);
   // en défense, on court intercepter tout intrus qui approche du cœur
   if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else{const h=e.hunt,vy=h.y+h.h-(e.y+e.h);
     // pillard loin au-dessus (chasseurs restés au fond d'une galerie) : on remonte en pilier vers lui au lieu de piétiner dessous
