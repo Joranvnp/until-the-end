@@ -677,7 +677,9 @@ function loadGame(){let d;try{d=JSON.parse(localStorage.getItem(SAVE_KEY))}catch
   for(const u of d.units){const e=recruit(u.t,u.k,true);Object.assign(e,{x:u.x,y:u.y,hp:u.hp,maxhp:u.mh,carry:u.c||{},carryN:u.n||0,state:u.s||'seek',waveNo:u.w,raid:!!u.r,strike:!!u.k2});if(u.k==='champion')ai.champ=e}
   cam.x=player.x-VW/2;cam.y=player.y-VH*camFY();computeLight();toast('Partie reprise.',2.5,COL.gold);return true}
 let saveT=20;
-addEventListener('pagehide',saveGame);document.addEventListener('visibilitychange',()=>{if(document.hidden)saveGame()});
+addEventListener('pagehide',saveGame);// application passée en arrière-plan (appel, accueil du téléphone) : pause et commandes relâchées, comme à la perte du focus
+// (avant : seule la sauvegarde ; la partie continuait sans le joueur et un doigt « resté posé » faisait courir le héros au retour)
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)return;saveGame();for(const k in keys)keys[k]=false;mouse.l=mouse.r=false;activeTouches.clear();for(const k in touch)touch[k]=false;if(state==='play')paused=true});
 // ---------- profil : réglages, succès, records, défi du jour (localStorage, clé ute-profile-v1) ----------
 const PROF_KEY='ute-profile-v1';
 const PROF=(()=>{let d=null;try{d=JSON.parse(localStorage.getItem(PROF_KEY))}catch(e){}
