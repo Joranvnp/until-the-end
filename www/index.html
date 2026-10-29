@@ -2399,6 +2399,7 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
   // paysage bas (téléphone couché) : recrues à gauche, améliorations à droite, pour ne pas couvrir la barre d'objets
   // aussi quand la version haute monterait sur la bande du haut (barres d'équipe, effectifs ~30 px) : portable 1280x600
   const wide=VW>=RW*2+8&&(HL.barTop||VH)-4<221+30;
+  if(!wide&&VW<RW)RW=VW; // iPhone SE debout (250 de large) : avant le panneau débordait de 12 et la croix × sortait de l'écran
   const gp=!wide&&touchGap();if(gp&&gp.R-gp.L<RW+6&&gp.R-gp.L>=252){RW=Math.min(262,gp.R-gp.L-4);cx=(gp.L+gp.R)/2}
   // tactile sur écran haut (téléphone debout, tablette) : lignes de 30 au lieu de 24, cibles d'environ 40 px réels sous le doigt
   // écran bas sans place pour la version large (ordinateur 1366x768) : lignes resserrées (20/22 au lieu de 24/25) et calé sous cette bande,
