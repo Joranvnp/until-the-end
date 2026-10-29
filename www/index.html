@@ -2383,7 +2383,8 @@ function togglePanel(n){panel=panel===n?null:n;cursorItem=null;panelT=0;sfx.plac
 // petit panneau centré qui mord sur la minicarte : décalé vers la gauche s'il reste de la marge
 const panelX=(x,W,y)=>{const m=HL.map,o=m&&y<m.y+m.h?x+W+3-m.x:0;return o>0&&x-o>=4?x-o:x};
 // le panneau évite la minicarte (coin haut droit) s'il tient en dessous
-const panelY=(H,y,x,W)=>{let b=HL.barTop||VH;if(isTouch&&W)for(const t of touchLayout())if(t.x<x+W&&t.x+t.w>x&&t.y-H-3>=2)b=Math.min(b,t.y);if(b-H-3<2)return y;y=Math.max(2,Math.min(y,b-H-3));const m=HL.map;
+const panelY=(H,y,x,W)=>{let b=HL.barTop||VH;if(isTouch&&W)for(const t of touchLayout())if(t.x<x+W&&t.x+t.w>x&&t.y-H-3>=2)b=Math.min(b,t.y);// trop haut pour tenir au-dessus des commandes (tablette debout) : sous la bande du haut, qui garde les ressources visibles
+  const tp=isTouch&&VH>VW;if(b-H-3<2)return tp?Math.max(y,Math.min((hudLow||0)+2,VH-H-2)):y;y=Math.max(2,Math.min(y,b-H-3));if(tp&&y<(hudLow||0)+2)return Math.min(hudLow+2,VH-H-2);const m=HL.map;
   if(m&&W&&x<m.x+m.w&&x+W>m.x&&y<m.y+m.h&&m.y+m.h+3+H<=b-3)y=m.y+m.h+3;return y};
 // tablette tactile : espace libre entre les commandes de gauche et de droite, pour y caler un panneau au lieu de les recouvrir
 function touchGap(){if(!isTouch)return null;const T=touchLayout();return{L:Math.max(0,...T.filter(t=>t.x<VW/2).map(t=>t.x+t.w)),R:Math.min(VW,...T.filter(t=>t.x>=VW/2).map(t=>t.x))}}
