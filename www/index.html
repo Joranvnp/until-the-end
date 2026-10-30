@@ -2380,7 +2380,8 @@ function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0
   const units=['Mineur : creuse et rapporte le minerai. Fuit les pillards vers la tour.','Guerrier : mêlée solide. Archer : tire de loin, recule au contact.','Golem : colosse lent qui brise tout, idéal contre le cœur.','Contres (+40 % dégâts) : guerrier > golem > archer > guerrier.','Tour de guet : tire sur les ennemis proches de ton cœur. Améliore-la à la base.','',
     'Défense : tes troupes tiennent une ligne devant le cœur, sous la tour, archers en retrait derrière les guerriers. 3 d\'entre elles chassent les pillards. Le fanion bleu marque la limite couverte par la tour.','Assaut : l\'armée marche groupée vers le cœur rouge.','Suivre : tes troupes t\'escortent partout.','Blessées, les unités reculent pour souffler, puis reviennent au combat (sauf le golem).'];
   const lines=pauseHelp?(pauseHelp===2?units:[...goal,'',...help]).flatMap(l=>l?wrapLines(l,W-16,7):['']):[];
-  const PB=menuBH(6,64),H=pauseHelp?30+lines.length*10+24:24+5*(PB+4)+40,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
+  // courbe des armées sous les boutons de pause, si l'écran a la place (on voit en cours de partie si l'on prend du retard)
+  const PB=menuBH(6,64),ph=!pauseHelp&&stats.hist&&stats.hist.length>=3&&VH-(24+5*(PB+4)+40)>=50?stats.hist:null,H=pauseHelp?30+lines.length*10+24:24+5*(PB+4)+40+(ph?38:0),x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   box(x,y,W,H);txt(pauseHelp===2?'Unités et ordres':pauseHelp?'Aide':'Pause',x+W/2,y+7,COL.txt,10,'center');
   if(pauseHelp){lines.forEach((l,i)=>txt(l,x+8,y+24+i*10,COL.txt,7));
     button(x+W/2-78,y+H-20,76,15,pauseHelp===2?'← Commandes':'Unités →',()=>{pauseHelp=pauseHelp===2?1:2;sfx.place()});button(x+W/2+2,y+H-20,76,15,'Retour',()=>{pauseHelp=false})}
@@ -2392,6 +2393,9 @@ function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0
     button(bx,y+24+2*(PB+4),bw,PB,'Aide et commandes',()=>{pauseHelp=1});
     button(bx,y+24+3*(PB+4),bw,PB,'Succès '+Object.keys(PROF.ach).length+'/'+ACH.length,()=>{menuPanel='ach';panelT=0;sfx.place()});
     button(bx,y+24+4*(PB+4),bw,PB,'Sauvegarder et quitter',()=>{saveGame();paused=false;panel=null;state='title'});
+    if(ph)armyChart(ph,bx+2,y+24+5*(PB+4)+4,bw-4,30);
+    // paysage trop bas pour la loger dessous : encadré à droite du menu s'il reste la place
+    else if(!pauseHelp&&stats.hist&&stats.hist.length>=3){const sx=x+W+6,sw=Math.min(160,VW-sx-8);if(sw>=110){box(sx,y,sw+12,52);armyChart(stats.hist,sx+6,y+10,sw,34)}}
     txt(daily?'Défi du jour : '+daily.mod.n:surv?'Siège · vague '+(stats.waves+1):'Difficulté '+DIFFS[diff].n,x+W/2,y+H-36,daily?COL.gold:COL.dim,6,'center');
     txt('Partie sauvegardée toutes les 20 s',x+W/2,y+H-22,COL.dim,6,'center')}}
 let cheatTaps=0,cheatTapT=-9;const openCheat=()=>{paused=true;pauseHelp=false;menuPanel='cheat';panelT=0;sfx.place()};
@@ -2499,6 +2503,11 @@ function forgeUp(){if(time<fuT&&time>fuT-1)return fuV;fuT=time+.5;const tv=it=>i
   return fuV=RECIPES.some(r=>{const it=IT[r.out];return(it.tool==='pick'||it.tool==='sword')&&tv(it)>(best[it.tool]||0)&&canPay(inv,r.inp)})}
 // recrutement depuis le panneau Base (bouton, ligne ou touche 1-4) : troc automatique, sinon ce qui manque
 function recruitUI(k){const u=UNITS[k],b=bases[0],s=trocFor(b.storage,u.cost);if(s>=0&&recruit(0,k))toast(u.n+' recruté !'+trocNote(s),2,'#9fd0ff');else lackMsg(u.cost,b.storage,1)}
+// courbe des combattants bleus et rouges (écran de fin, menu pause) à partir de stats.hist
+function armyChart(hist,cx0,cy0,cw,CH){const mx=Math.max(4,...hist.map(h=>Math.max(h[0],h[1])));
+  ctx.fillStyle='#05050c';ctx.fillRect(cx0-2,cy0-2,cw+4,CH+4);txt('Armées',cx0,cy0,COL.dim,6,'left');txt(''+mx,cx0+cw,cy0,COL.dim,6,'right');
+  for(const[k,col]of[[1,'#ff5a4a'],[0,'#6fb8ff']]){ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();hist.forEach((h,i)=>{const px=cx0+i/(hist.length-1)*cw,py=cy0+CH-1-h[k]/mx*(CH-9);i?ctx.lineTo(px,py):ctx.moveTo(px,py)});ctx.stroke()}
+  const la=tr('Toi'),lb=tr('Ennemi'),lw=uiWidth(la,6);txt(la,cx0+cw/2-lw-6,cy0,'#6fb8ff',6,'left');txt(lb,cx0+cw/2+6,cy0,'#ff5a4a',6,'left')}
 // ligne d'effet d'un objet (info-bulles de la barre et du sac)
 const itemDesc=it=>it.tool==='sword'||it.tool==='bow'?'Dégâts '+it.dmg+(it.tool==='bow'?' · tire à distance':''):it.tool==='pick'?'Minage x'+it.pow:it.place?'Clic gauche : poser':it.use==='heal'?'Rend des PV':it.use==='bomb'?'Se lance et explose':'Ressource';
 // caractéristique d'un outil ou d'une arme, montrée avant de le forger (avant : visible seulement une fois dans la barre d'objets)
@@ -2701,10 +2710,7 @@ function drawEnd(){if(!endShownT||endShownT<lastEndChange)endShownT=performance.
   else txt(uiFit('Blocs '+stats.mined+' · Recrues '+stats.recruited+' · Ennemis abattus '+stats.kills+' · Coffres '+(stats.chests||0),W-12,7),VW/2,y+69,COL.dim,7,'center');
   tl.forEach((l,i)=>txt(l,VW/2,y+84+dy+i*10,win?COL.gold:'#ffd27a',7,'center'));
   // courbe des combattants bleus et rouges au fil de la partie, juste au-dessus des boutons
-  if(hist){const cw=W-40,cx0=x+20,cy0=y+H-(tall?38+34:30)-(next?(tall?34:28):0)-CH-6,mx=Math.max(4,...hist.map(h=>Math.max(h[0],h[1])));
-    ctx.fillStyle='#05050c';ctx.fillRect(cx0-2,cy0-2,cw+4,CH+4);txt('Armées',cx0,cy0,COL.dim,6,'left');txt(''+mx,cx0+cw,cy0,COL.dim,6,'right');
-    for(const[k,col]of[[1,'#ff5a4a'],[0,'#6fb8ff']]){ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();hist.forEach((h,i)=>{const px=cx0+i/(hist.length-1)*cw,py=cy0+CH-1-h[k]/mx*(CH-9);i?ctx.lineTo(px,py):ctx.moveTo(px,py)});ctx.stroke()}
-    const la=tr('Toi'),lb=tr('Ennemi'),lw=uiWidth(la,6);txt(la,cx0+cw/2-lw-6,cy0,'#6fb8ff',6,'left');txt(lb,cx0+cw/2+6,cy0,'#ff5a4a',6,'left')}
+  if(hist)armyChart(hist,x+20,y+H-(tall?38+34:30)-(next?(tall?34:28):0)-CH-6,W-40,CH);
   const replay=()=>{audioInit();newGame(diff,daily,surv)},share=performance.now()-sharedT<2500?'Copié !':'Partager',menu=()=>{state='title'};
   if(tall){const bx=x+14,fw=W-28,hw=Math.floor((fw-8)/2),by=y+H-38;
     if(next)button(bx,by-68,fw,28,'Difficulté '+DIFFS[diff+1].n+' ▶',()=>{audioInit();newGame(diff+1)},true,true);
