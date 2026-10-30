@@ -2448,7 +2448,9 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
     const own=ents.filter(e=>e.type==='unit'&&e.team===0&&e.kind===k&&!e.dead).length;if(own)txt('×'+own,x+34+uiWidth(u.n,8),ty0,'#9fd0ff',8);
     // contre visible : le triangle guerrier > golem > archer > guerrier n'était écrit que dans l'aide
     // contre de l'armée rouge actuelle : la ligne est cerclée de vert et le contre clignote
-    if(CTR[k])txt((adv?'★ ':'')+'▶'+UNITS[CTR[k]].n,x+132,ty0,adv&&Math.sin(time*5)>0?'#ffffff':'#7dff9a',6,'right');if(!xs)txt(uiFit(u.d,101,6),x+30,tall?yy+10:yy+12,COL.dim,6);if(tall)txt(ust(u),x+30,yy+18,'#b8a98a',6);
+    if(CTR[k])txt((adv?'★ ':'')+'▶'+UNITS[CTR[k]].n,x+132,ty0,adv&&Math.sin(time*5)>0?'#ffffff':'#7dff9a',6,'right');
+    // tactile sans place pour une 3e ligne (paysage) : PV et dégâts à la place de la description, sans survol on ne les voyait nulle part
+    if(!xs)txt(uiFit(isTouch&&!tall?ust(u):u.d,101,6),x+30,tall?yy+10:yy+12,isTouch&&!tall?'#b8a98a':COL.dim,6);if(tall)txt(ust(u),x+30,yy+18,'#b8a98a',6);
     costLine(u.cost,x+136,yy+(xs?3:7),b.storage,1);const go=()=>{const s=trocFor(b.storage,u.cost);if(s>=0&&recruit(0,k))toast(u.n+' recruté !'+trocNote(s),2,'#9fd0ff')},ok=!!trocPlan(b.storage,u.cost);const dn=()=>lackMsg(u.cost,b.storage,1);cardHit(x+6,yy-p,RW-12,RP-2,go,ok,dn);button(x+RW-48,xs?yy:yy+4-bh,40,xs?12:14+2*bh,'Recruter',go,ok,false,dn)});
   const X=ux(x);txt('Améliorations',X+8,y+uy-9,COL.dim,7);if(UPG.some(u=>bases[1].upg[u.id]))txt('★ rouge = niveau ennemi',X+RW-8,y+uy-8,'#ff8a7a',6,'right');
   let hov=null;
