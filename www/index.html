@@ -1129,6 +1129,8 @@ function scanTarget(e,u,aggro){let best=null,bd=1e9;
     // le cœur se tire presque à niveau : depuis une grotte en dessous, la flèche finit dans le sol du château
     if(o.type==='core'?vgap(e,o)>(u.ranged?40:52):Math.abs(dy)>(u.ranged?130:52))continue;
     let d=Math.abs(dx)+Math.abs(dy)*1.5;if(o.type==='core')d-=(Math.abs(dx)<110?400:60);if(o.type==='monster')d+=40;if(o.type==='unit'&&Math.abs(dx)<22&&Math.abs(dy)<20)d-=500;
+    // tireur : il achève les blessés et vise ce qu'il contre (avant, toujours le plus proche : tirs dispersés sur des cibles pleines de vie)
+    if(u.ranged&&o.type==='unit')d-=(1-o.hp/o.maxhp)*60+(CTR[e.kind]===o.kind?40:0);
     // ennemi au contact : prioritaire même sur le cœur (avant, l'assaut frappait le cœur en tournant le dos aux défenseurs et fondait : 0 victoire sur 16 assauts, 1 à 2 sur 8 après)
     if(d<bd){bd=d;best=o}}return best}
 function digStep(e,tx,ty,dt,collect){const id=getT(tx,ty),d=TD[id];if(!d.solid&&id!==LOG)return 1;if(d.hard===Infinity)return -1;
