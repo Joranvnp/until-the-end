@@ -2490,7 +2490,10 @@ function drawCraftPanel(){const av=(HL.barTop||VH)-6-30,tight=(av-30)/RECIPES.le
     if(inf&&!two&&!isTouch&&mouse.inside&&mouse.x>=X+6&&mouse.x<X+CW-46&&mouse.y>=yy&&mouse.y<yy+RH-2)hov={inf,X,yy};
     // stock déjà dans le sac, en coin de l'icône (comme la barre d'objets) : évite de fabriquer en double
     const own=countItem(r.out);if(own)txt(''+own,X+8+is,yy+RH-9,COL.gold,6,'right');
-    const go=()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n+(inf?' ('+inf+')':''),2,COL.gold)};const dn=()=>lackMsg(r.inp,inv);cardHit(X+6,yy,CW-12,RH-2,go,ok,dn);button(X+CW-46,yy+1,38,RH-4,'Créer',go,ok,false,dn)});
+    const go=()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();
+      // outil meilleur que celui de la barre : il prend sa case (l'ancien part à sa place dans le sac), en main si l'ancien l'était
+      // (avant, la nouvelle pioche atterrissait dans une case libre et il fallait la chercher pour la sélectionner)
+      if(up&&!left){const inv=player.inv,j=inv.findIndex(q=>q&&q.id===r.out),i=inv.findIndex((q,k)=>k<9&&q&&IT[q.id].tool===ot.tool&&tv(IT[q.id])<tv(ot));if(i>=0&&j>i){const t=inv[i];inv[i]=inv[j];inv[j]=t}}if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n+(inf?' ('+inf+')':''),2,COL.gold)};const dn=()=>lackMsg(r.inp,inv);cardHit(X+6,yy,CW-12,RH-2,go,ok,dn);button(X+CW-46,yy+1,38,RH-4,'Créer',go,ok,false,dn)});
   if(hov){const l=tr(hov.inf),w=uiWidth(l,7)+10,tx=clamp(hov.X+24,2,VW-w-2),ty=hov.yy-15>=2?hov.yy-15:hov.yy+RH;box(tx,ty,w,13,'rgba(5,5,12,.96)','#ffffff');txt(l,tx+5,ty+3,COL.txt,7)}}
 function drawInvPanel(){
   // tactile : cases agrandies (36 px réels au lieu de 27 sur téléphone), icône centrée à sa taille nette
