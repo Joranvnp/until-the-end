@@ -2455,6 +2455,8 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
   const ust=u=>'PV '+u.hp+' · Dégâts '+Math.round(u.dmg*(1+.25*b.upg.dmg));let hovU=null;
   Object.entries(UNITS).filter(([,u])=>!u.hero).forEach(([k,u],i)=>{const yy=y+32+i*RP+p,adv=mix&&mix.ctr===k,ty0=tall?yy+1:yy+3;if(!isTouch&&mouse.inside&&mouse.x>=x+6&&mouse.x<x+RW-50&&mouse.y>=yy-p&&mouse.y<yy-p+RP-2)hovU={u,yy:yy-p};box(x+6,yy-p,RW-12,RP-2,COL.panel2,adv?'#7dff9a88':'#e8ecff18');
     const img=SPR[k+'0'].R.idle[0];if(xs){ctx.save();ctx.beginPath();ctx.rect(x+7,yy,20,RP-3);ctx.clip();ctx.drawImage(img,x+9,yy+RP-3-img.height+(k==='golem'?1:2));ctx.restore()}else ctx.drawImage(img,x+9,yy+(k==='golem'?-3:-2));txt(u.n,x+30,ty0,COL.txt,8);
+    // ordinateur : touche de recrutement rapide (1 à 4) en coin de l'icône
+    if(!isTouch)txt(''+(i+1),x+8,yy-p+1,COL.dim,6,'left');
     // effectif actuel de ce type, pour savoir quoi recruter sans compter à l'écran
     const own=ents.filter(e=>e.type==='unit'&&e.team===0&&e.kind===k&&!e.dead).length;if(own)txt('×'+own,x+34+uiWidth(u.n,8),ty0,'#9fd0ff',8);
     // contre visible : le triangle guerrier > golem > archer > guerrier n'était écrit que dans l'aide
@@ -2466,7 +2468,7 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
     else if(CTR[k])txt((adv?'★ ':'')+'▶'+UNITS[CTR[k]].n,x+132,ty0,adv&&Math.sin(time*5)>0?'#ffffff':'#7dff9a',6,'right');
     // tactile sans place pour une 3e ligne (paysage) : PV et dégâts à la place de la description, sans survol on ne les voyait nulle part
     if(!xs)txt(uiFit(isTouch&&!tall?ust(u):u.d,101,6),x+30,tall?yy+10:yy+12,isTouch&&!tall?'#b8a98a':COL.dim,6);if(tall)txt(ust(u),x+30,yy+18,'#b8a98a',6);
-    costLine(u.cost,x+136,yy+(xs?3:7),b.storage,1);const go=()=>{const s=trocFor(b.storage,u.cost);if(s>=0&&recruit(0,k))toast(u.n+' recruté !'+trocNote(s),2,'#9fd0ff')},ok=!!trocPlan(b.storage,u.cost);const dn=()=>lackMsg(u.cost,b.storage,1);cardHit(x+6,yy-p,RW-12,RP-2,go,ok,dn);button(x+RW-48,xs?yy:yy+4-bh,40,xs?12:14+2*bh,'Recruter',go,ok,false,dn)});
+    costLine(u.cost,x+136,yy+(xs?3:7),b.storage,1);const go=()=>recruitUI(k),ok=!!trocPlan(b.storage,u.cost);const dn=()=>lackMsg(u.cost,b.storage,1);cardHit(x+6,yy-p,RW-12,RP-2,go,ok,dn);button(x+RW-48,xs?yy:yy+4-bh,40,xs?12:14+2*bh,'Recruter',go,ok,false,dn)});
   const X=ux(x);txt('Améliorations',X+8,y+uy-9,COL.dim,7);if(UPG.some(u=>bases[1].upg[u.id]))txt('★ rouge = niveau ennemi',X+RW-8,y+uy-8,'#ff8a7a',6,'right');
   let hov=null;
   UPG.forEach((u,i)=>{const xx=X+6+(i%2)*(cw+3),yy=y+uy+Math.floor(i/2)*UP+p,l=b.upg[u.id],c=upgCost(u,l),le=bases[1].upg[u.id];if(!isTouch&&mouse.inside&&mouse.x>=xx&&mouse.x<xx+cw&&mouse.y>=yy-p&&mouse.y<yy-p+UP-2)hov={u,xx,yy:yy-p,l};box(xx,yy-p,cw,UP-2,COL.panel2,le>l?'#ff6a5a55':'#e8ecff18');if(u.gen&&l){ctx.fillStyle='#7dff9a55';ctx.fillRect(xx+1,yy-p+UP-4,Math.round((cw-2)*Math.min(1,(b.genT&&b.genT[u.id]||0)/genT(u,l))),1)}if(le)txt(le+'★',xx+cw-4,yy+3,'#ff8a7a',6,'right');
@@ -2488,6 +2490,8 @@ function forgeUp(){if(time<fuT&&time>fuT-1)return fuV;fuT=time+.5;const tv=it=>i
   for(const s of[...player.inv,cursorItem])if(s){inv[s.id]=(inv[s.id]||0)+s.n;const it=IT[s.id];if(it&&(it.tool==='pick'||it.tool==='sword'))best[it.tool]=Math.max(best[it.tool]||0,tv(it))}
   for(const k of RES)inv[k]=(inv[k]||0)+(st[k]||0);
   return fuV=RECIPES.some(r=>{const it=IT[r.out];return(it.tool==='pick'||it.tool==='sword')&&tv(it)>(best[it.tool]||0)&&canPay(inv,r.inp)})}
+// recrutement depuis le panneau Base (bouton, ligne ou touche 1-4) : troc automatique, sinon ce qui manque
+function recruitUI(k){const u=UNITS[k],b=bases[0],s=trocFor(b.storage,u.cost);if(s>=0&&recruit(0,k))toast(u.n+' recruté !'+trocNote(s),2,'#9fd0ff');else lackMsg(u.cost,b.storage,1)}
 // caractéristique d'un outil ou d'une arme, montrée avant de le forger (avant : visible seulement une fois dans la barre d'objets)
 const toolInfo=it=>it.tool==='sword'||it.tool==='bow'?'Dégâts '+it.dmg:it.tool==='pick'?'Minage x'+it.pow:'';
 function drawCraftPanel(){const av=(HL.barTop||VH)-6-30,tight=(av-30)/RECIPES.length<17,// -30 : l'en-tête du panneau (avant, oublié : en 1280x600 la forge montait sur la bande du haut)
@@ -2795,7 +2799,9 @@ addEventListener('keydown',ev=>{keys[ev.code]=true;audioInit();
   if(ev.code==='Escape'&&menuPanel){menuPanel=null;return}
   if(state!=='play')return;
   if(ev.code==='F9'){ev.preventDefault();if(menuPanel==='cheat'){menuPanel=null;paused=false}else openCheat();return}
-  if(ev.code.startsWith('Digit')){const n=+ev.code.slice(5);if(n>=1&&n<=9)player.sel=n-1}
+  if(ev.code.startsWith('Digit')){const n=+ev.code.slice(5);
+    // panneau Base ouvert : 1 à 4 recrutent mineur, guerrier, archer, golem (avant, 10 recrues = 10 clics sur « Recruter »)
+    if(panel==='base'&&!paused&&n>=1&&n<=4)recruitUI(Object.keys(UNITS).filter(k=>!UNITS[k].hero)[n-1]);else if(n>=1&&n<=9)player.sel=n-1}
   if(paused&&ev.code!=='Escape'&&ev.code!=='KeyP')return;
   if(ev.code==='KeyB')togglePanel('base');if(ev.code==='KeyC')togglePanel('craft');if(ev.code==='KeyE'||ev.code==='KeyI')togglePanel('inv');
   if(ev.code==='KeyR')toggleOrder();if(ev.code==='KeyF')usePower(player);if(ev.code==='Escape'||ev.code==='KeyP'){if(panel&&ev.code==='Escape'){panel=null;stowCursor()}else{paused=!paused;pauseHelp=false}}if(ev.code==='KeyM'){muted=!muted;toast(muted?'Son coupé':'Son activé',1.5)}
