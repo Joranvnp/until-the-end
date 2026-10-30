@@ -2445,6 +2445,8 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
   if(hov){const l1=tr(hov.u.d)+(hov.u.gen?'':' / niv.'),l2=tr('Niveau')+' '+hov.l+'/3',w=Math.max(uiWidth(l1,7),uiWidth(l2,6))+10,tx=clamp(Math.round(hov.xx),2,VW-w-2),ty=hov.yy-26>=2?hov.yy-26:hov.yy+UP;
     box(tx,ty,w,24,'rgba(5,5,12,.96)','#ffffff');txt(l1,tx+5,ty+4,COL.txt,7);txt(l2,tx+5,ty+14,COL.dim,6)}
 }
+// caractéristique d'un outil ou d'une arme, montrée avant de le forger (avant : visible seulement une fois dans la barre d'objets)
+const toolInfo=it=>it.tool==='sword'||it.tool==='bow'?'Dégâts '+it.dmg:it.tool==='pick'?'Minage x'+it.pow:'';
 function drawCraftPanel(){const av=(HL.barTop||VH)-6-30,tight=(av-30)/RECIPES.length<17,// -30 : l'en-tête du panneau (avant, oublié : en 1280x600 la forge montait sur la bande du haut)
   
   // colonnes resserrées (216 à 250) : le petit paysage (568x320) passe aussi en deux colonnes, avant ses lignes faisaient 12 px
@@ -2457,11 +2459,14 @@ function drawCraftPanel(){const av=(HL.barTop||VH)-6-30,tight=(av-30)/RECIPES.le
   // le minerai est déposé tout seul à la base : la forge puise dans le sac puis dans la réserve
   const inv={},st=bases[0].storage;for(const s of player.inv)if(s)inv[s.id]=(inv[s.id]||0)+s.n;for(const k of RES)inv[k]=(inv[k]||0)+(st[k]||0);
   // lignes compressées si l'écran est bas (téléphone en paysage) pour ne pas couvrir les boutons du bas
-  RECIPES.forEach((r,i)=>{const X=x+Math.floor(i/rows)*(CW-6),yy=y+22+(i%rows)*RH,ok=canPay(inv,r.inp),ty=yy+Math.round((RH-2-5)/2),is=Math.min(16,RH-3);box(X+6,yy,CW-12,RH-2,ok?COL.panel2:'#05050c','#e8ecff18');ctx.drawImage(ICON[r.out],X+8,yy+Math.floor((RH-2-is)/2),is,is);
-    txt(IT[r.out].n+(r.n>1?' ×'+r.n:''),X+27,ty,ok?COL.txt:COL.dim,7);costLine(r.inp,X+120,ty,inv);
+  let hov=null;
+  RECIPES.forEach((r,i)=>{const X=x+Math.floor(i/rows)*(CW-6),yy=y+22+(i%rows)*RH,ok=canPay(inv,r.inp),inf=toolInfo(IT[r.out]),two=inf&&RH>=19,ty=two?yy+Math.round((RH-2)/2)-7:yy+Math.round((RH-2-5)/2),is=Math.min(16,RH-3);box(X+6,yy,CW-12,RH-2,ok?COL.panel2:'#05050c','#e8ecff18');ctx.drawImage(ICON[r.out],X+8,yy+Math.floor((RH-2-is)/2),is,is);
+    txt(IT[r.out].n+(r.n>1?' ×'+r.n:''),X+27,ty,ok?COL.txt:COL.dim,7);if(two)txt(inf,X+27,ty+9,COL.dim,6);costLine(r.inp,X+120,two?yy+Math.round((RH-2-5)/2):ty,inv);
+    if(inf&&!two&&!isTouch&&mouse.inside&&mouse.x>=X+6&&mouse.x<X+CW-46&&mouse.y>=yy&&mouse.y<yy+RH-2)hov={inf,X,yy};
     // stock déjà dans le sac, en coin de l'icône (comme la barre d'objets) : évite de fabriquer en double
     const own=countItem(r.out);if(own)txt(''+own,X+8+is,yy+RH-9,COL.gold,6,'right');
-    const go=()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n,2,COL.gold)};cardHit(X+6,yy,CW-12,RH-2,go,ok);button(X+CW-46,yy+1,38,RH-4,'Créer',go,ok)})}
+    const go=()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n+(inf?' ('+inf+')':''),2,COL.gold)};cardHit(X+6,yy,CW-12,RH-2,go,ok);button(X+CW-46,yy+1,38,RH-4,'Créer',go,ok)});
+  if(hov){const l=tr(hov.inf),w=uiWidth(l,7)+10,tx=clamp(hov.X+24,2,VW-w-2),ty=hov.yy-15>=2?hov.yy-15:hov.yy+RH;box(tx,ty,w,13,'rgba(5,5,12,.96)','#ffffff');txt(l,tx+5,ty+3,COL.txt,7)}}
 function drawInvPanel(){
   // tactile : cases agrandies (36 px réels au lieu de 27 sur téléphone), icône centrée à sa taille nette
   const sw=isTouch?clamp(Math.floor(Math.min((VW-24)/9,((HL.barTop||VH)-44)/4)),20,27):20,io=Math.floor((sw-18)/2),W=9*sw+12,H=4*sw+34,x=panelX(Math.round(VW/2-W/2),W,Math.round(VH/2-H/2)-10),y=panelY(H,Math.round(VH/2-H/2)-10,x,W);panelRect={x,y,w:W,h:H};
