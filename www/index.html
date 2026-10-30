@@ -2221,9 +2221,12 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
   const mapH=narrow?Math.max(6,Math.min(41,Math.floor(VH*.22)-50)):0;
   const mw=narrow?Math.min(VW-heroW-16,120,Math.floor(mapH*WW/WH)):Math.min(176,Math.floor(VW*.28)),mh=Math.round(mw*WH/WW),mx=VW-mw-6,my=6;
   HL.map={x:mx-2,y:my-2,w:mw+4,h:mh+4};
-  box(mx-2,my-2,mw+4,mh+4,'#05050c');ctx.imageSmoothingEnabled=false;ctx.drawImage(mmC,mx,my,mw,mh);
+  box(mx-2,my-2,mw+4,mh+4,'#05050c');ctx.imageSmoothingEnabled=false;
+  // terrain atténué et repères cernés de noir : les unités (1,5 px bleu/rouge) se confondaient avec les filons bleus et orangés
+  ctx.globalAlpha=.6;ctx.drawImage(mmC,mx,my,mw,mh);ctx.globalAlpha=1;
   const sc=mw/(WW*T);ctx.strokeStyle='#e8ecff99';ctx.lineWidth=1;ctx.strokeRect(mx+cam.x*sc,my+cam.y*sc,VW*sc,VH*sc);
-  for(const e of ents){if(e.dead||(e.type!=='unit'&&e.type!=='player'&&e.type!=='core'&&e.type!=='monster'))continue;ctx.fillStyle=e.type==='player'?'#fff':e.team===0?COL.blue:e.team===1?COL.red:'#7ddf6a';const z=e.type==='core'?3:e.type==='player'?2:1.5;ctx.fillRect(mx+(e.x+e.w/2)*sc-z/2,my+(e.y+e.h/2)*sc-z/2,z,z)}
+  for(const e of ents){if(e.dead||(e.type!=='unit'&&e.type!=='player'&&e.type!=='core'&&e.type!=='monster'))continue;const z=e.type==='core'?4:e.type==='player'?3:2,px=Math.round(mx+(e.x+e.w/2)*sc-z/2),py=Math.round(my+(e.y+e.h/2)*sc-z/2);ctx.fillStyle='#05050c';ctx.fillRect(px-1,py-1,z+2,z+2)}
+  for(const e of ents){if(e.dead||(e.type!=='unit'&&e.type!=='player'&&e.type!=='core'&&e.type!=='monster'))continue;ctx.fillStyle=e.type==='player'?'#fff':e.team===0?'#6fb8ff':e.team===1?'#ff5a4a':'#7ddf6a';const z=e.type==='core'?4:e.type==='player'?3:2;ctx.fillRect(Math.round(mx+(e.x+e.w/2)*sc-z/2),Math.round(my+(e.y+e.h/2)*sc-z/2),z,z)}
   // barres des cœurs (+ effectifs)
   let cx0,cw,cy0;const midW=mx-heroW-26;
   if(narrow){cx0=8;cw=VW-16;cy0=my+mh+3}else if(midW>=150){cw=Math.min(240,midW);cx0=Math.round(heroW+12+(midW-cw)/2+4);cy0=4}else{cx0=8;cw=VW-16;cy0=Math.max(42,my+mh+6)}
