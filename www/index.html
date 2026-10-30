@@ -2481,9 +2481,12 @@ function drawCraftPanel(){const av=(HL.barTop||VH)-6-30,tight=(av-30)/RECIPES.le
   // le minerai est déposé tout seul à la base : la forge puise dans le sac puis dans la réserve
   const inv={},st=bases[0].storage;for(const s of player.inv)if(s)inv[s.id]=(inv[s.id]||0)+s.n;for(const k of RES)inv[k]=(inv[k]||0)+(st[k]||0);
   // lignes compressées si l'écran est bas (téléphone en paysage) pour ne pas couvrir les boutons du bas
+  // meilleure pioche / épée déjà possédée (sac + objet en main) : la forge signale ce qui l'améliore (▲) et grise ce qui est moins bien
+  const tv=it=>it.tool==='pick'?it.pow:it.dmg,best={};for(const s of[...player.inv,cursorItem])if(s){const it=IT[s.id];if(it&&(it.tool==='pick'||it.tool==='sword'))best[it.tool]=Math.max(best[it.tool]||0,tv(it))}
   let hov=null;
   RECIPES.forEach((r,i)=>{const X=x+Math.floor(i/rows)*(CW-6),yy=y+22+(i%rows)*RH,ok=canPay(inv,r.inp),inf=toolInfo(IT[r.out]),two=inf&&RH>=19,ty=two?yy+Math.round((RH-2)/2)-7:yy+Math.round((RH-2-5)/2),is=Math.min(16,RH-3);box(X+6,yy,CW-12,RH-2,ok?COL.panel2:'#05050c','#e8ecff18');ctx.drawImage(ICON[r.out],X+8,yy+Math.floor((RH-2-is)/2),is,is);
-    txt(IT[r.out].n+(r.n>1?' ×'+r.n:''),X+27,ty,ok?COL.txt:COL.dim,7);if(two)txt(inf,X+27,ty+9,COL.dim,6);costLine(r.inp,X+120,two?yy+Math.round((RH-2-5)/2):ty,inv);
+    const ot=IT[r.out],cmpT=(ot.tool==='pick'||ot.tool==='sword')&&best[ot.tool]!=null?Math.sign(tv(ot)-best[ot.tool]):null,up=cmpT===1,worse=cmpT===-1;
+    txt(IT[r.out].n+(r.n>1?' ×'+r.n:'')+(up&&!two?' ▲':''),X+27,ty,ok?COL.txt:COL.dim,7);if(two)txt((up?'▲ ':'')+inf,X+27,ty+9,up?'#7dff9a':worse?'#5a5a70':COL.dim,6);costLine(r.inp,X+120,two?yy+Math.round((RH-2-5)/2):ty,inv);
     if(inf&&!two&&!isTouch&&mouse.inside&&mouse.x>=X+6&&mouse.x<X+CW-46&&mouse.y>=yy&&mouse.y<yy+RH-2)hov={inf,X,yy};
     // stock déjà dans le sac, en coin de l'icône (comme la barre d'objets) : évite de fabriquer en double
     const own=countItem(r.out);if(own)txt(''+own,X+8+is,yy+RH-9,COL.gold,6,'right');
