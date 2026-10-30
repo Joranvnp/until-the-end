@@ -1269,7 +1269,11 @@ function updateUnit(e,dt){
   else if(time-(e.hitT||0)>8)e.hp=Math.min(e.maxhp,e.hp+dt*2.5);
   // blessé : il recule ~18 cases vers chez lui pour souffler (pas jusqu'au cœur, sinon il traverse toute la carte et l'assaut le perd)
   const sg=siegeOf(e);
-  if(e.hp<e.maxhp*(sg?.2:.28)&&!e.retreat&&e.kind!=='golem'){e.retreat=true;e.retX=retreatSpot(e,home)}
+  // dernier assaut : au pied d'un cœur adverse presque détruit (< 25 %), on ne recule plus, on l'achève
+  // (avant, l'armée bleue pouvait fondre en se repliant blessure par blessure devant un cœur rouge à 50 PV)
+  const ecr=bases[1-e.team].core,allIn=!ecr.dead&&ecr.hp<ecr.maxhp*.25&&Math.abs(ecr.x+11-(e.x+e.w/2))<8*T&&!(surv&&e.team===0);
+  if(allIn&&e.retreat){e.retreat=false;e.retX=null}
+  if(e.hp<e.maxhp*(sg?.2:.28)&&!e.retreat&&e.kind!=='golem'&&!allIn){e.retreat=true;e.retX=retreatSpot(e,home)}
   if(e.retreat){if(e.hp>e.maxhp*(sg?.6:.85)){e.retreat=false;e.retX=null}else{const near=nearestHostile(e,26);if(near&&e.atk<=0)meleeOrShoot(e,u,near);if(e.retX==null)e.retX=retreatSpot(e,home);
     // encore talonné à son point de repli : on recule d'un cran
     if(near&&Math.abs(e.retX-(e.x+e.w/2))<=8)e.retX=retreatSpot(e,home);
