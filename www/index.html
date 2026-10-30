@@ -2317,9 +2317,9 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
     // petite étiquette « ordre » au-dessus : le bouton affiche l'ordre EN COURS de l'armée (pas une action à faire)
     if(fn===toggleOrder){const l=tr('Ordre').toUpperCase(),w=uiWidth(l,7)+4;ctx.fillStyle='#05050cbb';ctx.fillRect(bx,by-10,w,9);txt(l,bx+2,by-9,COL.dim,7)}
     // pastille dorée sur Base quand une amélioration est payable (les générateurs remplissent la réserve sans qu'on regarde)
-    if(fn===btns[1][2]&&panel!=='base'&&UPG.some(u=>b0.upg[u.id]<3&&canPay(b0.storage,upgCost(u,b0.upg[u.id])))){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2,2*r+2,2*r+2);ctx.fillStyle=COL.gold;ctx.fillRect(bx+wd-2*r-2,by-1,2*r,2*r)}
+    if(fn===btns[1][2]&&panel!=='base'&&UPG.some(u=>b0.upg[u.id]<3&&canPay(b0.storage,upgCost(u,b0.upg[u.id])))){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2-r,2*r+2,2*r+2);ctx.fillStyle=COL.gold;ctx.fillRect(bx+wd-2*r-2,by-1-r,2*r,2*r)}
     // même pastille, verte, sur Forge quand une pioche ou une épée meilleure que celles du sac est fabricable (le ▲ de la forge)
-    if(fn===btns[2][2]&&panel!=='craft'&&forgeUp()){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2,2*r+2,2*r+2);ctx.fillStyle='#7dff9a';ctx.fillRect(bx+wd-2*r-2,by-1,2*r,2*r)}bx+=wd+3}
+    if(fn===btns[2][2]&&panel!=='craft'&&forgeUp()){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2-r,2*r+2,2*r+2);ctx.fillStyle='#7dff9a';ctx.fillRect(bx+wd-2*r-2,by-1-r,2*r,2*r)}bx+=wd+3}
   for(let i=0;i<9;i++){const x=hx+i*sw,s=p.inv[i],on=i===p.sel;box(x,hy,sw-2,sw-2,'rgba(5,5,12,.9)',on?'#ffffff':'#e8ecff44');
     if(s){const bo=on&&time-selT<.2?-Math.round(Math.sin((time-selT)/.2*Math.PI)*3):0;const iz=sw>=34?32:sw>=27?24:16;ctx.drawImage(ICON[s.id],Math.round(x+(sw-2-iz)/2),Math.round(hy+(sw-2-iz)/2)+bo,iz,iz);if(s.n>1)qty(s.n,x+sw-4,hy+sw-11)}
     // numéro sur une pastille sombre : lisible même quand l'icône remplit la case (PC)
@@ -2340,7 +2340,7 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
   if(!isTouch&&player&&!panel){const h=heroDef(HERO),cd=Math.max(0,player.pwCd),lab='F '+tr(h.p)+(cd>0?' '+Math.ceil(cd)+'s':''),w=uiWidth(lab,7)+8,low=!same&&hx-w-8>=6,px=low?hx-w-8:6,py=low?hy+Math.round((sw-2-11)/2):top-13; // à gauche de la barre d'objets quand la place est libre
     ctx.fillStyle='#05050ccc';ctx.fillRect(px,py,w,11);if(cd>0){ctx.fillStyle='#ffffff18';ctx.fillRect(px,py,Math.round(w*(1-cd/h.cd)),11)}txt(lab,px+4,py+3,cd>0?COL.dim:COL.gold,7)}
   // souris sur une case : nom de l'objet et ce qu'il fait, au-dessus de la barre
-  if(hotTip&&!panel){const it=IT[hotTip.s.id],d=it.tool==='sword'||it.tool==='bow'?'Dégâts '+it.dmg+(it.tool==='bow'?' · tire à distance':''):it.tool==='pick'?'Minage x'+it.pow:it.place?'Clic gauche : poser':it.use==='heal'?'Rend des PV':it.use==='bomb'?'Se lance et explose':'Ressource';
+  if(hotTip&&!panel){const it=IT[hotTip.s.id],d=itemDesc(it);
     const l1=tr(it.n),l2=tr(d),w=Math.max(uiWidth(l1,7),uiWidth(l2,6))+10,x=clamp(Math.round(hotTip.x-w/2),2,VW-w-2),y=Math.min(hy,by)-27;
     box(x,y,w,24,'rgba(5,5,12,.95)','#ffffff');txt(l1,x+5,y+4,COL.txt,7);txt(l2,x+5,y+14,COL.dim,6);hotTip=null}
   hotTip=null;HL.touchY=top;
@@ -2495,6 +2495,8 @@ function forgeUp(){if(time<fuT&&time>fuT-1)return fuV;fuT=time+.5;const tv=it=>i
   return fuV=RECIPES.some(r=>{const it=IT[r.out];return(it.tool==='pick'||it.tool==='sword')&&tv(it)>(best[it.tool]||0)&&canPay(inv,r.inp)})}
 // recrutement depuis le panneau Base (bouton, ligne ou touche 1-4) : troc automatique, sinon ce qui manque
 function recruitUI(k){const u=UNITS[k],b=bases[0],s=trocFor(b.storage,u.cost);if(s>=0&&recruit(0,k))toast(u.n+' recruté !'+trocNote(s),2,'#9fd0ff');else lackMsg(u.cost,b.storage,1)}
+// ligne d'effet d'un objet (info-bulles de la barre et du sac)
+const itemDesc=it=>it.tool==='sword'||it.tool==='bow'?'Dégâts '+it.dmg+(it.tool==='bow'?' · tire à distance':''):it.tool==='pick'?'Minage x'+it.pow:it.place?'Clic gauche : poser':it.use==='heal'?'Rend des PV':it.use==='bomb'?'Se lance et explose':'Ressource';
 // caractéristique d'un outil ou d'une arme, montrée avant de le forger (avant : visible seulement une fois dans la barre d'objets)
 const toolInfo=it=>it.tool==='sword'||it.tool==='bow'?'Dégâts '+it.dmg:it.tool==='pick'?'Minage x'+it.pow:'';
 function drawCraftPanel(){const av=(HL.barTop||VH)-6-30,tight=(av-30)/RECIPES.length<17,// -30 : l'en-tête du panneau (avant, oublié : en 1280x600 la forge montait sur la bande du haut)
@@ -2530,9 +2532,14 @@ function drawInvPanel(){
   // comme la forge : le bandeau de vague prend la place du sous-titre au lieu de recouvrir le titre
   const wd=HL.waveDraw;if(wd&&wd.y<y+H&&wd.y+11>y&&wd.x<x+W&&wd.x+wd.w>x)panelTitleHi=x+W-22;else if(cursorItem)txt(uiFit('En main : '+tr(IT[cursorItem.id].n)+(cursorItem.n>1?' ×'+cursorItem.n:'')+' · touche une case',W-60,6),x+W-22,y+8,COL.gold,6,'right'); // tactile : pas de curseur, on dit quel objet est tenu
   else txt(isTouch?'touche pour déplacer':'clique pour déplacer',x+W-22,y+8,COL.dim,6,'right');button(x+W-18,y+4,14,12,'×',()=>togglePanel('inv'));
+  let hv=null;
   for(let i=0;i<36;i++){const r=i<9?3:Math.floor((i-9)/9),c=i%9,xx=x+6+c*sw,yy=y+22+r*sw+(i<9?6:0),s=player.inv[i];
-    box(xx,yy,sw-2,sw-2,i<9?'#0a0a14':COL.panel2,'#e8ecff33');if(s){ctx.drawImage(ICON[s.id],xx+1+io,yy+1+io);if(s.n>1)qty(s.n,xx+sw-4,yy+sw-11)}
-    uiHits.push({x:xx,y:yy,w:sw-2,h:sw-2,fn:()=>{const t=player.inv[i];if(cursorItem&&t&&t.id===cursorItem.id&&!IT[t.id].tool){const k=Math.min(cursorItem.n,99-t.n);t.n+=k;cursorItem.n-=k;if(cursorItem.n<=0)cursorItem=null}else{player.inv[i]=cursorItem;cursorItem=t}sfx.place()}})}}
+    // ordinateur : survol d'une case pleine, son nom et son effet (avant, le sac ne nommait aucun objet)
+    if(s&&!isTouch&&!cursorItem&&mouse.inside&&mouse.x>=xx&&mouse.x<xx+sw-2&&mouse.y>=yy&&mouse.y<yy+sw-2)hv={s,xx,yy};
+    box(xx,yy,sw-2,sw-2,i<9?'#0a0a14':COL.panel2,hv&&hv.s===s?'#ffffffaa':'#e8ecff33');if(s){ctx.drawImage(ICON[s.id],xx+1+io,yy+1+io);if(s.n>1)qty(s.n,xx+sw-4,yy+sw-11)}
+    uiHits.push({x:xx,y:yy,w:sw-2,h:sw-2,fn:()=>{const t=player.inv[i];if(cursorItem&&t&&t.id===cursorItem.id&&!IT[t.id].tool){const k=Math.min(cursorItem.n,99-t.n);t.n+=k;cursorItem.n-=k;if(cursorItem.n<=0)cursorItem=null}else{player.inv[i]=cursorItem;cursorItem=t}sfx.place()}})}
+  if(hv){const it=IT[hv.s.id],l1=tr(it.n)+(hv.s.n>1?' ×'+hv.s.n:''),l2=tr(itemDesc(it)),w=Math.max(uiWidth(l1,7),uiWidth(l2,6))+10,tx=clamp(Math.round(hv.xx+sw/2-w/2),2,VW-w-2),ty=hv.yy-26>=2?hv.yy-26:hv.yy+sw;
+    box(tx,ty,w,24,'rgba(5,5,12,.95)','#ffffff');txt(l1,tx+5,ty+4,COL.txt,7);txt(l2,tx+5,ty+14,COL.dim,6)}}
 function drawCursor(){if(!mouse.inside||isTouch&&state==='play')return;const x=Math.round(mouse.x),y=Math.round(mouse.y);
   if(cursorItem){ctx.drawImage(ICON[cursorItem.id],x-6,y-6);if(cursorItem.n>1)txt(''+cursorItem.n,x+8,y+2,COL.txt,7)}
   ctx.fillStyle='#120e1c';ctx.fillRect(x-1,y-4,3,9);ctx.fillRect(x-4,y-1,9,3);ctx.fillStyle=COL.txt;ctx.fillRect(x,y-3,1,7);ctx.fillRect(x-3,y,7,1)}
