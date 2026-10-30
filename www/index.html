@@ -2314,7 +2314,9 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
     // petite étiquette « ordre » au-dessus : le bouton affiche l'ordre EN COURS de l'armée (pas une action à faire)
     if(fn===toggleOrder){const l=tr('Ordre').toUpperCase(),w=uiWidth(l,7)+4;ctx.fillStyle='#05050cbb';ctx.fillRect(bx,by-10,w,9);txt(l,bx+2,by-9,COL.dim,7)}
     // pastille dorée sur Base quand une amélioration est payable (les générateurs remplissent la réserve sans qu'on regarde)
-    if(fn===btns[1][2]&&panel!=='base'&&UPG.some(u=>b0.upg[u.id]<3&&canPay(b0.storage,upgCost(u,b0.upg[u.id])))){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2,2*r+2,2*r+2);ctx.fillStyle=COL.gold;ctx.fillRect(bx+wd-2*r-2,by-1,2*r,2*r)}bx+=wd+3}
+    if(fn===btns[1][2]&&panel!=='base'&&UPG.some(u=>b0.upg[u.id]<3&&canPay(b0.storage,upgCost(u,b0.upg[u.id])))){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2,2*r+2,2*r+2);ctx.fillStyle=COL.gold;ctx.fillRect(bx+wd-2*r-2,by-1,2*r,2*r)}
+    // même pastille, verte, sur Forge quand une pioche ou une épée meilleure que celles du sac est fabricable (le ▲ de la forge)
+    if(fn===btns[2][2]&&panel!=='craft'&&forgeUp()){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2,2*r+2,2*r+2);ctx.fillStyle='#7dff9a';ctx.fillRect(bx+wd-2*r-2,by-1,2*r,2*r)}bx+=wd+3}
   for(let i=0;i<9;i++){const x=hx+i*sw,s=p.inv[i],on=i===p.sel;box(x,hy,sw-2,sw-2,'rgba(5,5,12,.9)',on?'#ffffff':'#e8ecff44');
     if(s){const bo=on&&time-selT<.2?-Math.round(Math.sin((time-selT)/.2*Math.PI)*3):0;const iz=sw>=34?32:sw>=27?24:16;ctx.drawImage(ICON[s.id],Math.round(x+(sw-2-iz)/2),Math.round(hy+(sw-2-iz)/2)+bo,iz,iz);if(s.n>1)qty(s.n,x+sw-4,hy+sw-11)}
     // numéro sur une pastille sombre : lisible même quand l'icône remplit la case (PC)
@@ -2476,6 +2478,12 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
   if(hov){const l1=tr(hov.u.d)+(hov.u.gen?'':' / niv.'),l2=tr('Niveau')+' '+hov.l+'/3',w=Math.max(uiWidth(l1,7),uiWidth(l2,6))+10,tx=clamp(Math.round(hov.xx),2,VW-w-2),ty=hov.yy-26>=2?hov.yy-26:hov.yy+UP;
     box(tx,ty,w,24,'rgba(5,5,12,.96)','#ffffff');txt(l1,tx+5,ty+4,COL.txt,7);txt(l2,tx+5,ty+14,COL.dim,6)}
 }
+// une pioche ou une épée meilleure que la meilleure possédée est-elle payable (sac + réserve) ? recalculé 2 fois par seconde
+let fuT=-1,fuV=false;
+function forgeUp(){if(time<fuT&&time>fuT-1)return fuV;fuT=time+.5;const tv=it=>it.tool==='pick'?it.pow:it.dmg,best={},inv={},st=bases[0].storage;
+  for(const s of[...player.inv,cursorItem])if(s){inv[s.id]=(inv[s.id]||0)+s.n;const it=IT[s.id];if(it&&(it.tool==='pick'||it.tool==='sword'))best[it.tool]=Math.max(best[it.tool]||0,tv(it))}
+  for(const k of RES)inv[k]=(inv[k]||0)+(st[k]||0);
+  return fuV=RECIPES.some(r=>{const it=IT[r.out];return(it.tool==='pick'||it.tool==='sword')&&tv(it)>(best[it.tool]||0)&&canPay(inv,r.inp)})}
 // caractéristique d'un outil ou d'une arme, montrée avant de le forger (avant : visible seulement une fois dans la barre d'objets)
 const toolInfo=it=>it.tool==='sword'||it.tool==='bow'?'Dégâts '+it.dmg:it.tool==='pick'?'Minage x'+it.pow:'';
 function drawCraftPanel(){const av=(HL.barTop||VH)-6-30,tight=(av-30)/RECIPES.length<17,// -30 : l'en-tête du panneau (avant, oublié : en 1280x600 la forge montait sur la bande du haut)
