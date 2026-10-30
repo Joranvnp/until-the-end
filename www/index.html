@@ -2306,7 +2306,7 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;
   // équerres aux deux coins opposés de la case choisie, tracées après toutes les cases pour ne pas être recouvertes par la voisine
   {const x=hx+p.sel*sw,e=sw-2;ctx.fillStyle=Math.sin(time*5)>0?'#ffffff':'#a0a4be';ctx.fillRect(x-2,hy-2,6,1);ctx.fillRect(x-2,hy-2,1,6);ctx.fillRect(x+e-4,hy+e+1,6,1);ctx.fillRect(x+e+1,hy+e-4,1,6)}
   let top=Math.min(hy,by-10);HL.barTop=top; // -10 : étiquette « ordre » au-dessus des boutons
-  const ss=p.inv[p.sel],sa=2.5-(time-selT);if(ss&&sa>0){ctx.globalAlpha=Math.min(1,sa*2);txt(IT[ss.id].n,VW/2,top-11,COL.txt,8,'center');ctx.globalAlpha=1;top-=12} // nom de l'objet seulement juste après un changement de case
+  const ss=p.inv[p.sel],sa=2.5-(time-selT);if(ss&&sa>0){ctx.globalAlpha=Math.min(1,sa*2);const inf=toolInfo(IT[ss.id]);txt(uiFit(tr(IT[ss.id].n)+(inf?' · '+tr(inf):''),VW-8,8),VW/2,top-11,COL.txt,8,'center');ctx.globalAlpha=1;top-=12} // nom de l'objet (et sa force : sur téléphone, pas de survol pour la voir) juste après un changement de case
   {const og=ents.find(e=>e.kind==='ogre'&&!e.dead);if(og&&!panel){const w=Math.min(VW-40,220),x=Math.round((VW-w)/2),y=top-16;txt("Ogre de sang",VW/2,y,'#ff9a8a',7,'center');
     ctx.fillStyle='#120e1c';ctx.fillRect(x-1,y+8,w+2,5);ctx.fillStyle='#ff5a4a';ctx.fillRect(x,y+9,Math.max(1,Math.round(w*og.hp/og.maxhp)),3);top=y-3}}
   // One-line objective tag; no wide framed banner.
