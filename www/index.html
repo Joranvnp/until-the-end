@@ -1655,7 +1655,9 @@ function updateFx(dt){if(state==='title')titleT+=dt;else titleT=0;if(fade>0)fade
   for(const c of confetti){c.vy+=60*dt;c.x+=c.vx*dt;c.y+=c.vy*dt;c.r+=c.vr*dt;c.vx*=Math.pow(.6,dt)}confetti=confetti.filter(c=>c.y<VH+10);
   if(state!==shownState){shownState=state;lastEndChange=performance.now();fade=.8;if(state==='win')for(let i=0;i<140;i++)confetti.push({x:R(0,VW),y:R(-VH,0),vx:R(-20,20),vy:R(10,60),r:R(0,6),vr:R(-8,8),col:['#ffe066','#4f9df5','#63ebca','#ff6fae','#ffffff'][RI(0,4)]})}}
 // lune de sang : une nuit sur quatre (toutes en défi « Nuits rouges »), monstres doublés
-const nightNo=()=>Math.floor(time/dayLen);
+// numéro stable sur toute la nuit : elle déborde d'un souffle après minuit du cycle (ph 0,595 → 1,0003) ; avant, ce souffle comptait
+// pour la nuit suivante et déclenchait une fausse lune de sang à l'aube (Ogre compris), et la vraie, une nuit plus tard, passait sans annonce
+const nightNo=()=>Math.floor(time/dayLen-.5);
 const isBlood=()=>daylight()<.25&&(daily&&daily.mod.id==='blood'||nightNo()%4===3);
 // spores des grottes : hasard visuel indépendant, population bornée autour de la caméra
 const caveSpores=[],caveDrips=[],caveRand=mulberry(73519),caveColors=['#38ffd0','#b07cff','#ffcf6a'];let caveSpawn=0;
