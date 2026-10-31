@@ -717,6 +717,10 @@ const ACH=[
   {id:'streak3',n:'Assidu',d:'Joue le défi 3 jours de suite'},
 ];
 let achPop=[];
+// progression des succès chiffrés (null si sans objet hors partie)
+function achProg(id){const inGame=state==='play'&&stats;
+  if(id==='siege10')return[PROF.rec.surv||0,10];if(id==='streak3')return[(PROF.daily&&PROF.daily.streak)||0,3];
+  if(id==='miner100')return inGame?[stats.mined,100]:null;if(id==='army10')return inGame?[ents.filter(e=>e.type==='unit'&&e.team===0&&!e.dead).length,10]:null;return null}
 function unlock(id){if(PROF.ach[id])return;const a=ACH.find(a=>a.id===id);if(!a)return;PROF.ach[id]=Date.now();saveProf();achPop.push({a,t:0});sfx.ach();buzz(60)}
 // ---------- quêtes du jour (3 par jour, progression cumulée sur toutes les parties) et récompense de connexion ----------
 // le butin s'ajoute à la réserve de la base au début de la partie suivante (pas en défi du jour, pour rester équitable)
@@ -2631,7 +2635,9 @@ function drawAchPanel(close){const two=VW>=380,cols=two?2:1,rowsN=Math.ceil(ACH.
   const rec=[0,1,2].map(i=>PROF.rec[i]?DIFFS[i].n+' '+fmtT(PROF.rec[i]):null).filter(Boolean);
   txt(uiFit('Parties '+PROF.games+' · Victoires '+PROF.wins+(rec.length?' · Records : '+rec.join(', '):''),W-12,6),x+W/2,y+22,COL.dim,6,'center');
   const cw=(W-12)/cols;ACH.forEach((a,i)=>{const c=Math.floor(i/rowsN),r=i%rowsN,xx=Math.round(x+6+c*cw),yy=y+34+r*RH,on=!!PROF.ach[a.id];
-    txt(on?'★':'☆',xx+2,yy+2,on?COL.gold:'#e8ecff66',7);txt(uiFit(a.n,cw-16,7),xx+12,yy+1,on?COL.txt:COL.dim,7);if(RH>=17)txt(uiFit(a.d,cw-16,6),xx+12,yy+9,on?COL.dim:'#e8ecff8c',6)});
+    // succès chiffrés pas encore obtenus : où on en est (« 47/100 »), à droite du titre
+    const pr=on?null:achProg(a.id),pl=pr?Math.min(pr[0],pr[1])+'/'+pr[1]:'',pw=pl?uiWidth(pl,6)+4:0;if(pl)txt(pl,xx+cw-6,yy+2,'#9fd0ff',6,'right');
+    txt(on?'★':'☆',xx+2,yy+2,on?COL.gold:'#e8ecff66',7);txt(uiFit(a.n,cw-16-pw,7),xx+12,yy+1,on?COL.txt:COL.dim,7);if(RH>=17)txt(uiFit(a.d,cw-16,6),xx+12,yy+9,on?COL.dim:'#e8ecff8c',6)});
   button(x+W/2-40,y+H-19-RX(),80,15+RX(),'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
 // ==== TRICHE (outil de test, à retirer avant publication) ====
 function drawCheatPanel(close){const b=bases[0],R=[['wood',200],['stone',200],['coal',100],['copper',100],['iron',100],['silver',50],['gold',50],['diamond',20]],
