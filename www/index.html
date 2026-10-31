@@ -490,10 +490,10 @@ function computeLight(){
 // =====================================================================
 //  ÉTAT DU JEU
 // =====================================================================
-let state='title', diff=1, time=0, dayLen=300, ents=[], parts=[], arrows=[], floats=[], msgs=[], bases=[], player, cam={x:0,y:0}, shake=0;
+let trickT=3, state='title', diff=1, time=0, dayLen=300, ents=[], parts=[], arrows=[], floats=[], msgs=[], bases=[], player, cam={x:0,y:0}, shake=0;
 let lastEndChange=0,confetti=[],panelT=1,craftFx=0,endInfo={},fade=0,bloodNight=-1,weather={rain:0,target:0,t:20,flash:0},corpses=[],pops=[],bombs=[],hurtFx=0,hitStop=0,shownState='title';
 let paused=false,pauseHelp=false,endT=0,endState=null,panel=null, cursorItem=null, stats, ai, titleCam=0, hoverTile=null, mining=null;
-const DIFFS=[{n:'Paisible',inc:.55,core:1.3},{n:'Normal',inc:1,core:1},{n:'Brutal',inc:1.6,core:.85}];
+const DIFFS=[{n:'Paisible',inc:.55,core:.75,rec:8},{n:'Normal',inc:1,core:.9,rec:4.5},{n:'Brutal',inc:1.6,core:1,rec:2}];
 function newGame(d,dly=null,sv=false){
   daily=dly;diff=d;surv=sv&&!dly;genWorld(dly?dly.seed:(Math.random()*1e9)|0);fade=1;bloodNight=-1;weather={rain:0,target:0,t:20,flash:0};corpses=[];pops=[];bombs=[];visualDebris.length=0;PROF.games++;saveProf();
   ents=[];parts=[];arrows=[];floats=[];msgs=[];time=dayLen*.08;panel=null;cursorItem=null;
@@ -1202,7 +1202,7 @@ function updateAI(dt){
   // 2. économie
   if(cnt('miner')<wantMiners&&recruit(1,'miner'))return;
   // 3. améliorations quand la réserve déborde
-  for(const u of UPG){const l=b.upg[u.id];if(l<3&&rnd()<.2){const c=upgCost(u,l);if(canPay(st,c)&&(st.stone>c.stone*2||ai.style==='eco')){pay(st,c);b.upg[u.id]++;applyUpg(1,u.id);return}}}
+  for(const u of UPG){const l=b.upg[u.id];if(l<(u.id==='core'?diff+1:3)&&rnd()<.2){const c=upgCost(u,l);if(canPay(st,c)&&(st.stone>c.stone*2||ai.style==='eco')){pay(st,c);b.upg[u.id]++;applyUpg(1,u.id);return}}}
   // 4. contre-attaque : l'armée du joueur est loin de sa base, son cœur est dégarni
   {const pc=bases[0].core.x,home=teamPow(0,pc,45*T),away=ents.filter(e=>e.type==='unit'&&e.team===0&&!e.dead&&e.kind!=='miner'&&Math.abs(e.x-pc)>90*T).length;
    const reserve=fighters.filter(e=>!e.raid&&!e.strike&&!e.retreat);
@@ -1212,7 +1212,7 @@ function updateAI(dt){
   const foeMiners=foe.filter(e=>e.kind==='miner'&&!e.dead).length;
   if(b.order==='defend'&&foeMiners>=2&&time-(ai.lastRaid||0)>90&&fighters.length>=3){const idle=fighters.filter(e=>!e.raid&&!e.retreat).slice(0,2);idle.forEach(e=>e.raid=true);ai.lastRaid=time;if(idle.length)toast('Des pillards rouges traquent tes mineurs !',3,'#ff9a8a')}
   // 6. armée : on rassemble au point de ralliement puis on attaque en groupe (effectif plafonné : lisibilité et perfs)
-  if(fighters.length<survCap())recruit(1,counter());
+  if(fighters.length<survCap()&&time>=(ai.recT||0)&&recruit(1,counter()))ai.recT=time+DIFFS[diff].rec*(surv?.7:1);
   // avant de lancer la vague, on jauge la défense adverse (unités au cœur, joueur, tour) : trop forte, on grossit encore
   // l'armée, au plus 90 s ou jusqu'au plafond d'effectif, puis on attaque quand même pour ne jamais rester passif
   const ready=b.order==='defend'&&fighters.length>=ai.wave&&(surv?time-(ai.lastWave||0)>firstWave():time>firstWave());
@@ -1283,6 +1283,7 @@ function update(dt){
   if(hitStop>0){hitStop-=dt;return}
   time+=dt;updateWorldFx(dt);updateBombs(dt);
   saveT-=dt;if(saveT<=0){saveT=20;saveGame()}
+  trickT-=dt;if(trickT<=0){trickT=3;bases[0].storage.wood++;if(rnd()<.5)bases[0].storage.stone++}
   checkTut();checkObjectives();updateObjTarget(dt);
   if(endT>0){endT-=dt;if(endT<=0){state=endState;return}}
   updatePlayer(dt);computeArmies();buildTargets();
