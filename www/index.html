@@ -1524,7 +1524,9 @@ function teamPow(team,nearX,radius){let p=0;for(const e of ents){if(e.dead||e.te
   if(e.type==='unit')p+=POW[e.kind]*e.hp/e.maxhp;else if(e.type==='player'&&!e.dead)p+=2.5}return p}
 function updateAI(dt){
   const b=bases[1],st=b.storage,inc=DIFFS[diff].inc;
-  if(!ai.champ||ai.champ.dead){ai.champT-=dt;if(ai.champT<=0){ai.champ=recruit(1,'champion',true);ai.champ.hp=ai.champ.maxhp=Math.round(320*(.8+diff*.25));ai.champT=50;if(time>20)toast('Le champion rouge reprend les armes.',3,'#ff9a8a')}}
+  if(!ai.champ||ai.champ.dead){ai.champT-=dt;if(ai.champT<=0){
+    // « reprend les armes » seulement après la mort d'un champion (avant, affiché dès 0:08 au premier : le temps de jeu démarre à 24 s)
+    const back=!!ai.champ;ai.champ=recruit(1,'champion',true);ai.champ.hp=ai.champ.maxhp=Math.round(320*(.8+diff*.25));ai.champT=50;if(back)toast('Le champion rouge reprend les armes.',3,'#ff9a8a')}}
   ai.t-=dt;if(ai.t>0)return;ai.t=2;
   // petit revenu passif (le gros vient des mineurs et du champion)
   const m=inc*(.6+time/900)*(daily&&daily.mod.id==='fury'?1.4:1)*(surv?1+stats.waves*.2:1);st.wood+=Math.round(1.2*m);st.stone+=Math.round(1.2*m);if(rnd()<.3*m)st.copper++;if(rnd()<.25*m)st.coal++;if(rnd()<.18*m)st.iron++;if(rnd()<.08*m)st.silver++;if(rnd()<.05*m)st.gold++;
