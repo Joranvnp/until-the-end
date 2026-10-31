@@ -2882,7 +2882,9 @@ function pollPad(dt){const gp=navigator.getGamepads?[...navigator.getGamepads()]
   if(padMenu()){
     for(const k of['l','r','j','d','a'])if(pad[k]){pad[k]=false;touch[k]=false}
     const dir=L?1:R?2:U?3:D?4:0;pad.nav-=dt;if(dir&&(dir!==pad.navDir||pad.nav<=0)){pad.nav=dir!==pad.navDir?.32:.12;padMove(dir===1?-1:dir===2?1:0,dir===3?-1:dir===4?1:0)}pad.navDir=dir;
-    if(hit(0)&&padHit){pressFx={...padHit,t:performance.now()};padHit.fn()}
+    if(hit(0)&&padHit){pressFx={...padHit,t:performance.now()};padHit.fn();pad.repT=performance.now()+450}
+    // A maintenu sur un bouton répétable (Recruter, consommables, troc) : il se répète comme au doigt
+    else if(b(0)&&padHit&&padHit.rep&&performance.now()>=(pad.repT||0)){pad.repT=performance.now()+220;pressFx={...padHit,t:performance.now()};padHit.fn()}
     if(hit(1)){if(menuPanel)menuPanel=null;else if(panel){panel=null;stowCursor()}else if(paused){paused=false;pauseHelp=false}}
   }else{
     const st={l:L&&!R,r:R&&!L,j:b(0)||U,d:D,a:b(2)||b(7)};
