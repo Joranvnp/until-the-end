@@ -1856,38 +1856,54 @@ function iconTile(x,y,w,h,k,label,fn,col,badge,cnt){const hov=mouse.inside&&mous
   if(cnt&&uiWidth(cnt,6)<w/2-13)txt(cnt,x+3,y+2,col,6);if(badge){ctx.fillStyle=COL.gold;ctx.fillRect(Math.round(x+w)-6,Math.round(y)+3,3,3)}uiHits.push({x,y,w,h,fn})}
 const MICON_C={};function MICON_IMG(k,col){const id=k+col;if(MICON_C[id])return MICON_C[id];const c=mk(10,10),g=c.getContext('2d');for(const[cc,o]of[['#05050c',1],[col,0]]){g.fillStyle=cc;MICON[k].forEach((r,j)=>[...r].forEach((ch,i)=>{if(ch==='X')g.fillRect(i+o,j+o,1,1)}))}return MICON_C[id]=c}
 const openPanel=m=>{menuPanel=m;panelT=0;sfx.place()};
+// gros bouton principal de l'écran titre : bord doré qui pulse, sous-titre coloré
+function heroButton(x,y,w,h,label,sub,subCol,fn){const hov=mouse.inside&&mouse.x>=x&&mouse.x<x+w&&mouse.y>=y&&mouse.y<y+h,dn=hov&&mouse.l?1:0,p=.5+.5*Math.sin(performance.now()/380);
+  ctx.globalAlpha=.18+.22*p;ctx.fillStyle=COL.gold;ctx.fillRect(Math.round(x)-2,Math.round(y)-1,Math.round(w)+4,h+2);ctx.fillRect(Math.round(x)-1,Math.round(y)-2,Math.round(w)+2,h+4);ctx.globalAlpha=1;
+  box(x,y+dn,w,h-dn,hov?'#5a3a12f4':'#3e2810f2',hov?'#ffffff':COL.gold);ctx.fillStyle='#ffe0663a';ctx.fillRect(Math.round(x)+2,Math.round(y)+2+dn,Math.round(w)-4,1);
+  if(!dn){ctx.fillStyle='#1a0f04';ctx.fillRect(Math.round(x)+1,Math.round(y+h)-3,Math.round(w)-2,2)}
+  const ty=sub?y+dn+5:y+dn+(h-10)/2;txt(uiFit(label,w-10,14),x+w/2,ty,'#fff3c4',14,'center');if(sub)txt(uiFit(sub,w-10,6),x+w/2,ty+14,subCol,6,'center');
+  uiHits.push({x,y,w,h,fn})}
+// sélecteur de difficulté en trois pastilles
+function diffChips(x,y,w,h,d,set){const n=DIFFS.length,g=3,cw=Math.floor((w-g*(n-1))/n),cols=['#63ebca','#9fc0ff','#ff8a80'];
+  for(let i=0;i<n;i++){const cx=x+i*(cw+g),ww=i===n-1?w-i*(cw+g):cw,on=i===d,hov=mouse.inside&&mouse.x>=cx&&mouse.x<cx+ww&&mouse.y>=y&&mouse.y<y+h;
+    box(cx,y,ww,h,on?cols[i]+'38':'#05050cd8',on?cols[i]:hov?'#ffffff':'#e8ecff40');if(on){ctx.fillStyle=cols[i];ctx.fillRect(Math.round(cx)+3,y+h-3,Math.round(ww)-6,1)}
+    txt(uiFit(DIFFS[i].n,ww-6,7),cx+ww/2,y+(h-7)/2,on?cols[i]:COL.dim,7,'center');uiHits.push({x:cx,y,w:ww,h,fn:()=>set(i)})}}
 function drawTitle(){
   menuBackdrop();
   if(menuPanel)return drawMenuPanel(()=>{menuPanel=null});
+  // voiles sombres en haut (logo) et en bas (actions) pour garder l'illustration au centre
+  {let g=ctx.createLinearGradient(0,0,0,VH*.32);g.addColorStop(0,'rgba(5,5,12,.75)');g.addColorStop(1,'rgba(5,5,12,0)');ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH*.32);
+   g=ctx.createLinearGradient(0,VH*.45,0,VH);g.addColorStop(0,'rgba(5,5,12,0)');g.addColorStop(1,'rgba(5,5,12,.85)');ctx.fillStyle=g;ctx.fillRect(0,VH*.45,VW,VH*.55)}
   // porte-monnaie en haut à droite, ouvre la boutique
   {const s=''+PROF.coins,w=uiWidth(s,7)+20,x=VW-w-5,hov=mouse.inside&&mouse.x>=x&&mouse.y<20&&mouse.y>=4;box(x,4,w,15,'#05050cdd',hov?'#ffffff':COL.gold+'88');coinTag(s,x+w/2,9,COL.gold);uiHits.push({x,y:4,w,h:15,fn:()=>openPanel('shop')})}
   {const L=lvlOf(PROF.xp),w=Math.min(84,VW/3);box(5,4,w,15,'#05050cdd','#9fc0ff88');txt(tr('Niv. ')+L.l,10,7,'#9fc0ff',7);bar(10,14,w-10,2,L.cur/L.need,'#4f9df5');txt(Math.floor(L.cur)+'/'+L.need,w,7,COL.dim,6,'right')}
-  const tsz=VW<360?21:28,ty=Math.max(22,Math.round(VH*(VH>VW*1.2?.17:.09)));logo(VW/2,ty,tsz);
-  txt('Mine. Forge. Détruis leur cœur.',VW/2,ty+uiScale(tsz)*5+9,'#c8cde8',7,'center');
-  const bw=Math.min(232,VW-24),bx=Math.round(VW/2-bw/2);let y=ty+uiScale(tsz)*5+24+(VH>VW*1.2?16:0),k=0;
-  const sv=hasSave();if(sv){button(bx-slideIn(k++),y,bw,20,'Continuer la partie',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)},true,true);y+=24}
-  // Jouer + choix de la difficulté
-  {const d=clamp(PROF.lastDiff??1,0,DIFFS.length-1),o=slideIn(k++),aw=24,setD=v=>{PROF.lastDiff=(v+DIFFS.length)%DIFFS.length;saveProf();sfx.click()};
-    button(bx+o,y,aw,26,'◀',()=>setD(d-1));button(bx+bw-aw+o,y,aw,26,'▶',()=>setD(d+1));
-    const px=bx+aw+4+o,pw=bw-2*aw-8,hov=mouse.inside&&mouse.x>=px&&mouse.x<px+pw&&mouse.y>=y&&mouse.y<y+26;
-    box(px,y,pw,26,hov?'#2a3d6cee':'#1c2a52ee',hov?'#ffffff':'#9fc0ff');ctx.fillStyle='#ffffff22';ctx.fillRect(px+2,y+2,pw-4,1);
-    txt(uiFit(sv?'Nouvelle partie':'Jouer',pw-8,8),px+pw/2,y+5,COL.txt,8,'center');txt(uiFit(tr('Difficulté')+' · '+tr(DIFFS[d].n),pw-8,6),px+pw/2,y+16,['#63ebca','#9fc0ff','#ff8a80'][d],6,'center');
-    uiHits.push({x:px,y,w:pw,h:26,fn:()=>{audioInit();newGame(d)}});y+=30}
+  const port=VH>VW*1.2,tsz=VW<360?21:28,lz=uiScale(tsz),ty=Math.max(26,Math.round(VH*(port?.15:.1)));logo(VW/2,ty,tsz);
+  let lb=ty+lz*5+6;
+  if(VH>=230){txt('Mine. Forge. Détruis leur cœur.',VW/2,lb+3,'#c8cde8',7,'center');lb+=13}
+  // filet décoratif sous le logo
+  {const w=Math.min(120,VW*.4),cx=Math.round(VW/2);ctx.fillStyle='#e8ecff30';ctx.fillRect(cx-w/2,lb,w/2-5,1);ctx.fillRect(cx+5,lb,w/2-5,1);ctx.fillStyle='#ff6a5a';ctx.fillRect(cx-1,lb-2,2,5);ctx.fillRect(cx-2,lb-1,4,3)}
+  // barre d'icônes ancrée en bas
+  const bw=Math.min(244,VW-24),bx=Math.round(VW/2-bw/2),th=port?36:32,dockY=VH-th-8;
+  {ctx.fillStyle='#05050cb0';ctx.fillRect(0,dockY-6,VW,VH-dockY+6);ctx.fillStyle='#e8ecff1c';ctx.fillRect(0,dockY-6,VW,1);
+   const n=5,g=4,tw=Math.floor((bw-g*(n-1))/n),q=questsToday(),rw=q.login!==dayKey(),na=Object.keys(PROF.ach).length,nr=Object.keys(PROF.relics).length,o=Math.round(slideIn(4)/3);
+   const afford=OUTFITS.some(e=>!PROF.outfits[e.id]&&PROF.coins>=e.p);
+   [['shop','Boutique','#ffe066',afford],['relic','Reliques','#c9a7ff',0,nr+'/'+RELICS.length],['ach','Succès','#ffd27a',0,na+'/'+ACH.length],['quest','Quêtes','#63ebca',rw,q.list.filter(e=>e.done).length+'/3'],['set','Réglages','#a0a4be']]
+     .forEach(([id,l,c,bd,cn],i)=>iconTile(bx+i*(tw+g),dockY+o,i===n-1?bw-i*(tw+g):tw,th,id,l,()=>openPanel(id),c,bd,tw>=40?cn:0))}
+  // bloc d'actions, calé juste au-dessus de la barre
+  const sv=hasSave(),d=clamp(PROF.lastDiff??1,0,DIFFS.length-1),setD=v=>{if(v===d)return;PROF.lastDiff=v;saveProf();sfx.click()},play=()=>{audioInit();newGame(d)};
+  const D=dailyInfo(),st=PROF.daily.streak&&PROF.daily.last>=dayKey(new Date(Date.now()-864e5))?PROF.daily.streak:0,hh=port?34:30;
+  const H=hh+5+16+(sv?4+20:0)+6+26+(VH>=230?13:0);
+  let y=Math.max(lb+8,dockY-10-H),k=0;
+  if(sv){heroButton(bx-slideIn(k++),y,bw,hh,'Continuer la partie',0,0,()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)});y+=hh+5;
+    diffChips(bx+slideIn(k++),y,bw,16,d,setD);y+=20;button(bx-slideIn(k++),y,bw,20,'Nouvelle partie',play);y+=26}
+  else{diffChips(bx+slideIn(k++),y,bw,16,d,setD);y+=21;
+    heroButton(bx-slideIn(k++),y,bw,hh,'Jouer',tr('Difficulté')+' · '+tr(DIFFS[d].n),['#63ebca','#9fc0ff','#ff8a80'][d],play);y+=hh+6}
   // défi du jour et Siège
-  {const D=dailyInfo(),done=PROF.daily.won===D.key,cw=Math.floor((bw-4)/2),o=slideIn(k++);
-    modeCard(bx-o,y,cw,26,(done?'★ ':'')+tr('Défi du jour'),D.mod.n,()=>{audioInit();newGame(1,D)},done?COL.gold:'#ffd27a',!done);
-    modeCard(bx+cw+4-o,y,bw-cw-4,26,'Mode Siège',PROF.rec.surv?tr('Record : ')+PROF.rec.surv:'Vagues infinies',()=>{audioInit();newGame(1,null,true)},'#ff8a80');y+=30}
-  // rangée de pictogrammes
-  {const o=slideIn(k++),n=5,g=4,tw=Math.floor((bw-g*(n-1))/n),q=questsToday(),rw=q.login!==dayKey(),na=Object.keys(PROF.ach).length,nr=Object.keys(PROF.relics).length;
-    const afford=OUTFITS.some(e=>!PROF.outfits[e.id]&&PROF.coins>=e.p);
-    [['shop','Boutique','#ffe066',afford],['relic','Reliques','#c9a7ff',0,nr+'/'+RELICS.length],['ach','Succès','#ffd27a',0,na+'/'+ACH.length],['quest','Quêtes','#63ebca',rw,q.list.filter(e=>e.done).length+'/3'],['set','Réglages','#a0a4be']]
-      .forEach(([id,l,c,bd,cn],i)=>iconTile(bx+i*(tw+g)+o,y,i===n-1?bw-i*(tw+g):tw,34,id,l,()=>openPanel(id),c,bd,tw>=40?cn:0));y+=40}
-  const D=dailyInfo(),st=PROF.daily.streak&&PROF.daily.last>=dayKey(new Date(Date.now()-864e5))?PROF.daily.streak:0;
-  txt(uiFit(D.mod.d+(st?tr(' · Série : ')+st+tr(st>1?' jours':' jour'):''),bw,6),VW/2,y,'#ffd27a',6,'center');y+=11;
-  const lines=isTouch?['← → Marcher   ▲ Sauter','Gros bouton : miner, frapper, lancer','Base · Forge · Sac : commandes du bas']:
-    ['Q D / ← → Marcher   Espace Sauter','Clic gauche Utiliser   Clic droit Miner','B Base   C Forge   E Sac   R Ordre   M Son'];
-  if(y+40<VH-10){const ww=Math.min(VW-20,uiWidth(lines[2])+20);box(Math.round((VW-ww)/2),y,ww,39,'#05050cbb','#e8ecff33');lines.forEach((l,i)=>txt(uiFit(l,ww-12),VW/2,y+7+i*10,COL.dim,7,'center'))}
-  txt('v'+VERSION,VW-4,VH-9,'#e8ecff60',6,'right');
+  {const done=PROF.daily.won===D.key,cw=Math.floor((bw-4)/2),o=slideIn(k++);
+    modeCard(bx+o,y,cw,26,(done?'★ ':'')+tr('Défi du jour'),D.mod.n,()=>{audioInit();newGame(1,D)},done?COL.gold:'#ffd27a',!done);
+    modeCard(bx+cw+4+o,y,bw-cw-4,26,'Mode Siège',PROF.rec.surv?tr('Record : ')+PROF.rec.surv:'Vagues infinies',()=>{audioInit();newGame(1,null,true)},'#ff8a80');y+=31}
+  if(VH>=230)txt(uiFit(D.mod.d+(st?tr(' · Série : ')+st+tr(st>1?' jours':' jour'):''),bw,6),VW/2,y,'#ffd27a',6,'center');
+  txt('v'+VERSION,VW/2,8,'#e8ecff50',6,'center');
 }
 // panneaux Réglages / Succès, partagés par l'écran titre et le menu pause
 function drawMenuPanel(close){if(menuPanel==='set')return drawSettings(close);if(menuPanel==='quest')return drawQuestPanel(close);if(menuPanel==='relic')return drawRelicPanel(close);if(menuPanel==='shop')return drawShopPanel(close);return drawAchPanel(close)}
