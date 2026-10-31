@@ -12,7 +12,8 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const SR = 44100, TAU = 2 * Math.PI;
-const output = resolve(dirname(fileURLToPath(import.meta.url)), '../www/audio');
+const extra = process.argv.includes('--extra');
+const output = resolve(dirname(fileURLToPath(import.meta.url)), extra ? '../musiques/nouvelles' : '../www/audio');
 const started = performance.now();
 let seed = 0x554e544c;
 function random() {
@@ -778,6 +779,230 @@ const musicBlood = () => arrangeMusic('blood');
 
 const musics = { menu: musicMenu, day: musicDay, night: musicNight, combat: musicCombat, blood: musicBlood };
 
+// ---------- Nouvelles partitions : chemin indépendant, uniquement --extra ----------
+function pizzicato(track, midi, start, duration, amp, pan = 0) {
+  const f = hz(midi), total = duration + .12;
+  layer(track, start, total, amp, t => (sine(f*t) + .42*sine(2*f*t) + .2*sine(3*f*t))
+    * Math.exp(-11*t) * adsr(t,total,.002,.09,.55,.12), pan);
+}
+function ocarina(track, midi, start, duration, amp, pan = 0) {
+  const f = hz(midi), total = duration + .09;
+  let phase = 0;
+  layer(track, start, total, amp, t => {
+    phase += f*(1+.0025*sine(5.8*t)*Math.min(1,t/.2))/SR;
+    return (sine(phase)+.16*sine(3*phase)+.04*sine(5*phase))*adsr(t,total,.018,.08,.8,.09);
+  }, pan);
+}
+function triangleBass(track, midi, start, duration, amp, pan = 0) {
+  const f = hz(midi), total = duration + .055;
+  layer(track,start,total,amp,t => (sine(f*t)-sine(3*f*t)/9+sine(5*f*t)/25-sine(7*f*t)/49)
+    * adsr(t,total,.006,.1,.8,.055),pan);
+}
+function tambourine(track, start, amp, pan = .3) {
+  const n = kitNoise(), high = biquad('high',4200);
+  layer(track,start,.16,amp,t => high(.45*n()+.2*sine(6193*t)+.2*sine(8371*t)+.15*sine(10459*t))
+    * Math.exp(-27*t)*Math.min(1,t/.003),pan);
+}
+function brush(track, start, amp, pan = -.25) {
+  const n = kitNoise(), band = biquad('band',2400,.65);
+  layer(track,start,.22,amp,t => band(n())*Math.sin(Math.PI*Math.min(1,t/.22))*Math.exp(-12*t),pan);
+}
+
+// Chaque paire est [MIDI, durée] ; 0 est un silence. Les durées remplissent
+// exactement une mesure, exprimées en noires (aube/grotte) ou croches (village/raid).
+function phrase(bars, units) {
+  return bars.map(notes => {
+    let at = 0;
+    const events = notes.map(([note,duration]) => { const event = [at,note,duration]; at += duration; return event; });
+    if (Math.abs(at-units)>1e-8) throw new Error(`Mesure incomplète : ${at}/${units}`);
+    return events.filter(([,note]) => note !== 0);
+  });
+}
+const AUBE_A = phrase([
+  [[69,1],[72,.5],[70,.5],[69,1]], [[67,.5],[65,.5],[64,1],[67,1]],
+  [[69,.5],[72,.5],[77,1.5],[76,.5]], [[74,1],[72,1],[69,1]],
+  [[70,1.5],[74,.5],[72,1]], [[69,.5],[67,.5],[65,1],[69,1]],
+  [[67,1],[70,.5],[69,.5],[67,1]], [[64,1.5],[67,.5],[72,1]],
+],3);
+const AUBE_B = phrase([
+  [[77,1.5],[76,.5],[74,1]], [[73,.5],[76,.5],[79,1],[76,1]],
+  [[74,1],[69,.5],[72,.5],[74,1]], [[72,2],[69,.5],[67,.5]],
+  [[70,.5],[74,.5],[77,1],[74,1]], [[69,1.5],[72,.5],[77,1]],
+  [[74,1],[70,1],[67,1]], [[76,1],[74,.5],[72,.5],[70,1]],
+],3);
+const VILLAGE_A = phrase([
+  [[71,1],[74,1],[79,1],[78,1],[74,2]], [[76,2],[71,1],[67,1],[71,1],[74,1]],
+  [[72,1],[76,1],[79,1],[81,2],[79,1]], [[78,1],[74,1],[69,1],[74,2],[72,1]],
+  [[71,2],[74,1],[79,1],[83,1],[81,1]], [[79,1],[76,1],[72,1],[76,2],[79,1]],
+  [[81,1],[79,1],[76,1],[74,1],[72,1],[69,1]], [[78,2],[76,1],[74,2],[69,1]],
+],6);
+const VILLAGE_B = phrase([
+  [[83,3],[81,1],[79,2]], [[78,2],[76,1],[74,3]],
+  [[76,1],[79,1],[83,1],[86,2],[83,1]], [[81,3],[78,2],[74,1]],
+  [[79,2],[76,1],[72,2],[76,1]], [[78,1],[81,1],[84,1],[83,2],[81,1]],
+  [[79,1],[78,1],[76,1],[74,2],[71,1]], [[72,1],[69,1],[66,1],[69,2],[74,1]],
+],6);
+const VILLAGE_C = phrase([
+  [[76,3],[71,2],[67,1]], [[78,2],[75,1],[71,3]],
+  [[79,2],[78,1],[76,2],[74,1]], [[73,1],[76,1],[79,1],[81,3]],
+  [[78,3],[74,3]], [[76,2],[72,1],[69,2],[72,1]],
+  [[71,1],[74,1],[79,1],[78,1],[76,1],[74,1]], [[78,2],[81,1],[78,1],[74,1],[72,1]],
+],6);
+const GROTTE_A = phrase([
+  [[73,.5],[68,.5],[71,1],[75,.5],[73,1],[0,.5]],
+  [[66,1],[69,.5],[73,.5],[75,1],[73,1]],
+  [[68,.5],[71,.5],[75,1.5],[78,.5],[75,1]],
+  [[70,1.5],[73,.5],[78,1],[76,1]],
+  [[73,.5],[80,.5],[78,1],[75,.5],[73,.5],[71,1]],
+  [[78,1],[76,.5],[73,.5],[71,1],[68,1]],
+  [[66,.5],[70,.5],[73,1],[76,1.5],[75,.5]],
+  [[71,1],[75,.5],[78,.5],[75,1],[71,1]],
+],4);
+const GROTTE_B = phrase([
+  [[76,2],[80,1],[78,1]], [[75,1.5],[71,.5],[68,2]],
+  [[78,1],[82,1],[80,.5],[78,.5],[75,1]], [[80,2],[78,1],[76,1]],
+  [[78,.5],[76,.5],[73,1],[70,1],[73,1]], [[75,1],[78,1.5],[76,.5],[75,1]],
+  [[73,1.5],[70,.5],[66,1],[70,1]], [[72,1],[75,.5],[80,.5],[78,1],[75,1]],
+],4);
+const RAID_A = phrase([
+  [[66,1],[73,1],[69,1],[66,2],[65,1],[66,1]],
+  [[74,2],[73,1],[69,1],[66,1],[62,2]],
+  [[64,1],[71,1],[68,1],[76,2],[74,1],[71,1]],
+  [[73,3],[72,1],[69,1],[68,1],[65,1]],
+  [[66,1],[69,1],[73,1],[78,2],[77,1],[78,1]],
+  [[74,1],[69,1],[66,1],[62,2],[66,2]],
+  [[71,2],[74,1],[78,1],[76,1],[74,2]],
+  [[77,2],[73,1],[68,2],[65,1],[73,1]],
+],7);
+const RAID_B = phrase([
+  [[81,3],[80,2],[76,2]], [[80,2],[76,2],[73,3]],
+  [[78,3],[74,1],[73,1],[71,2]], [[76,2],[73,1],[69,4]],
+  [[74,3],[78,2],[81,2]], [[80,2],[78,1],[76,2],[73,2]],
+  [[71,1],[74,1],[78,1],[81,2],[78,2]], [[77,3],[75,1],[73,1],[72,1],[73,1]],
+],7);
+const RAID_C = phrase([
+  [[66,2],[0,1],[67,1],[66,1],[61,2]], [[67,1],[70,1],[73,1],[79,2],[76,2]],
+  [[69,2],[73,1],[76,2],[75,1],[73,1]], [[68,1],[71,1],[74,1],[77,2],[74,2]],
+  [[66,3],[69,1],[73,1],[78,2]], [[74,2],[73,1],[69,1],[66,1],[62,2]],
+  [[71,1],[74,1],[78,1],[77,1],[74,1],[71,2]], [[65,1],[68,1],[73,1],[77,1],[80,1],[77,1],[73,1]],
+],7);
+const EXTRA_SCORES = {
+  aube: { bpm:84, units:3, form:['A','B','A','B'],
+    sections: { A: { tune:AUBE_A, chords:[[53,'maj'],[48,'maj'],[53,'maj'],[50,'min'],[46,'maj'],[53,'maj'],[43,'min'],[48,'dom']] },
+      B: { tune:AUBE_B, chords:[[50,'min'],[57,'dom'],[50,'min'],[53,'maj'],[46,'maj'],[53,'maj'],[43,'min'],[48,'dom']] } } },
+  village: { bpm:270, units:6, form:['A','A','B','B','C','A'],
+    sections: { A: { tune:VILLAGE_A, chords:[[55,'maj'],[52,'min'],[48,'maj'],[50,'dom'],[55,'maj'],[48,'maj'],[45,'min'],[50,'dom']] },
+      B: { tune:VILLAGE_B, chords:[[55,'maj'],[50,'maj'],[52,'min'],[50,'maj'],[48,'maj'],[50,'dom'],[55,'maj'],[50,'dom']] },
+      C: { tune:VILLAGE_C, chords:[[52,'min'],[47,'dom'],[52,'min'],[57,'dom'],[50,'maj'],[45,'min'],[55,'maj'],[50,'dom']] } } },
+  grotte: { bpm:98, units:4, form:['A','B','B','A'],
+    sections: { A: { tune:GROTTE_A, chords:[[49,'min'],[54,'min'],[56,'min'],[54,'maj'],[49,'min'],[52,'maj'],[54,'dom'],[47,'maj']] },
+      B: { tune:GROTTE_B, chords:[[52,'maj'],[56,'min'],[59,'maj'],[49,'min'],[54,'maj'],[47,'maj'],[54,'maj'],[56,'dom']] } } },
+  raid: { bpm:224, units:7, form:['A','B','A','C','B'],
+    sections: { A: { tune:RAID_A, chords:[[42,'min'],[50,'maj'],[52,'maj'],[49,'dom'],[42,'min'],[50,'maj'],[47,'min'],[49,'dom']] },
+      B: { tune:RAID_B, chords:[[57,'maj'],[49,'min'],[47,'min'],[54,'min'],[50,'maj'],[49,'min'],[47,'min'],[49,'dom']] },
+      C: { tune:RAID_C, chords:[[42,'min'],[43,'dim'],[45,'maj'],[44,'dim'],[42,'min'],[50,'maj'],[47,'min'],[49,'dom']] } } },
+};
+
+function arrangeExtra(name) {
+  const score = EXTRA_SCORES[name], beat = 60/score.bpm, length = score.units*beat;
+  const t = canvas(score.form.length*8*length,true,true);
+  let index = 0;
+  for (const [sectionIndex,section] of score.form.entries()) {
+    const {tune,chords} = score.sections[section], contrast = section !== 'A';
+    const reprise = sectionIndex === score.form.length-1, lift = reprise ? 1.08 : 1;
+    for (let b=0;b<8;b++,index++) {
+      const start = index*length, notes = tones(chords[b]), root = bassRoot(chords[b][0]);
+      const nextSection = score.form[(sectionIndex+1)%score.form.length];
+      const nextChord = b===7 ? score.sections[nextSection].chords[0] : chords[b+1];
+      const nextRoot = bassRoot(nextChord[0]);
+      if (name === 'aube') {
+        melody(t,contrast ? chipKeys : chipHarp,tune[b],start,beat,contrast ? .36 : .48,-.18);
+        triangleBass(t,root,start,beat*.85,.32);
+        [1,2].forEach(at => notes.forEach((n,k) => chipKeys(t,n+12,start+at*beat,beat*.55,.09,(k-1)*.3)));
+        [0,.5,1,1.5,2,2.5].forEach((at,k) => chipHarp(t,notes[[0,2,1,2,0,1][k]]+12,start+at*beat,beat*.45,.09,.45));
+        if (contrast) notes.forEach((n,k) => chipStrings(t,n+12,start,length*.85,.055,(k-1)*.5));
+        kit(t,'kick',start,.17);
+        [1,2].forEach(at => brush(t,start+at*beat,.12));
+        if (b%4===3) [2,2.33,2.67].forEach((at,k) => chipHarp(t,notes[2-k]+24,start+at*beat,beat*.25,.18,.4));
+      } else if (name === 'village') {
+        melody(t,contrast ? ocarina : pizzicato,tune[b],start,beat,contrast ? .3 : .48,-.12);
+        if (reprise) melody(t,ocarina,tune[b],start,beat,.14,.25);
+        [0,3].forEach((at,k) => triangleBass(t,root+(k ? 7 : 0),start+at*beat,beat*1.8,.34));
+        [1,2,4,5].forEach(at => notes.forEach((n,k) => pizzicato(t,n+12,start+at*beat,beat*.7,.1,(k-1)*.4)));
+        for (let k=0;k<6;k++) tambourine(t,start+k*beat,(k%3===0 ? .27 : .12)*lift);
+        [0,3].forEach(at => kit(t,'kick',start+at*beat,.25));
+        if (section==='C') notes.forEach((n,k) => chipStrings(t,n+12,start,length*.9,.06,(k-1)*.5));
+        if (b%4===3) [4,4.5,5,5.5].forEach((at,k) => { tambourine(t,start+at*beat,.2+k*.02); kit(t,'tom',start+at*beat,.12,-.3+k*.2,220-k*35); });
+      } else if (name === 'grotte') {
+        melody(t,contrast ? bell : marimba,tune[b],start,beat,contrast ? .27 : .4,-.25);
+        // Échos du motif seulement : la basse et les balais restent nets.
+        melody(t,contrast ? bell : marimba,tune[b],start+beat*.75,beat,.09,.55);
+        const walk = [root,root+(notes[1]-notes[0]),root+7,nextRoot-1];
+        walk.forEach((n,k) => triangleBass(t,n,start+k*beat,beat*.8,.33));
+        [0,2.5].forEach(at => notes.forEach((n,k) => chipKeys(t,n+12,start+at*beat,beat*.65,.085,(k-1)*.45)));
+        if (contrast) melody(t,ocarina,[[1,notes[2]+12,1.5],[3,notes[1]+12,.75]],start,beat,.12,.3);
+        [1,3].forEach(at => brush(t,start+at*beat,.3));
+        [0,2].forEach(at => kit(t,'kick',start+at*beat,.28));
+        [0,.5,1.5,2,2.5,3.5].forEach(at => kit(t,'hat',start+at*beat,.055,.4));
+        if (b%4===3) [3,3.25,3.5,3.75].forEach((at,k) => brush(t,start+at*beat,.12+k*.04,-.4+k*.2));
+      } else {
+        melody(t,chipBrass,tune[b],start,beat,.29*lift,-.1);
+        if (contrast) melody(t,chipStrings,tune[b],start,beat,.12,.2,-12);
+        // 2+2+3 : accents aux croches 0, 2, 4, approche chromatique vers l'accord suivant.
+        [root,root+12,root+7,root+6,root, nextRoot-2,nextRoot-1].forEach((n,k) => bass(t,n,start+k*beat,beat*.65,.36));
+        [0,2,4].forEach(at => {
+          notes.forEach((n,k) => chipBrass(t,n+12,start+at*beat,beat*.65,.075,(k-1)*.5));
+          kit(t,'kick',start+at*beat,.55); kit(t,'tom',start+at*beat,.3,at/7-.4,at===4 ? 110 : 170);
+        });
+        notes.forEach((n,k) => chipStrings(t,n+12,start,length*.9,contrast ? .08 : .04,(k-1)*.6));
+        [2,5].forEach(at => kit(t,'snare',start+at*beat,.32));
+        for (let k=0;k<7;k++) kit(t,'hat',start+k*beat,.09,.4);
+        if (b===0) kit(t,'crash',start,.25,-.4);
+        if (b%4===3) [4,4.5,5,5.5,6,6.5].forEach((at,k) => kit(t,'tom',start+at*beat,.28+k*.025,-.5+k*.2,240-k*28));
+      }
+    }
+  }
+  reverb(t,name==='grotte' ? .24 : .15,{room:name==='grotte' ? .62 : .38,damp:.55,predelay:.014});
+  return t;
+}
+
+function extraJingle(victory) {
+  // Deux phrases : appel/cadence en mi bémol, plainte/résolution en si mineur.
+  const beat = 60/(victory ? 120 : 60), units = victory ? 4 : 3;
+  const t = canvas(victory ? 10.5 : 11.5,true,false);
+  const tune = victory ? phrase([
+    [[70,.5],[70,.5],[75,1],[79,.5],[82,.5],[87,1]],
+    [[84,1],[80,.5],[79,.5],[77,1],[74,1]],
+    [[75,4]],
+  ],4) : phrase([
+    [[74,1.5],[73,.5],[71,1]], [[67,1],[66,1],[70,1]], [[71,3]],
+  ],3);
+  const chords = victory ? [[51,'maj'],[58,'dom'],[51,'maj']] : [[47,'min'],[54,'dom'],[47,'min']];
+  for (let b=0;b<3;b++) {
+    const start = b*units*beat, notes = tones(chords[b]), final = b===2;
+    melody(t,victory ? chipBrass : chipKeys,tune[b],start,beat,victory ? .32 : .4,-.08);
+    notes.forEach((n,k) => {
+      (victory ? chipBrass : chipStrings)(t,n+12,start,final ? (victory ? 1.7 : 2.2) : units*beat*.85,.12,(k-1)*.45);
+      if (final) bell(t,n+12,start,victory ? 2.6 : 1.5,.09,(k-1)*.4);
+    });
+    triangleBass(t,bassRoot(chords[b][0]),start,final ? 2 : units*beat*.8,.38);
+    if (victory) {
+      kit(t,'crash',start,final ? .42 : .2,-.35);
+      kit(t,'kick',start,.5);
+      if (!final) [2,2.5,3,3.5].forEach((at,k) => kit(t,b===1 ? 'tom' : 'snare',start+at*beat,.2+k*.04,k*.2-.3,200-k*30));
+    }
+  }
+  reverb(t,.26,{room:.62,damp:.48,predelay:.018});
+  // La réserve de silence accueille la réverbération, puis fondu de sécurité de 120 ms.
+  for (const channel of t.channels) for (let i=t.length-Math.round(.12*SR);i<t.length;i++) channel[i] *= (t.length-1-i)/(.12*SR);
+  return t;
+}
+const extraMusics = {
+  aube: () => arrangeExtra('aube'), village: () => arrangeExtra('village'),
+  grotte: () => arrangeExtra('grotte'), raid: () => arrangeExtra('raid'),
+  victoire: () => extraJingle(true), defaite: () => extraJingle(false),
+};
+
 function run(binary, args) {
   const result = spawnSync(binary, args, { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 });
   if (result.error) throw result.error;
@@ -791,13 +1016,13 @@ run(ffmpeg, ['-version']);
 await mkdir(output, { recursive: true });
 const temporary = await mkdtemp(join(tmpdir(), 'until-the-end-audio-'));
 const temporaryFiles = [];
-const names = [...Object.keys(effects), ...Object.keys(musics).map(name => `music-${name}`)];
+const names = extra ? Object.keys(extraMusics) : [...Object.keys(effects), ...Object.keys(musics).map(name => `music-${name}`)];
 try {
   for (const name of names) {
-    const isMusic = name.startsWith('music-');
-    const track = isMusic ? musics[name.slice(6)]() : effect(name, effects[name][0]);
-    const ceiling = isMusic ? -3 : effects[name][1];
-    master(track, isMusic, ceiling);
+    const isMusic = extra || name.startsWith('music-');
+    const track = extra ? extraMusics[name]() : isMusic ? musics[name.slice(6)]() : effect(name, effects[name][0]);
+    const ceiling = extra && !track.loop ? -1 : isMusic ? -3 : effects[name][1];
+    master(track, isMusic && track.loop, ceiling);
     const source = join(temporary, `${name}.wav`);
     temporaryFiles.push(source);
     await writeFile(source, wav(track));
