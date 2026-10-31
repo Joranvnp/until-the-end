@@ -1302,8 +1302,13 @@ function updateUnit(e,dt){
     if(prey){const dx=prey.x-e.x,dy=prey.y-e.y;if(Math.abs(dx)<u.range+8&&Math.abs(dy)<30){meleeOrShoot(e,u,prey);moveEnt(e,dt);return}
       if(Math.abs(dx)<T*1.5&&dy>T*2){e.vx=0;moveEnt(e,dt);if(e.onGround){const o0=Math.floor(e.x/T),fy=Math.floor((e.y+e.h-.01)/T);digStep(e,o0,fy+1,dt,false)}return}
       if(Math.abs(dx)<T*1.5&&dy<-T*2)return climbUp(e,dt,prey.x+prey.w/2);
-      navigate(e,prey.x+prey.w/2,dt,e.stuck>=2?'climb':'auto');return}
-    e.raid=false}
+      navigate(e,prey.x+prey.w/2,dt,e.stuck>=2?'climb':'auto');e.lurkT=0;return}
+    // tous les mineurs à l'abri : le pillard guette 30 s au bord de la portée de la tour au lieu de rentrer aussitôt
+    // (avant, il abandonnait à ~120 cases, hors du rayon d'interception des défenseurs : 0 mineur tué, 0 combat en 22 raids mesurés)
+    const fb=bases[1-e.team],lx=fb.tower.x+Math.sign(bases[e.team].core.x-fb.tower.x)*(250+fb.upg.tower*18+4*T);
+    if(!e.lurkT)e.lurkT=time+30;if(time<e.lurkT){const near=pickTarget(e,u,u.ranged?90:34);if(near&&near.type==='unit'&&!underTower(fb,near))return engage(e,u,near,dt);
+      if(Math.abs(lx-(e.x+e.w/2))>T)navigate(e,lx,dt,e.stuck>=2?'climb':'auto');else{e.vx=0;moveEnt(e,dt)}return}
+    e.raid=false;e.lurkT=0}
   if(e.strike){const ec=bases[1-e.team].core;const near=pickTarget(e,u,u.ranged?90:34);const tg=Math.abs(ec.x-e.x)<110?ec:near;if(tg)return engage(e,u,tg,dt);
     const dtx2=clamp(Math.floor((ec.x+11)/T),0,WW-1);if(Math.abs(ec.x+11-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx2]+1.5)return climbUp(e,dt,ec.x+11);navigate(e,ec.x+11,dt,e.stuck>=2?'climb':'auto');return}
   e.pace=1;const follow=b.order==='follow'&&e.team===0&&!player.dead;
