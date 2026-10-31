@@ -1016,12 +1016,13 @@ run(ffmpeg, ['-version']);
 await mkdir(output, { recursive: true });
 const temporary = await mkdtemp(join(tmpdir(), 'until-the-end-audio-'));
 const temporaryFiles = [];
-const names = extra ? Object.keys(extraMusics) : [...Object.keys(effects), ...Object.keys(musics).map(name => `music-${name}`)];
+// Sans --extra, les nouvelles partitions sont aussi écrites dans www/audio (music-aube, music-victoire…) pour le jeu.
+const names = extra ? Object.keys(extraMusics) : [...Object.keys(effects), ...[...Object.keys(musics), ...Object.keys(extraMusics)].map(name => `music-${name}`)];
 try {
   for (const name of names) {
     const isMusic = extra || name.startsWith('music-');
-    const track = extra ? extraMusics[name]() : isMusic ? musics[name.slice(6)]() : effect(name, effects[name][0]);
-    const ceiling = extra && !track.loop ? -1 : isMusic ? -3 : effects[name][1];
+    const track = extra ? extraMusics[name]() : isMusic ? (musics[name.slice(6)] || extraMusics[name.slice(6)])() : effect(name, effects[name][0]);
+    const ceiling = isMusic && !track.loop ? -1 : isMusic ? -3 : effects[name][1];
     master(track, isMusic && track.loop, ceiling);
     const source = join(temporary, `${name}.wav`);
     temporaryFiles.push(source);
