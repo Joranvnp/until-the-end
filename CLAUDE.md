@@ -25,6 +25,12 @@ Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx ca
 ## Visuels
 `npm run art` régénère icônes, écran de démarrage et visuels Play Store (`tools/gen-art.mjs`), puis `npm run assets` pour Android et iOS (captures App Store dans `store/ios/`, anglais dans `store/en/`).
 
+## Sons
+`npm run audio` régénère `www/audio/*.mp3` (synthèse DSP + ffmpeg, `tools/gen-audio.mjs`). Le moteur (`loadSounds`/`playSnd`/`music`) retombe sur la synthèse `synth` si un fichier manque. Menu : illustration `www/art/menu.png`.
+
+## Boutique
+Monnaie « éclats » (`PROF.coins`, gagnée dans `endGame` via `earnCoins`), tenues `OUTFITS` (couleurs du héros) et bonus `BOOSTS` consommés par `applyBoosts` (jamais en défi du jour ni à la reprise).
+
 ## Tests utilisés
 - Simulation accélérée : `__game.newGame(1)` puis `__game.step(n)` (exposé sur window pour les tests ; `__game.dbg` donne accès à la météo, aux bombes, aux succès et aux panneaux).
 - Vérifier : aucune erreur console, une partie AFK se termine en défaite, une grosse armée finit par gagner,

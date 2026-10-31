@@ -6,6 +6,7 @@
   "scripts": {
     "serve": "npx serve www",
     "art": "node tools/gen-art.mjs",
+    "audio": "node tools/gen-audio.mjs",
     "assets": "npx capacitor-assets generate --android --ios --iconBackgroundColor '#0b0a16' --iconBackgroundColorDark '#0b0a16' --splashBackgroundColor '#0b0a16' --splashBackgroundColorDark '#0b0a16'",
     "sync": "npx cap sync",
     "apk": "npx cap sync android && cd android && ./gradlew assembleDebug",
