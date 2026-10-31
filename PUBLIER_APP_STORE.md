@@ -45,7 +45,7 @@ Le numéro de build augmente tout seul à chaque lancement.
 - **Texte promotionnel (170 car.)** : Nouveau : défi du jour, mode Siège à vagues infinies et reliques à collectionner !
 - **Description** : reprends celle de `store/FICHE_PLAY_STORE.md`.
 - **Mots-clés (100 car.)** : `pixel,minage,stratégie,bac à sable,terraria,armée,château,hors ligne,rétro,survie`
-- **URL d'assistance** : https://github.com/Joranvnp/until-the-end/issues
+- **URL d'assistance** : https://joranvnp.github.io/until-the-end/assistance.html
 - **URL de confidentialité** : https://joranvnp.github.io/until-the-end/confidentialite.html (voir GitHub Pages dans `PUBLIER_PLAY_STORE.md`)
 - **Catégorie** : Jeux > Stratégie (secondaire : Action)
 - **Captures** : `store/ios/iphone-6.9-*.png` (iPhone 6,9", 1320 × 2868) et `store/ios/ipad-13-*.png`
