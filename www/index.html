@@ -1155,7 +1155,10 @@ function navigate(e,tx,dt,mode='auto'){
   const under=y1>surf[clamp(ax,0,WW-1)]+1;const list=[];
   if(mode==='climb'||(mode==='auto'&&under)){for(let y=y0-1;y<y1;y++)list.push([ax,y]);for(let x=o0;x<=o1;x++)list.push([x,y0-1])}
   else for(let y=y0;y<=y1;y++)list.push([ax,y]);
-  for(const[x,y]of list){const r=digStep(e,x,y,dt,e.kind==='miner'||e.kind==='champion');if(r===0)return false;if(r<0){e.vy=-JUMP;return false}}
+  for(const[x,y]of list){const r=digStep(e,x,y,dt,e.kind==='miner'||e.kind==='champion');if(r===0)return false;
+    // bloc indestructible (mur du château, socle) trop haut pour le saut : sans progrès, on monte en pilier au lieu de resauter
+    // (avant, le champion tombé dans un trou de 3 cases contre la plateforme de son château y sautait sur place pendant toute la partie)
+    if(r<0){if((e.stuck||0)>=2){e.stPil=true;e.stLast=time;climbUp(e,dt,e.x+e.w/2);return false}e.vy=-JUMP;return false}}
   e.vy=-JUMP*.95;return false}
 // pont : un trou de 1 à 4 cases barre la route (puits, escalier, cratère) et la cible est au-delà : on pose un bloc de terre
 // devant ses pieds plutôt que de tomber au fond (et de creuser pour en ressortir, ce qui laissait des fosses béantes)
