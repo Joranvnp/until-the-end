@@ -2465,7 +2465,7 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
   txt('Recruter',x+8,y+22,COL.dim,7);
   // troc : la pierre s'entasse par centaines (déblais des mineurs) alors que bois et cuivre manquent pour recruter
   txt('Troc (30 pierre) :',x+RW-104,y+22,COL.dim,6,'right');
-  for(const[k,n,bx,bw]of[['wood',8,x+RW-100,42],['copper',2,x+RW-55,49]]){const ok=b.storage.stone>=30,go=()=>{if(b.storage.stone<30)return;b.storage.stone-=30;b.storage[k]+=n;sfx.buy();toast(k==='wood'?'Troc : +8 bois':'Troc : +2 cuivre',2,'#9fd0ff')};button(bx,y+19,bw,11,k==='wood'?'+8 bois':'+2 cuivre',go,ok,false,()=>lackMsg({stone:30},b.storage))}
+  for(const[k,n,bx,bw]of[['wood',8,x+RW-100,42],['copper',2,x+RW-55,49]]){const ok=b.storage.stone>=30,go=()=>{if(b.storage.stone<30)return;b.storage.stone-=30;b.storage[k]+=n;sfx.buy();toast(k==='wood'?'Troc : +8 bois':'Troc : +2 cuivre',2,'#9fd0ff')};go.rep=true;button(bx,y+19,bw,11,k==='wood'?'+8 bois':'+2 cuivre',go,ok,false,()=>lackMsg({stone:30},b.storage))}
   const mix=redMix();
   // PV et dégâts réels (forge de guerre comprise) : avant, il fallait recruter pour comparer un archer et un guerrier
   const ust=u=>'PV '+u.hp+' · Dégâts '+Math.round(u.dmg*(1+.25*b.upg.dmg));let hovU=null;
@@ -2541,7 +2541,9 @@ function drawCraftPanel(){const av=(HL.barTop||VH)-6-30,tight=(av-30)/RECIPES.le
     const go=()=>{for(const[k,v]of Object.entries(r.inp)){const fromBag=Math.min(v,countItem(k));takeItem(k,fromBag);if(v>fromBag)st[k]-=v-fromBag}const left=addItem(r.out,r.n);if(left)dropItem(player.x,player.y,r.out,left);sfx.buy();
       // outil meilleur que celui de la barre : il prend sa case (l'ancien part à sa place dans le sac), en main si l'ancien l'était
       // (avant, la nouvelle pioche atterrissait dans une case libre et il fallait la chercher pour la sélectionner)
-      if(up&&!left){const inv=player.inv,j=inv.findIndex(q=>q&&q.id===r.out),i=inv.findIndex((q,k)=>k<9&&q&&IT[q.id].tool===ot.tool&&tv(IT[q.id])<tv(ot));if(i>=0&&j>i){const t=inv[i];inv[i]=inv[j];inv[j]=t}}if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n+(inf?' ('+inf+')':''),2,COL.gold)};const dn=()=>lackMsg(r.inp,inv);cardHit(X+6,yy,CW-12,RH-2,go,ok,dn);button(X+CW-46,yy+1,38,RH-4,'Créer',go,ok,false,dn)});
+      if(up&&!left){const inv=player.inv,j=inv.findIndex(q=>q&&q.id===r.out),i=inv.findIndex((q,k)=>k<9&&q&&IT[q.id].tool===ot.tool&&tv(IT[q.id])<tv(ot));if(i>=0&&j>i){const t=inv[i];inv[i]=inv[j];inv[j]=t}}if(r.out==='pick4')unlock('pick4');craftFx=.5;toast('Fabriqué : '+IT[r.out].n+(inf?' ('+inf+')':''),2,COL.gold)};
+    // maintien : les consommables (planches, torches, potions, bombes…) s'enchaînent ; pas les outils, un seul suffit
+    if(!ot.tool)go.rep=true;const dn=()=>lackMsg(r.inp,inv);cardHit(X+6,yy,CW-12,RH-2,go,ok,dn);button(X+CW-46,yy+1,38,RH-4,'Créer',go,ok,false,dn)});
   if(hov){const l=tr(hov.inf),w=uiWidth(l,7)+10,tx=clamp(hov.X+24,2,VW-w-2),ty=hov.yy-15>=2?hov.yy-15:hov.yy+RH;box(tx,ty,w,13,'rgba(5,5,12,.96)','#ffffff');txt(l,tx+5,ty+3,COL.txt,7)}}
 function drawInvPanel(){
   // tactile : cases agrandies (36 px réels au lieu de 27 sur téléphone), icône centrée à sa taille nette
