@@ -2153,10 +2153,10 @@ function button(x,y,wd,ht,label,fn,on=true,hot=false,deny=null){const hov=mouse.
   if(on&&(hov||hot)){ctx.fillStyle='#e8ecff35';ctx.fillRect(Math.round(x)+2,Math.round(y)+2,Math.round(wd)-4,1)}
   // libellé collé aux bords (téléphone portrait) : sur deux lignes si le bouton est assez haut, sinon tronqué
   const tc=on?COL.txt:COL.dim,lw=wd-10;let ls=null;if(ht>=20&&uiWidth(label)>lw){ls=wrapLines(label,lw,8,true);if(ls.length!==2||ls.some(l=>l.length<3||uiWidth(l)>lw))ls=null}
-  if(ls)ls.forEach((l,i)=>txt(l,x+wd/2,y+(ht-13)/2+i*8,tc,8,'center'));else txt(uiFit(label,wd-4),x+wd/2,y+(ht-5)/2,tc,8,'center');uiHits.push({x,y,w:wd,h:ht,fn:on?fn:()=>{sfx.deny();if(deny)deny()}})}
+  if(ls)ls.forEach((l,i)=>txt(l,x+wd/2,y+(ht-13)/2+i*8,tc,8,'center'));else txt(uiFit(label,wd-4),x+wd/2,y+(ht-5)/2,tc,8,'center');uiHits.push({x,y,w:wd,h:ht,fn:on?fn:()=>{sfx.deny();if(deny)deny()},rep:on&&fn.rep})}
 // tactile : toute la carte (ligne de recrue, amélioration) réagit au doigt, pas seulement son petit bouton
 // (poussée avant le bouton : uiHitAt prend la dernière zone touchée, le bouton reste prioritaire)
-function cardHit(x,y,w,h,fn,on,deny=null){if(isTouch)uiHits.push({x,y,w,h,fn:on?fn:()=>{sfx.deny();if(deny)deny()}})}
+function cardHit(x,y,w,h,fn,on,deny=null){if(isTouch)uiHits.push({x,y,w,h,fn:on?fn:()=>{sfx.deny();if(deny)deny()},rep:on&&fn.rep})}
 // bouton grisé touché : on dit ce qui manque (avant : un simple bruit de refus, sans savoir quoi aller miner)
 function lackMsg(c,st,troc){const e=Object.entries(c).filter(([k,v])=>(st[k]||0)<v),l=e.map(([k,v])=>(v-(st[k]||0))+' '+tr(IT[k].n).toLowerCase());if(!l.length)return;const m='Il manque : '+l.join(', ')+(troc&&e.every(([k])=>TROC[k])?' (ou plus de pierre pour le troc).':'.');if(!msgs.some(q=>q.s===m&&q.t>.6)){toast(m,2.5,'#ffc27a');msgs[msgs.length-1].panel=true}} // panel : recopié dans le bandeau du panneau (en paysage, le panneau cache les messages)
 function costLine(c,x,y,st,troc){let cx=x;const tp=troc&&!canPay(st,c)&&trocPlan(st,c);for(const[k,v]of Object.entries(c)){const okk=(st[k]||0)>=v;ctx.drawImage(ICON[k],Math.round(cx),Math.round(y)-2,8,8);
@@ -2484,7 +2484,7 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
     else if(CTR[k])txt((adv?'★ ':'')+'▶'+UNITS[CTR[k]].n,x+132,ty0,adv&&Math.sin(time*5)>0?'#ffffff':'#7dff9a',6,'right');
     // tactile sans place pour une 3e ligne (paysage) : PV et dégâts à la place de la description, sans survol on ne les voyait nulle part
     if(!xs)txt(uiFit(isTouch&&!tall?ust(u):u.d,101,6),x+30,tall?yy+10:yy+12,isTouch&&!tall?'#b8a98a':COL.dim,6);if(tall)txt(ust(u),x+30,yy+18,'#b8a98a',6);
-    costLine(u.cost,x+136,yy+(xs?3:7),b.storage,1);const go=()=>recruitUI(k),ok=!!trocPlan(b.storage,u.cost);const dn=()=>lackMsg(u.cost,b.storage,1);cardHit(x+6,yy-p,RW-12,RP-2,go,ok,dn);button(x+RW-48,xs?yy:yy+4-bh,40,xs?12:14+2*bh,'Recruter',go,ok,false,dn)});
+    costLine(u.cost,x+136,yy+(xs?3:7),b.storage,1);const go=()=>recruitUI(k);go.rep=true;const ok=!!trocPlan(b.storage,u.cost);const dn=()=>lackMsg(u.cost,b.storage,1);cardHit(x+6,yy-p,RW-12,RP-2,go,ok,dn);button(x+RW-48,xs?yy:yy+4-bh,40,xs?12:14+2*bh,'Recruter',go,ok,false,dn)});
   const X=ux(x);txt('Améliorations',X+8,y+uy-9,COL.dim,7);if(UPG.some(u=>bases[1].upg[u.id]))txt('★ rouge = niveau ennemi',X+RW-8,y+uy-8,'#ff8a7a',6,'right');
   let hov=null;
   UPG.forEach((u,i)=>{const xx=X+6+(i%2)*(cw+3),yy=y+uy+Math.floor(i/2)*UP+p,l=b.upg[u.id],c=upgCost(u,l),le=bases[1].upg[u.id];if(!isTouch&&mouse.inside&&mouse.x>=xx&&mouse.x<xx+cw&&mouse.y>=yy-p&&mouse.y<yy-p+UP-2)hov={u,xx,yy:yy-p,l};box(xx,yy-p,cw,UP-2,COL.panel2,le>l?'#ff6a5a55':'#e8ecff18');if(u.gen&&l){ctx.fillStyle='#7dff9a55';ctx.fillRect(xx+1,yy-p+UP-4,Math.round((cw-2)*Math.min(1,(b.genT&&b.genT[u.id]||0)/genT(u,l))),1)}if(le)txt(le+'★',xx+cw-4,yy+3,'#ff8a7a',6,'right');
@@ -2816,13 +2816,17 @@ function toLocal(ev){const r=cv.getBoundingClientRect(),d=cv.width/r.width;retur
 // au doigt, un appui qui frôle un bouton (à tol px près) l'active quand même : les petits boutons des panneaux restent faciles à toucher
 function uiHitAt(x,y,tol=0){for(let i=uiHits.length-1;i>=0;i--){const h=uiHits[i];if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h)return h}
   let best=null,bd=tol;for(const h of uiHits){const d=Math.hypot(Math.max(h.x-x,0,x-(h.x+h.w)),Math.max(h.y-y,0,y-(h.y+h.h)));if(d<=bd){bd=d;best=h}}return best}
-function uiClick(x,y,tol=0){const h=uiHitAt(x,y,tol);if(!h)return false;pressFx={...h,t:performance.now()};h.fn();return true}
+function uiClick(x,y,tol=0){const h=uiHitAt(x,y,tol);if(!h)return false;pressFx={...h,t:performance.now()};h.fn();holdRep=h.rep?{x,y,tol,next:performance.now()+450}:null;return true}
+// bouton maintenu (Recruter) : il se répète tant que le doigt ou le clic reste dessus et que c'est payable
+// (avant, 10 recrues = 10 tapes ; s'arrête dès que la case n'est plus payable ou que le panneau se ferme)
+let holdRep=null;
+function holdTick(){if(!holdRep)return;const n=performance.now();if(n<holdRep.next)return;const h=uiHitAt(holdRep.x,holdRep.y,holdRep.tol);if(!h||!h.rep){holdRep=null;return}holdRep.next=n+220;pressFx={...h,t:n};h.fn()}
 cv.addEventListener('mousemove',ev=>{const p=toLocal(ev);mouse.x=p.x;mouse.y=p.y;mouse.inside=true;updateMouseWorld()});
-cv.addEventListener('mouseleave',()=>{mouse.inside=false;mouse.l=mouse.r=false});
+cv.addEventListener('mouseleave',()=>{mouse.inside=false;mouse.l=mouse.r=false;holdRep=null});
 cv.addEventListener('mousedown',ev=>{audioInit();cv.focus();const p=toLocal(ev);mouse.x=p.x;mouse.y=p.y;mouse.inside=true;updateMouseWorld();
   if(ev.button===0){if(uiClick(p.x,p.y))return;if(panel&&panelRect&&p.x>=panelRect.x&&p.x<panelRect.x+panelRect.w&&p.y>=panelRect.y&&p.y<panelRect.y+panelRect.h)return;mouse.l=true}
   if(ev.button===2)mouse.r=true});
-addEventListener('mouseup',ev=>{if(ev.button===0)mouse.l=false;if(ev.button===2)mouse.r=false});
+addEventListener('mouseup',ev=>{if(ev.button===0){mouse.l=false;holdRep=null}if(ev.button===2)mouse.r=false});
 cv.addEventListener('contextmenu',ev=>ev.preventDefault());
 cv.addEventListener('wheel',ev=>{if(state!=='play')return;ev.preventDefault();player.sel=(player.sel+(ev.deltaY>0?1:8))%9},{passive:false});
 addEventListener('keydown',ev=>{keys[ev.code]=true;audioInit();
@@ -2841,7 +2845,7 @@ addEventListener('blur',()=>{for(const k in keys)keys[k]=false;mouse.l=mouse.r=f
 cv.addEventListener('touchstart',ev=>{ev.preventDefault();audioInit();for(const t of ev.changedTouches){const p=toLocal(t);const ui=state!=='play'||uiHits.some(h=>p.x>=h.x&&p.x<h.x+h.w&&p.y>=h.y&&p.y<h.y+h.h)||(panel&&panelRect&&p.x>=panelRect.x&&p.x<panelRect.x+panelRect.w&&p.y>=panelRect.y&&p.y<panelRect.y+panelRect.h);
   if(ui){mouse.x=p.x;mouse.y=p.y;uiClick(p.x,p.y,state!=='play'||paused||panel?Math.round(10*(window.devicePixelRatio||1)/S):0)}activeTouches.set(t.identifier,{...p,ui})}if(state==='play')touchUpdate()},{passive:false});
 cv.addEventListener('touchmove',ev=>{ev.preventDefault();for(const t of ev.changedTouches){const a=activeTouches.get(t.identifier);if(a){const p=toLocal(t);a.x=p.x;a.y=p.y}}if(state==='play')touchUpdate()},{passive:false});
-const tEnd=ev=>{for(const t of ev.changedTouches)activeTouches.delete(t.identifier);if(state==='play')touchUpdate()};cv.addEventListener('touchend',tEnd);cv.addEventListener('touchcancel',tEnd);
+const tEnd=ev=>{for(const t of ev.changedTouches){const a=activeTouches.get(t.identifier);if(a&&a.ui)holdRep=null;activeTouches.delete(t.identifier)}if(state==='play')touchUpdate()};cv.addEventListener('touchend',tEnd);cv.addEventListener('touchcancel',tEnd);
 
 // =====================================================================
 //  DÉMARRAGE
@@ -2890,7 +2894,7 @@ addEventListener('gamepadconnected',()=>audioInit());
 // qualité adaptative : si l'appareil tient moins de ~45 images/s pendant ~4 s de jeu, on coupe l'aberration chromatique du halo
 let fxAvg=16,fxSlowN=0,lowFx=false;
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;
-  if(state==='play'&&!paused&&!lowFx){fxAvg=fxAvg*.95+dt*50;fxSlowN=fxAvg>22?fxSlowN+1:0;if(fxSlowN>150)lowFx=true}try{pollPad(dt);update(dt);render()}catch(err){console.error(err)}requestAnimationFrame(frame)}
+  if(state==='play'&&!paused&&!lowFx){fxAvg=fxAvg*.95+dt*50;fxSlowN=fxAvg>22?fxSlowN+1:0;if(fxSlowN>150)lowFx=true}try{pollPad(dt);holdTick();update(dt);render()}catch(err){console.error(err)}requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
 window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},get lowFx(){return lowFx},set lowFx(v){lowFx=v},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{get msgs(){return msgs},get diff(){return diff},TRM,spawnOgre,hurt,usePower,nextHero,get HERO(){return HERO},set panel(v){panel=v},set help(v){pauseHelp=v},endGame,SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,shareText,shareResult,findRelic,set paused(v){paused=v}},get objTgt(){return objTgt},get tut(){return tut},get firstRun(){return firstRun},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
 </script>
