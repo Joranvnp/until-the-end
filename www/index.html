@@ -2438,7 +2438,7 @@ function togglePanel(n){panel=panel===n?null:n;stowCursor();panelT=0;sfx.place()
 const panelX=(x,W,y)=>{const m=HL.map,o=m&&y<m.y+m.h?x+W+3-m.x:0;return o>0&&x-o>=4?x-o:x};
 // le panneau évite la minicarte (coin haut droit) s'il tient en dessous
 const panelY=(H,y,x,W)=>{let b=HL.barTop||VH;if(isTouch&&W)for(const t of touchLayout())if(t.x<x+W&&t.x+t.w>x&&t.y-H-3>=2)b=Math.min(b,t.y);// trop haut pour tenir au-dessus des commandes (tablette debout) : sous la bande du haut, qui garde les ressources visibles
-  const tp=isTouch&&VH>VW;if(b-H-3<2)return tp?Math.max(y,Math.min((hudLow||0)+2,VH-H-2)):y;y=Math.max(2,Math.min(y,b-H-3));if(tp&&y<(hudLow||0)+2)return Math.min(hudLow+2,VH-H-2);const m=HL.map;
+  const tp=isTouch&&VH>VW;if(b-H-3<2)return tp?Math.max(y,Math.min((hudLow||0)+2,VH-H-2)):y;y=Math.max(2,Math.min(y,b-H-3));if(tp&&y<(hudLow||0)+2&&(hudLow||0)+2+H<=b)return Math.min(hudLow+2,VH-H-2);const m=HL.map;
   if(m&&W&&x<m.x+m.w&&x+W>m.x&&y<m.y+m.h&&m.y+m.h+3+H<=b-3)y=m.y+m.h+3;return y};
 // tablette tactile : espace libre entre les commandes de gauche et de droite, pour y caler un panneau au lieu de les recouvrir
 function touchGap(){if(!isTouch)return null;const T=touchLayout();return{L:Math.max(0,...T.filter(t=>t.x<VW/2).map(t=>t.x+t.w)),R:Math.min(VW,...T.filter(t=>t.x>=VW/2).map(t=>t.x))}}
@@ -2451,7 +2451,11 @@ function drawBasePanel(){const b=bases[0];let RW=262,cx=VW/2;
   // tactile sur écran haut (téléphone debout, tablette) : lignes de 30 au lieu de 24, cibles d'environ 40 px réels sous le doigt
   // écran bas sans place pour la version large (ordinateur 1366x768) : lignes resserrées (20/22 au lieu de 24/25) et calé sous cette bande,
   // sinon le panneau couvrait la bande du haut (barres d'équipe) et mordait sur la barre d'objets
-  const tall=isTouch&&!wide&&(HL.barTop||VH)-40>=300,cmp=!wide&&!tall&&(HL.barTop||VH)-3-32<221,
+  // tablette debout : si la version haute ne tient pas entre la mini-carte et les commandes tactiles mais la normale oui,
+  // on prend la normale (avant, le panneau recouvrait ◀ ▶ ▼ et on ne pouvait plus bouger le héros panneau ouvert)
+  const tbTop=HL.map?HL.map.y+HL.map.h+3:2,tbCt=isTouch&&VH>VW?Math.min(...touchLayout().filter(t=>t.k==='l'||t.k==='d').map(t=>t.y)):VH,
+    tbFit=tbCt-3-tbTop<50+4*30+3*30&&tbCt-3-tbTop>=50+4*24+3*25;
+  const tall=isTouch&&!wide&&(HL.barTop||VH)-40>=300&&!tbFit,cmp=!wide&&!tall&&(HL.barTop||VH)-3-32<221,
     // encore trop haut même collé en haut de l'écran (iPhone SE couché 667x375, 568x320, 1366x768) : recrues sur une ligne sans description,
     // sinon le panneau recouvrait la rangée Menu/Base/Forge/Sac et l'ordre (on ne pouvait plus passer d'un panneau à l'autre)
     xs=cmp&&(HL.barTop||VH)-5<196,RP=tall?30:xs?15:cmp?20:24,UP=tall?30:xs?20:cmp?22:25,p=tall?3:0,bh=tall?2:0;
