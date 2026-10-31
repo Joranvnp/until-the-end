@@ -749,7 +749,7 @@ function synthMusic(dt){musicT-=dt;if(musicT>0)return;const night=daylight()<.35
   const n=SCALE[Math.floor(Math.random()*SCALE.length)];if(Math.random()<.8)tone(base*2*Math.pow(2,n/12),musicT*1.6,'triangle',.018);
   if(Math.random()<.3)tone(base*Math.pow(2,SCALE[Math.floor(Math.random()*3)]/12)/2,musicT*3,'sine',.03)}
 // échantillons (www/audio, générés par npm run audio) : chargés au premier geste, décodés une fois
-const SND={},SND_FX=Object.keys(synth),SND_MUS=['menu','day','night'];let sndReq=false,sfxBus=null,musBus=null;
+const SND={},SND_FX=Object.keys(synth),SND_MUS=['menu','day','night','combat','blood'];let sndReq=false,sfxBus=null,musBus=null;
 function loadSounds(){if(sndReq||!AC)return;sndReq=true;sfxBus=AC.createGain();sfxBus.gain.value=.8;sfxBus.connect(AC.destination);musBus=AC.createGain();musBus.gain.value=.55;musBus.connect(AC.destination);
   for(const n of[...SND_FX,...SND_MUS.map(m=>'music-'+m)])fetch('audio/'+n+'.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>new Promise((ok,ko)=>AC.decodeAudioData(b,ok,ko))).then(buf=>{SND[n]=buf}).catch(()=>{})}
 // petite variation de hauteur sur les sons répétitifs, et pas deux fois le même son dans la même trame
@@ -759,7 +759,13 @@ function playSnd(n,vol=1){if(!AC||muted)return true;const b=SND[n];if(!b)return 
 const sfx={};for(const k of SND_FX)sfx[k]=()=>{if(!playSnd(k))synth[k]()};
 // musique : menu à l'écran titre et de fin, jour / nuit en partie, fondu enchaîné de 2 s ; synthé de repli si le fichier manque
 let musCur=null;
-function music(dt){if(!AC)return;const want=muted||!PROF.set.music?null:state==='play'?(daylight()<.35?'night':'day'):'menu';
+// Morceau voulu en partie : lune de sang > combat (2 ennemis à moins de 13 tuiles, tenu 8 s) > nuit/jour ; repli si le fichier manque.
+let musFight=0;
+function playMusic(dt){const base=daylight()<.35?'night':'day';if(!player)return base;
+  let near=0;for(const e of ents)if(!e.dead&&(e.team===1||e.type==='monster')&&Math.hypot(e.x-player.x,e.y-player.y)<13*T)near++;
+  musFight=near>=2?8:Math.max(0,musFight-dt);
+  const k=isBlood()?'blood':musFight>0?'combat':base;return SND['music-'+k]?k:base}
+function music(dt){if(!AC)return;const want=muted||!PROF.set.music?null:state==='play'?playMusic(dt):'menu';
   if(want&&!SND['music-'+want]){if(state==='play'&&!paused)synthMusic(dt);if(!musCur)return}
   if((musCur&&musCur.n)===want)return;const t=AC.currentTime;
   if(musCur){const o=musCur;o.g.gain.cancelScheduledValues(t);o.g.gain.setValueAtTime(o.g.gain.value,t);o.g.gain.linearRampToValueAtTime(0,t+2);o.s.stop(t+2.1);musCur=null}
