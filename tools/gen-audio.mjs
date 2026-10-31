@@ -520,210 +520,261 @@ function effect(name, duration) {
 }
 
 // ---------- Musiques ----------
-// Accords : [fondamentale MIDI, qualité] ; mélodies : [temps, note, durée en temps].
-const QUALITY = { maj: [0, 4, 7], min: [0, 3, 7], sus: [0, 5, 7], maj7: [0, 4, 7, 11], min7: [0, 3, 7, 10],
-  add9: [0, 4, 7, 14], min9: [0, 3, 7, 14], dim: [0, 3, 6], sus2: [0, 2, 7] };
-// Fondamentales entre do2 et si2 : éviter les do1/sol0 peu audibles en jeu.
+// Partitions originales : chaque mesure contient [temps, MIDI, durée en temps].
+// Aucun bruit d'ambiance ; les seuls bruits sont les transitoires du kit.
+const QUALITY = { maj: [0, 4, 7], min: [0, 3, 7], dom: [0, 4, 7, 10], dim: [0, 3, 6] };
+const tones = ([root, quality]) => QUALITY[quality].map(n => root + n);
 const bassRoot = root => 36 + ((root % 12) + 12) % 12;
-const tones = ([root, quality]) => QUALITY[quality].map(i => root + i);
 
-function arp(track, chord, start, beat, pattern, inst, amp, octave = 0, step = 0.5, pan = 0.3) {
-  const notes = tones(chord), ladder = [...notes, ...notes.map(n => n + 12)];
-  pattern.forEach((index, k) => {
-    if (index === null) return;
-    inst(track, ladder[index] + octave, start + k * step * beat, step * beat * 1.6, amp * (k % 2 ? .75 : 1), k % 2 ? pan : -pan);
-  });
+// Deux fronts polyBLEP : carré à largeur modulée, vibrato retardé.
+function chipLead(track, midi, start, duration, amp, pan = 0) {
+  const f = hz(midi), low = biquad('low', 5700);
+  let phase = 0;
+  layer(track, start, duration + .055, amp, t => {
+    const dt = f * (1 + .0035 * Math.min(1, t / .22) * sine(5.4 * t)) / SR;
+    phase = (phase + dt) % 1;
+    const width = .43 + .055 * sine(1.8 * t);
+    const pulse = (phase < width ? 1 : -1) + blep(phase, dt) - blep((phase - width + 1) % 1, dt);
+    return low(pulse * .72 + sine(phase) * .18) * adsr(t, duration + .055, .008, .09, .78, .055);
+  }, pan);
+}
+
+function chipKeys(track, midi, start, duration, amp, pan = 0) {
+  const f = hz(midi), total = duration + .16;
+  layer(track, start, total, amp, t => {
+    const mod = 1.8 * Math.exp(-7 * t) * sine(f * 2 * t);
+    return Math.sin(TAU * f * t + mod) * Math.exp(-1.8 * t)
+      * adsr(t, total, .003, .2, .65, .16);
+  }, pan);
+}
+
+function chipHarp(track, midi, start, duration, amp, pan = 0) {
+  const f = hz(midi), total = duration + .1;
+  layer(track, start, total, amp, t => (sine(f * t) + .32 * sine(2 * f * t) + .12 * sine(3 * f * t))
+    * Math.exp(-7 * t) * adsr(t, total, .002, .12, .7, .1), pan);
+}
+
+function chipStrings(track, midi, start, duration, amp, pan = 0) {
+  const f = hz(midi), low = biquad('low', 2100), total = duration + .16;
+  layer(track, start, total, amp, t => low((saw(f * .997 * t, f * .997 / SR)
+    + saw(f * 1.003 * t + .27, f * 1.003 / SR)) * .5)
+    * adsr(t, total, .07, .16, .65, .16), pan);
+}
+
+function chipBrass(track, midi, start, duration, amp, pan = 0) {
+  const f = hz(midi), low = biquad('low', 2800), total = duration + .07;
+  layer(track, start, total, amp, t => low(saw(f * t, f / SR) + .3 * saw(2 * f * t, 2 * f / SR))
+    * adsr(t, total, .018, .1, .55, .07), pan);
+}
+
+// Bruit local déterministe pour les peaux : ne consomme pas le PRNG des effets.
+function kitNoise() {
+  let state = 0x13579bdf;
+  return () => { state ^= state << 13; state ^= state >>> 17; state ^= state << 5; return (state >>> 0) / 2147483648 - 1; };
+}
+function kit(track, kind, start, amp, pan = 0, pitch = 150) {
+  const lengths = { kick: .28, snare: .2, hat: .065, open: .24, crash: .95, tom: .24 };
+  const duration = lengths[kind], n = kitNoise(), high = biquad('high', kind === 'snare' ? 1600 : 6500);
+  let phase = 0;
+  layer(track, start, duration, amp, t => {
+    if (kind === 'kick' || kind === 'tom') {
+      const f = kind === 'kick' ? 49 + 105 * Math.exp(-42 * t) : pitch * (1 + .65 * Math.exp(-35 * t));
+      phase += f / SR;
+      return (sine(phase) + .12 * sine(2 * phase)) * Math.exp(-t * (kind === 'kick' ? 17 : 14));
+    }
+    if (kind === 'snare') return .72 * high(n()) * Math.exp(-23 * t)
+      + .42 * sine(185 * t) * Math.exp(-35 * t) + .18 * sine(330 * t) * Math.exp(-45 * t);
+    const metallic = [4013, 5347, 7019, 8231, 10103].reduce((sum, f) => sum + sine(f * t), 0) / 5;
+    return high(.65 * n() + .35 * metallic) * Math.exp(-t * (kind === 'hat' ? 65 : kind === 'open' ? 18 : 5));
+  }, pan);
 }
 
 function melody(track, inst, notes, start, beat, amp, pan = 0, shift = 0) {
-  for (const [b, midi, d, v = 1] of notes) inst(track, midi + shift, start + b * beat, d * beat, amp * v, pan);
+  for (const [at, note, duration] of notes) inst(track, note + shift, start + at * beat, duration * beat * .9, amp, pan);
 }
 
+const MENU_A = [
+  [[0,69,.75],[.75,72,.25],[1,76,1.5],[2.5,74,.5],[3,72,1]],
+  [[0,72,1],[1,77,1],[2,76,.5],[2.5,72,.5],[3,69,1]],
+  [[0,67,.5],[.5,72,.5],[1,76,1],[2,79,1.5],[3.5,76,.5]],
+  [[0,74,2],[2,71,1],[3,67,1]],
+  [[0,69,.75],[.75,72,.25],[1,76,1],[2,81,1],[3,79,.5],[3.5,76,.5]],
+  [[0,77,1.5],[1.5,76,.5],[2,72,1],[3,69,1]],
+  [[0,74,1],[1,77,.5],[1.5,76,.5],[2,74,1],[3,72,1]],
+  [[0,71,1.5],[1.5,69,.5],[2,68,1],[3,71,1]],
+];
+const MENU_B = [
+  [[0,77,2],[2,81,.5],[2.5,79,.5],[3,77,1]],
+  [[0,76,1.5],[1.5,74,.5],[2,72,2]],
+  [[0,74,.5],[.5,77,.5],[1,81,1],[2,79,1],[3,77,1]],
+  [[0,76,2.5],[2.5,72,.5],[3,69,1]],
+  [[0,72,1],[1,74,1],[2,77,1.5],[3.5,76,.5]],
+  [[0,74,1],[1,71,1],[2,67,1],[3,74,1]],
+  [[0,77,.5],[.5,76,.5],[1,74,1],[2,72,1],[3,69,1]],
+  [[0,68,1],[1,71,.5],[1.5,76,.5],[2,74,1],[3,71,1]],
+];
 const DAY_A = [
-  [[0, 78, 1.5], [1.5, 76, .5], [2, 74, 1], [3, 69, 1]], [[0, 73, 1], [1, 76, 1], [2, 81, 2]],
-  [[0, 78, 1.5], [1.5, 79, .5], [2, 78, 1], [3, 74, 1]], [[0, 76, 3], [3, 74, .5], [3.5, 76, .5]],
-  [[0, 78, 1], [1, 81, 1], [2, 83, 1], [3, 81, 1]], [[0, 76, 1.5], [1.5, 78, .5], [2, 76, 1], [3, 73, 1]],
-  [[0, 74, 1], [1, 71, 1], [2, 74, 1], [3, 79, 1]], [[0, 76, 3.5]],
+  [[0,74,.5],[.5,78,.5],[1,81,.75],[1.75,78,.25],[2,76,.5],[2.5,74,.5],[3,78,1]],
+  [[0,76,.75],[.75,73,.25],[1,69,1],[2.5,73,.5],[3,76,1]],
+  [[0,78,.5],[.5,81,.5],[1,83,1],[2,81,.5],[2.5,78,.5],[3,74,1]],
+  [[0,79,1.5],[1.5,78,.5],[2,74,1],[3,71,1]],
+  [[0,74,.5],[.5,78,.5],[1,81,1],[2,86,.75],[2.75,85,.25],[3,81,1]],
+  [[0,79,.5],[.5,78,.5],[1,76,1],[2,73,.5],[2.5,74,.5],[3,76,1]],
+  [[0,79,1],[1,78,.5],[1.5,76,.5],[2,74,1],[3,71,1]],
+  [[0,73,.5],[.5,76,.5],[1,81,1],[2,76,1],[3,73,1]],
 ];
 const DAY_B = [
-  [[0, 83, 2], [2, 81, 1], [3, 79, 1]], [[0, 79, 1.5], [1.5, 81, .5], [2, 83, 2]],
-  [[0, 86, 2], [2, 85, 1], [3, 81, 1]], [[0, 81, 3], [3, 76, 1]],
-  [[0, 79, 1], [1, 78, 1], [2, 76, 1], [3, 74, 1]], [[0, 76, 1.5], [1.5, 74, .5], [2, 71, 2]],
-  [[0, 74, 1], [1, 76, 1], [2, 78, 1], [3, 81, 1]], [[0, 79, 2], [2, 76, 1], [3, 74, 1]],
+  [[0,79,1],[1,83,1.5],[2.5,81,.5],[3,79,1]],
+  [[0,78,.5],[.5,79,.5],[1,81,2],[3,78,1]],
+  [[0,76,1],[1,79,.5],[1.5,83,.5],[2,81,1],[3,79,1]],
+  [[0,85,1.5],[1.5,83,.5],[2,81,1],[3,76,1]],
+  [[0,83,.5],[.5,81,.5],[1,79,1],[2,78,.5],[2.5,79,.5],[3,83,1]],
+  [[0,81,1],[1,78,.5],[1.5,74,.5],[2,78,2]],
+  [[0,76,.5],[.5,79,.5],[1,83,1],[2,81,.5],[2.5,79,.5],[3,76,1]],
+  [[0,73,1],[1,76,1],[2,81,1],[3,73,1]],
+];
+const NIGHT_A = [
+  [[0,76,1.5],[1.5,71,.5],[2,79,1],[3,78,1]],
+  [[0,76,2],[2,72,.5],[2.5,74,.5],[3,76,1]],
+  [[0,72,1],[1,76,1.5],[2.5,74,.5],[3,69,1]],
+  [[0,71,2],[2,75,1],[3,78,1]],
+  [[0,79,1.5],[1.5,78,.5],[2,76,.5],[2.5,74,.5],[3,71,1]],
+  [[0,72,1],[1,76,1],[2,79,1.5],[3.5,76,.5]],
+  [[0,74,1],[1,72,.5],[1.5,71,.5],[2,69,2]],
+  [[0,71,1.5],[1.5,74,.5],[2,75,1],[3,71,1]],
+];
+const NIGHT_B = [
+  [[0,79,1],[1,83,2],[3,81,1]],
+  [[0,78,1.5],[1.5,76,.5],[2,74,2]],
+  [[0,76,.5],[.5,79,.5],[1,84,1.5],[2.5,83,.5],[3,79,1]],
+  [[0,81,2],[2,76,1],[3,72,1]],
+  [[0,83,1.5],[1.5,81,.5],[2,79,1],[3,76,1]],
+  [[0,78,1],[1,74,1],[2,71,1],[3,74,1]],
+  [[0,76,1],[1,72,1],[2,69,1],[3,72,1]],
+  [[0,75,1],[1,78,.5],[1.5,81,.5],[2,78,1],[3,75,1]],
+];
+const COMBAT_A = [
+  [[0,74,.5],[.5,74,.25],[.75,77,.25],[1,81,1],[2,77,.5],[2.5,74,.5],[3,81,1]],
+  [[0,82,1],[1,81,.5],[1.5,77,.5],[2,74,.75],[2.75,77,.25],[3,82,1]],
+  [[0,79,.5],[.5,76,.5],[1,72,1],[2,76,.5],[2.5,79,.5],[3,84,1]],
+  [[0,81,1.5],[1.5,77,.5],[2,74,1],[3,72,.5],[3.5,73,.5]],
+  [[0,74,.5],[.5,77,.5],[1,81,.5],[1.5,86,.5],[2,84,.5],[2.5,81,.5],[3,77,1]],
+  [[0,82,.75],[.75,81,.25],[1,77,1],[2,74,.5],[2.5,77,.5],[3,82,1]],
+  [[0,79,.5],[.5,82,.5],[1,86,1],[2,82,.5],[2.5,79,.5],[3,77,1]],
+  [[0,76,.5],[.5,73,.5],[1,69,1],[2,73,.5],[2.5,76,.5],[3,81,1]],
+];
+const COMBAT_B = [
+  [[0,81,2],[2,84,1],[3,86,1]],
+  [[0,84,1.5],[1.5,82,.5],[2,79,1],[3,76,1]],
+  [[0,82,1],[1,86,1],[2,89,1],[3,86,1]],
+  [[0,81,2],[2,77,.5],[2.5,79,.5],[3,81,1]],
+  [[0,79,1],[1,82,1.5],[2.5,81,.5],[3,79,1]],
+  [[0,77,.5],[.5,81,.5],[1,86,1],[2,84,1],[3,81,1]],
+  [[0,82,1],[1,79,.5],[1.5,77,.5],[2,79,1],[3,82,1]],
+  [[0,85,1.5],[1.5,83,.5],[2,81,.5],[2.5,79,.5],[3,76,1]],
+];
+const BLOOD_A = [
+  [[0,72,.75],[.75,71,.25],[1,72,.5],[1.5,75,.5],[2,79,1],[3,75,1]],
+  [[0,80,1.5],[1.5,79,.5],[2,75,.5],[2.5,72,.5],[3,68,1]],
+  [[0,77,.5],[.5,72,.5],[1,68,1],[2,72,.5],[2.5,77,.5],[3,80,1]],
+  [[0,79,1],[1,74,.5],[1.5,71,.5],[2,67,1],[3,71,1]],
+  [[0,72,.5],[.5,75,.5],[1,79,.75],[1.75,80,.25],[2,79,1],[3,84,1]],
+  [[0,83,1],[1,80,.5],[1.5,77,.5],[2,74,1],[3,77,1]],
+  [[0,80,.75],[.75,79,.25],[1,77,1],[2,75,.5],[2.5,74,.5],[3,72,1]],
+  [[0,71,.5],[.5,74,.5],[1,79,1],[2,77,.5],[2.5,74,.5],[3,71,1]],
+];
+const BLOOD_B = [
+  [[0,75,1],[1,79,2],[3,82,1]],
+  [[0,82,1.5],[1.5,80,.5],[2,77,1],[3,74,1]],
+  [[0,80,1],[1,84,1],[2,87,1.5],[3.5,84,.5]],
+  [[0,79,2],[2,75,1],[3,72,1]],
+  [[0,77,1],[1,80,.5],[1.5,84,.5],[2,82,1],[3,80,1]],
+  [[0,83,1.5],[1.5,80,.5],[2,77,1],[3,74,1]],
+  [[0,80,.5],[.5,79,.5],[1,77,1],[2,74,1],[3,71,1]],
+  [[0,79,1],[1,77,.5],[1.5,74,.5],[2,71,1],[3,67,1]],
 ];
 
-function musicDay() {
-  const bpm = 100, beat = 60 / bpm, barLength = 4 * beat, bars = 32;
-  const t = canvas(bars * barLength, true, true);
-  const A = [[62, 'add9'], [57, 'maj'], [59, 'min7'], [55, 'maj7'], [62, 'maj'], [57, 'maj'], [55, 'add9'], [57, 'sus']];
-  const B = [[52, 'min7'], [55, 'maj'], [62, 'add9'], [57, 'maj'], [52, 'min9'], [55, 'maj7'], [59, 'min'], [57, 'sus']];
-  for (let b = 0; b < bars; b++) {
-    const section = Math.floor(b / 8), i = b % 8, start = b * barLength;
-    const chord = (section === 2 ? B : A)[i], notes = tones(chord);
-    // Nappe et basse
-    notes.slice(0, 3).forEach((n, k) => pad(t, n, start, barLength, .05, (k - 1) * .5, { cutoff: 1500 }));
-    bass(t, bassRoot(chord[0]), start, beat * 1.8, .32);
-    bass(t, bassRoot(chord[0]) + 7, start + beat * 2, beat * .9, .2);
-    bass(t, bassRoot(chord[0]), start + beat * 3, beat * .9, section ? .22 : .14);
-    // Harpe en croches, plus dense au fil des sections
-    const pattern = section === 0 ? [0, null, 2, null, 1, null, 3, null] : [0, 2, 4, 2, 1, 3, 5, 3];
-    arp(t, chord, start, beat, pattern, (tr, m, s, d, a, p) => pluck(tr, m, s, d, a, p, { bright: .45, damping: .995, ring: .9 }), .2);
-    // Mélodie : marimba, puis flûte au pont, marimba doublée d’une cloche au retour
-    if (section === 0 && i % 2 === 0) melody(t, marimba, DAY_A[i].slice(0, 2), start, beat, .14, .1, -12);
-    if (section === 1) melody(t, marimba, DAY_A[i], start, beat, .32, .1);
-    if (section === 2) melody(t, flute, DAY_B[i], start, beat, .16, -.05);
-    if (section === 3 && i < 7) {
-      melody(t, marimba, DAY_A[i], start, beat, .28, .1);
-      melody(t, bell, DAY_A[i].slice(0, 1), start, beat, .035, -.3);
-    }
-    if (section === 3 && i === 7) melody(t, kalimba, [[0, 74, 2], [2, 69, 2]], start, beat, .25, .2);
-    // Percussions douces
-    if (section) {
-      drum(t, start, .32, { f0: 140, f1: 52, decay: .22, click: .1 });
-      drum(t, start + beat * 2.5, .22, { f0: 140, f1: 52, decay: .2, click: .1 });
-      for (let s = 0; s < 8; s++) shaker(t, start + s * beat / 2 + (s % 2 ? beat * .04 : 0), s % 2 ? .05 : .08, .35);
-    }
-    if (section === 2) [1, 3].forEach(p => rim(t, start + p * beat, .09, -.2));
-    if (section === 0 && i % 2 === 0) kalimba(t, notes[2] + 12, start + beat * 3.5, beat, .07, -.4);
-  }
-  const air = svf('band');
-  texture(t, .025, (_, i) => air(noise(), 440 + 120 * sine(2 * i / t.length), .8), -.3);
-  echo(t, beat * .75, .3, .14);
-  reverb(t, .3, { room: .7, damp: .45, predelay: .02 });
-  return t;
-}
+// Les dominantes majeures ferment les phrases mineures et préparent la boucle.
+const SCORES = {
+  menu: { bpm: 96, a: MENU_A, b: MENU_B, long: false, energy: .65,
+    chordsA: [[57,'min'],[53,'maj'],[48,'maj'],[55,'maj'],[57,'min'],[53,'maj'],[50,'min'],[52,'dom']],
+    chordsB: [[53,'maj'],[48,'maj'],[50,'min'],[57,'min'],[53,'maj'],[55,'maj'],[50,'min'],[52,'dom']] },
+  day: { bpm: 116, a: DAY_A, b: DAY_B, long: true, energy: .8,
+    chordsA: [[62,'maj'],[57,'maj'],[59,'min'],[55,'maj'],[62,'maj'],[57,'maj'],[55,'maj'],[57,'dom']],
+    chordsB: [[55,'maj'],[62,'maj'],[52,'min'],[57,'maj'],[55,'maj'],[62,'maj'],[52,'min'],[57,'dom']] },
+  night: { bpm: 84, a: NIGHT_A, b: NIGHT_B, long: false, energy: .38,
+    chordsA: [[52,'min'],[48,'maj'],[45,'min'],[47,'dom'],[52,'min'],[48,'maj'],[45,'min'],[47,'dom']],
+    chordsB: [[55,'maj'],[50,'maj'],[48,'maj'],[45,'min'],[52,'min'],[47,'min'],[45,'min'],[47,'dom']] },
+  combat: { bpm: 144, a: COMBAT_A, b: COMBAT_B, long: true, energy: 1,
+    chordsA: [[50,'min'],[46,'maj'],[48,'maj'],[50,'min'],[50,'min'],[46,'maj'],[43,'min'],[45,'dom']],
+    chordsB: [[53,'maj'],[48,'maj'],[46,'maj'],[50,'min'],[43,'min'],[50,'min'],[43,'min'],[45,'dom']] },
+  blood: { bpm: 140, a: BLOOD_A, b: BLOOD_B, long: true, energy: 1.12,
+    chordsA: [[48,'min'],[44,'maj'],[41,'min'],[43,'dom'],[48,'min'],[47,'dim'],[41,'min'],[43,'dom']],
+    chordsB: [[51,'maj'],[46,'maj'],[44,'maj'],[48,'min'],[41,'min'],[47,'dim'],[47,'dim'],[43,'dom']] },
+};
 
-function musicMenu() {
-  const bpm = 72, beat = 60 / bpm, barLength = 4 * beat, bars = 16;
+function arrangeMusic(name) {
+  const score = SCORES[name], beat = 60 / score.bpm, barLength = 4 * beat;
+  const battle = name === 'combat' || name === 'blood', quiet = name === 'night';
+  const form = [['intro',4], ['A',score.long ? 16 : 8], ['B',8], ["A'",score.long ? 16 : 12]];
+  const bars = form.reduce((sum, [, count]) => sum + count, 0);
   const t = canvas(bars * barLength, true, true);
-  const C = [[57, 'min9'], [53, 'maj7'], [48, 'add9'], [55, 'sus2'], [57, 'min7'], [53, 'maj7'], [50, 'min9'], [52, 'maj']];
-  const M = [
-    [[0, 76, 1.5], [1.5, 74, .5], [2, 72, 2]], [[0, 69, 1], [1, 72, 1], [2, 76, 2]],
-    [[0, 79, 2], [2, 76, 1], [3, 74, 1]], [[0, 74, 3.5]],
-    [[0, 76, 1], [1, 79, 1], [2, 81, 1.5], [3.5, 79, .5]], [[0, 77, 2], [2, 76, 1], [3, 72, 1]],
-    [[0, 74, 1.5], [1.5, 72, .5], [2, 76, 2]], [[0, 68, 2], [2, 71, 2]],
-  ];
-  for (let b = 0; b < bars; b++) {
-    const i = b % 8, start = b * barLength, chord = C[i];
-    tones(chord).forEach((n, k) => pad(t, n, start, barLength, .045, (k - 1.5) * .35, { cutoff: 1100, attack: 1.4 }));
-    bass(t, bassRoot(chord[0]), start, barLength * .9, .22);
-    arp(t, chord, start, beat, [0, null, 2, 3, null, 1, 4, null], kalimba, .12, 12, .5, .4);
-    if (b >= 8) melody(t, flute, M[i], start, beat, .14, 0);
-    else if (i % 2 === 0) melody(t, marimba, M[i].slice(0, 2), start, beat, .1, -.2, -12);
-    else if (i % 2 === 1) glass(t, tones(chord)[2] + 24, start + beat * 2, beat, .04, .4);
-    if (i % 2 === 0) taiko(t, start, .2, -.15);
-    if (i === 7) taiko(t, start + beat * 3, .12, .15);
-  }
-  // Brume : souffle grave qui respire sur la durée du morceau (périodique)
-  const wind = svf('band');
-  texture(t, .05, (_, i) => wind(noise(), 380 + 220 * Math.sin(TAU * 2 * i / t.length), 1.2), .2);
-  echo(t, beat * .75, .35, .18);
-  reverb(t, .45, { room: .88, damp: .35, predelay: .03 });
-  return t;
-}
-
-function musicNight() {
-  const bpm = 64, beat = 60 / bpm, barLength = 4 * beat, bars = 20;
-  const t = canvas(bars * barLength, true, true);
-  const C = [[52, 'min9'], [48, 'maj7'], [45, 'min9'], [47, 'sus'], [52, 'min7'], [48, 'maj7'], [50, 'add9'], [47, 'min7'], [45, 'min9'], [47, 'sus']];
-  const M = [
-    [[0, 71, 1.5], [1.5, 74, .5], [2, 76, 1.5]], [[0, 79, 2], [2, 78, .5], [2.5, 76, 1]],
-    [[0, 72, 2], [2, 71, 1], [3, 69, .5]], [[0, 76, 2], [2, 78, 1.5]],
-    [[0, 76, 1.5], [1.5, 78, .5], [2, 79, 1.5]], [[0, 83, 2], [2, 79, 1], [3, 76, .5]],
-    [[0, 78, 2.5], [3, 76, .5]], [[0, 74, 1], [1, 73, .5], [1.5, 71, 2]],
-    [[0, 72, 1.5], [2, 71, 1], [3, 69, .5]], [[0, 76, 2], [2, 78, 1], [3, 71, .5]],
-  ];
-  for (let b = 0; b < bars; b++) {
-    const i = b % 10, start = b * barLength, chord = C[i], notes = tones(chord);
-    notes.forEach((n, k) => pad(t, n, start, barLength, .055, (k - 1.5) * .4, { cutoff: 900, attack: 1.8, release: 2.4 }));
-    bass(t, bassRoot(chord[0]), start, barLength * .95, b % 4 === 0 ? .16 : .1);
-    if (b % 2 === 0) drum(t, start, .18, { f0: 90, f1: 45, decay: .5, click: 0 });
-    // Cloches de verre en écho, motif de trois notes qui tourne lentement
-    [0, 1.5, 3].forEach((p, k) => glass(t, notes[(k + b) % notes.length] + 12, start + beat * p, beat, .045 * (k ? .7 : 1), k % 2 ? .45 : -.45));
-    if (b >= 4 && b < 12) melody(t, flute, M[i], start, beat, .12, .1);
-    if (b >= 14 && b < 18) melody(t, marimba, M[i], start, beat, .14, -.1, -12);
-  }
-  // Grotte : gouttes semées et vent qui respire
-  for (let k = 0; k < 22; k++) drip(t, between(0, t.length / SR), between(.03, .07), between(650, 1200), between(-.7, .7));
-  const wind = svf('band'), wind2 = svf('band');
-  texture(t, .07, (_, i) => wind(noise(), 300 + 180 * Math.sin(TAU * 3 * i / t.length), 1.5), -.4);
-  texture(t, .04, (_, i) => wind2(noise(), 900 + 400 * Math.sin(TAU * 2 * i / t.length + 1), 3), .4);
-  echo(t, beat * .75, .45, .25);
-  reverb(t, .6, { room: .92, damp: .3, predelay: .04 });
-  return t;
-}
-
-function musicCombat() {
-  const bpm = 128, beat = 60 / bpm, barLength = 4 * beat, bars = 24;
-  const t = canvas(bars * barLength, true, true);
-  const C = [[50, 'min'], [46, 'maj'], [48, 'maj'], [50, 'min'], [50, 'min'], [46, 'maj'], [43, 'min'], [45, 'maj']];
-  const M = [
-    [[0, 74, 1.5], [1.5, 77, .5], [2, 81, 2]], [[0, 82, 1], [1, 81, 1], [2, 77, 2]],
-    [[0, 79, 1.5], [1.5, 81, .5], [2, 79, 1], [3, 76, 1]], [[0, 74, 3], [3, 72, 1]],
-    [[0, 74, 1], [1, 77, 1], [2, 81, 1], [3, 86, 1]], [[0, 84, 2], [2, 82, 1], [3, 81, 1]],
-    [[0, 79, 1.5], [1.5, 77, .5], [2, 79, 1], [3, 82, 1]], [[0, 81, 2], [2, 73, 2]],
-  ];
-  for (let b = 0; b < bars; b++) {
-    const section = Math.floor(b / 8), i = b % 8, start = b * barLength, chord = C[i], notes = tones(chord);
-    // Ostinato de basse en croches
-    const line = [0, 0, 12, 0, 0, 7, 0, 7];
-    line.forEach((n, s) => bass(t, bassRoot(chord[0]) + n, start + s * beat / 2, beat * .42, s % 2 ? .22 : .3));
-    // Cordes détachées en doubles croches sur les deux premières sections
-    for (let s = 0; s < 16; s++) {
-      if ((section === 2 && s % 2 !== 0) || (section === 1 && s % 4 === 3)) continue;
-      const n = notes[[0, 1, 2, 1][s % 4]] + 12;
-      strings(t, n, start + s * beat / 4, beat * .2, (s % 4 ? .07 : .11) * (section === 1 ? .7 : 1), s % 2 ? .35 : -.35);
-    }
-    // Taikos : grand coup sur 1, réponses syncopées, roulement en fin de phrase
-    taiko(t, start, .55, -.1);
-    taiko(t, start + beat * 1.5, .3, .2);
-    taiko(t, start + beat * 2, .45, -.1);
-    if (i % 4 === 3) [3, 3.25, 3.5, 3.75].forEach((p, k) => taiko(t, start + beat * p, .2 + k * .06, k % 2 ? .3 : -.3));
-    [1, 3].forEach(p => rim(t, start + p * beat, .14, .25));
-    for (let s = 0; s < 8; s++) shaker(t, start + s * beat / 2, s % 2 ? .06 : .04, -.3);
-    // Thème : cors au milieu, cordes aiguës au dernier tiers
-    if (section === 1) { melody(t, brass, M[i], start, beat, .22, 0, -12); melody(t, brass, M[i], start, beat, .1, .2, -24); }
-    if (section === 2) melody(t, strings, M[i], start, beat, .16, -.1);
-    if (section !== 1) tones(chord).forEach((n, k) => pad(t, n, start, barLength, .035, (k - 1) * .5, { cutoff: 1800, attack: .3, release: .6 }));
-    if (i === 7) sweep(t, start + beat * 2, beat * 2, .12, 600, 6000, .8, .95, 0);
-  }
-  reverb(t, .22, { room: .75, damp: .45, predelay: .015 });
-  return t;
-}
-
-function musicBlood() {
-  const bpm = 76, beat = 60 / bpm, barLength = 4 * beat, bars = 16;
-  const t = canvas(bars * barLength, true, true);
-  // Do mineur phrygien : le ré bémol donne la menace.
-  const C = [[48, 'min'], [49, 'maj'], [48, 'min'], [44, 'maj'], [48, 'min'], [49, 'maj'], [46, 'min'], [47, 'dim']];
-  const M = [
-    [[0, 72, 2], [2, 73, .5], [2.5, 72, 1]], [[0, 73, 2.5], [3, 68, .5]], [[0, 67, 2], [2, 68, 1], [3, 67, 1]], [[0, 63, 4]],
-    [[0, 72, 1.5], [1.5, 75, .5], [2, 73, .5], [2.5, 72, 1]], [[0, 73, 2], [2, 68, 1.5]], [[0, 70, 2], [2, 65, 1.5]], [[0, 65, 2], [2, 62, 1.5]],
-  ];
-  for (let b = 0; b < bars; b++) {
-    const i = b % 8, start = b * barLength, chord = C[i];
-    tones(chord).forEach((n, k) => choir(t, n, start, barLength, .06, (k - 1) * .5, b % 2 ? 'o' : 'u'));
-    bass(t, bassRoot(chord[0]), start, barLength * .85, .18);
-    // Battement de cœur : « lub-dub » sur chaque temps fort
-    [0, 2].forEach(p => {
-      drum(t, start + p * beat, .5, { f0: 80, f1: 42, drop: 20, decay: .18, click: 0 });
-      drum(t, start + p * beat + .17, .3, { f0: 75, f1: 40, drop: 20, decay: .15, click: 0 });
+  let barIndex = 0;
+  for (const [section, count] of form) for (let b = 0; b < count; b++, barIndex++) {
+    const intro = section === 'intro', bridge = section === 'B', reprise = section === "A'";
+    // L'intro expose quatre mesures complètes ; le retour court finit sur V.
+    const i = intro ? [0,1,6,7][b] : reprise && count === 12 && b >= 8 ? b - 4 : b % 8;
+    const chord = (bridge ? score.chordsB : score.chordsA)[i], notes = tones(chord);
+    const start = barIndex * barLength, root = bassRoot(chord[0]);
+    const lift = intro ? .68 : bridge && b < 4 ? .8 : reprise ? 1.08 : 1;
+    const power = score.energy * lift;
+    // Cordes à voix rapprochées, toujours derrière la mélodie.
+    notes.slice(0,3).forEach((n,k) => chipStrings(t, 60 + n % 12, start, barLength * .94, .055 * lift, (k-1)*.55));
+    const bassPattern = battle ? [0,0,12,0,0,7,12,7] : [0,null,7,12,0,7,null,12];
+    bassPattern.forEach((n,k) => {
+      if (n === null || (intro && k % 2)) return;
+      bass(t, root+n, start+k*beat/2, beat * (quiet ? .65 : .4), .29 * (k%2 ? .8 : 1) * lift);
     });
-    if (i === 0 || i === 4) taiko(t, start, .4, 0);
-    // Cloches au triton, presque immobiles
-    glass(t, chord[0] + 30, start + beat * 1, beat * .5, .025, -.5);
-    if (b % 2) glass(t, chord[0] + 36, start + beat * 3, beat, .035, .5);
-    if (b >= 8) melody(t, (tr, m, s, d, a, p) => choir(tr, m, s, d, a, p, 'a'), M[i], start, beat, .1, .1);
-    else melody(t, flute, M[i], start, beat, .06, .2, -12);
+    // Harpe régulière et accords syncopés de piano FM.
+    const arpPattern = bridge ? [0,2,1,2,0,1,2,1] : [0,1,2,1,0,2,1,2];
+    arpPattern.forEach((n,k) => chipHarp(t, notes[n]+12, start+k*beat/2, beat*.45, quiet ? .12 : .075, k%2 ? .4 : -.4));
+    if (!intro) [ .5, 2.5 ].forEach(at => notes.slice(0,3).forEach((n,k) =>
+      chipKeys(t, n+12, start+at*beat, beat*.42, .065*lift, -.35+k*.18)));
+    const tune = (bridge ? score.b : score.a)[i];
+    melody(t, quiet ? chipKeys : chipLead, tune, start, beat, quiet ? .34 : .25, -.04);
+    if (reprise && b >= 4) {
+      // Réponse indépendante sous les tenues du thème, pas un doublage parallèle.
+      const counter = [[.5,notes[2]+12,.75],[2,notes[1]+12,.5],[3,notes[0]+12,.75]];
+      melody(t, chipKeys, counter, start, beat, .1, .4);
+    }
+    if ((battle || name === 'menu') && !intro) [0,2.5].forEach(at => notes.slice(0,3).forEach((n,k) =>
+      chipBrass(t, n+12, start+at*beat, beat*.32, .07*power, (k-1)*.3)));
+    const kicks = intro ? [0,2] : battle ? [0,.75,2,2.5] : name === 'day' ? [0,1.5,2,3.5] : [0,2.5];
+    kicks.forEach(at => kit(t,'kick',start+at*beat,.56*power));
+    [1,3].forEach(at => kit(t,'snare',start+at*beat,.4*power,-.12));
+    for (let k=0;k<8;k++) {
+      const open = !intro && !quiet && k===7 && b%4!==3;
+      kit(t,open ? 'open' : 'hat',start+k*beat/2,.12*power*(k%2 ? .7 : 1),.32);
+    }
+    if (b===0 && !intro) kit(t,'crash',start,.22*power,-.4);
+    // Fin de chaque phrase : roulement caisse claire, toms descendants, reprise.
+    if (b%4===3) {
+      const hits = battle ? 6 : 4;
+      for (let k=0;k<hits;k++) {
+        const at = 4-(hits-k)*.25;
+        kit(t,k<2 ? 'snare' : 'tom',start+at*beat,(.22+k*.035)*power,
+          -.35+k*.12,190-k*19);
+      }
+    }
   }
-  // Grincement métallique lointain et vent rouge
-  const scrape = svf('band'), wind = svf('band');
-  texture(t, .035, (_, i) => scrape(noise(), 2400 + 900 * Math.sin(TAU * 4 * i / t.length), 12), .5);
-  texture(t, .06, (_, i) => wind(noise(), 260 + 140 * Math.sin(TAU * 3 * i / t.length), 1.4), -.3);
-  echo(t, beat * .75, .4, .18);
-  reverb(t, .55, { room: .93, damp: .35, predelay: .035 });
+  reverb(t, quiet ? .23 : .17, { room: .42, damp: .55, predelay: .012 });
   return t;
 }
+const musicMenu = () => arrangeMusic('menu');
+const musicDay = () => arrangeMusic('day');
+const musicNight = () => arrangeMusic('night');
+const musicCombat = () => arrangeMusic('combat');
+const musicBlood = () => arrangeMusic('blood');
 
 const musics = { menu: musicMenu, day: musicDay, night: musicNight, combat: musicCombat, blood: musicBlood };
 
