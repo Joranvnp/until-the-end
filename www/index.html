@@ -494,7 +494,7 @@ function computeLight(){
 // =====================================================================
 //  ÉTAT DU JEU
 // =====================================================================
-let trickT=3, state='title', diff=1, time=0, dayLen=300, ents=[], parts=[], arrows=[], floats=[], msgs=[], bases=[], player, cam={x:0,y:0}, shake=0;
+let trickT=3, state='title', diff=1, time=0, dayLen=300, ents=[], parts=[], arrows=[], floats=[], msgs=[], bases=[], player, cam={x:0,y:0}, camOff={x:0,y:0}, shake=0;
 let lastEndChange=0,confetti=[],panelT=1,craftFx=0,endInfo={},fade=0,bloodNight=-1,weather={rain:0,target:0,t:20,flash:0},corpses=[],pops=[],bombs=[],hurtFx=0,hitStop=0,shownState='title';
 let paused=false,pauseHelp=false,endT=0,endState=null,panel=null, cursorItem=null, stats, ai, titleCam=0, hoverTile=null, mining=null;
 const DIFFS=[{n:'Paisible',inc:.55,core:.75,rec:8},{n:'Normal',inc:1,core:.9,rec:4.5},{n:'Brutal',inc:1.6,core:1,rec:2}];
@@ -1533,6 +1533,9 @@ function render(){
   const g=w;g.imageSmoothingEnabled=false;
   let cx=cam.x,cy=cam.y;
   if(state==='title'||!player){cx=(titleCam%(WW*T-VW*2))+VW/2;cy=BASE_GY*T-VH*.62;if(fg){const m=Math.floor((cx+VW/2)/T);cy=Math.min(cy,surf[clamp(m,0,WW-1)]*T-VH*.55)}}
+  // caméra calée sur le héros : son décalage à l'écran ne bouge que par pixel entier, sinon il oscille d'un pixel à chaque image en marchant (image floue sur téléphone)
+  else{const ox=player.x-cam.x,oy=player.y-cam.y;if(Math.abs(ox-camOff.x)>=1)camOff.x=Math.round(ox);if(Math.abs(oy-camOff.y)>=1)camOff.y=Math.round(oy);
+    cx=clamp(Math.round(player.x)-camOff.x,0,WW*T-VW);cy=clamp(Math.round(player.y)-camOff.y,-40,WH*T-VH)}
   if(shake>0&&PROF.set.shake){cx+=R(-shake,shake);cy+=R(-shake,shake)}
   cx=Math.round(cx);cy=Math.round(cy);
   drawSky(g,cx,cy);
@@ -1544,7 +1547,8 @@ function render(){
     if(state==='play'&&hoverTile&&!panelBlocks()){g.strokeStyle='rgba(255,236,170,.75)';g.lineWidth=1;g.strokeRect(hoverTile.tx*T-cx+.5,hoverTile.ty*T-cy+.5,T-1,T-1)}
     // nombres flottants : petit saut à l'apparition, puis fondu
     for(const f of floats){const age=1-f.t,hop=age<.15?Math.sin(age/.15*Math.PI)*3:0;g.globalAlpha=clamp(f.t*2,0,1);wtxt(g,f.s,Math.round(f.x-cx+(f.dx||0)*age*14),Math.round(f.y-cy-hop),f.col,f.big?14:7)}g.globalAlpha=1}
-  ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.drawImage(wc,0,0,VW*S,VH*S);
+  // opacité et mode remis à zéro : un globalAlpha laissé par le HUD de l'image précédente fondait le monde sur l'ancienne image (traînée floue en mouvement)
+  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.filter='none';ctx.imageSmoothingEnabled=false;ctx.drawImage(wc,0,0,VW*S,VH*S);
   if(PROF.set.crt)drawCRT();
   ctx.setTransform(S,0,0,S,0,0);
   uiHits=[];
