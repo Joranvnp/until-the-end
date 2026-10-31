@@ -2224,7 +2224,8 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
    if(p.dead&&panel)txt('Retour dans '+Math.ceil(p.respawn)+' s',8,27,'#ff6fae',7)}
   // minicarte
   // Reserve 50 px below/around the map for cores and two resource rows.
-  const mapH=narrow?Math.max(6,Math.min(41,Math.floor(VH*.22)-50)):0;
+  // (fenêtre étroite mais couchée, ex. ordinateur 800x600 : la carte faisait 16 px de haut, illisible ; on lui laisse 30 % de la hauteur)
+  const mapH=narrow?Math.max(6,Math.min(41,Math.floor(VH*(VW>VH?.3:.22))-50)):0;
   const mw=narrow?Math.min(VW-heroW-16,120,Math.floor(mapH*WW/WH)):Math.min(176,Math.floor(VW*.28)),mh=Math.round(mw*WH/WW),mx=VW-mw-6,my=6;
   HL.map={x:mx-2,y:my-2,w:mw+4,h:mh+4};
   box(mx-2,my-2,mw+4,mh+4,'#05050c');ctx.imageSmoothingEnabled=false;
