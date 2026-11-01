@@ -821,15 +821,18 @@ function drawTutRing(x,y,w,h){const a=.55+.45*Math.sin(time*6),o=1+Math.round(1.
 // ---------- objectifs (guide pas à pas) ----------
 const hasItem=id=>player.inv.some(s=>s&&s.id===id);
 const OBJ=[
-  {t:'Mine 10 blocs avec ta pioche',ok:()=>stats.mined>=10,rw:{wood:10}},
+  {t:'Mine 10 blocs avec ta pioche',ok:()=>stats.mined>=10,pr:()=>[stats.mined,10],rw:{wood:10}},
   {t:'Recrute un mineur à ta base',ok:()=>(stats.rk.miner||0)>=1,rw:{stone:10}},
-  {t:'Rapporte du cuivre : 12 en réserve à ta base',ok:()=>bases[0].storage.copper>=12,rw:{wood:10}},
+  {t:'Rapporte du cuivre : 12 en réserve à ta base',ok:()=>bases[0].storage.copper>=12,pr:()=>[bases[0].storage.copper,12],rw:{wood:10}},
   {t:'Fabrique une pioche en cuivre à la forge',ok:()=>hasItem('pick2')||hasItem('pick3')||hasItem('pick4'),rw:{coal:4}},
-  {t:'Recrute 3 guerriers',ok:()=>(stats.rk.warrior||0)>=3,rw:{iron:3}},
+  {t:'Recrute 3 guerriers',ok:()=>(stats.rk.warrior||0)>=3,pr:()=>[stats.rk.warrior||0,3],rw:{iron:3}},
   {t:'Achète une amélioration de base',ok:()=>Object.values(bases[0].upg).some(v=>v>0),rw:{copper:6}},
-  {t:'Abats 5 ennemis rouges',ok:()=>stats.kills>=5,rw:{gold:2}},
+  {t:'Abats 5 ennemis rouges',ok:()=>stats.kills>=5,pr:()=>[stats.kills,5],rw:{gold:2}},
   {t:'Détruis le cœur rouge, à l\'autre bout du monde',ok:()=>false,rw:{}},
 ];
+// objectif chiffré : la ligne montre la progression (« Rapporte du cuivre : 12 en réserve à ta base (7/12) »), sinon on ne sait
+// pas où on en est ni si le cuivre resté dans le sac compte
+function objLine(){const o=OBJ[stats.obj];if(!o||!o.pr)return o;const[c,m]=o.pr();return{...o,t:o.t+' ('+Math.min(c,m)+'/'+m+')'}}
 function checkObjectives(){const o=OBJ[stats.obj];if(!o||!o.ok())return;const b=bases[0];for(const[k,v]of Object.entries(o.rw))b.storage[k]+=v;
   const rw=Object.entries(o.rw).map(([k,v])=>'+'+v+' '+tr(IT[k].n).toLowerCase()).join(', ');stats.obj++;toast('Objectif accompli !'+(rw?' Récompense : '+rw:''),4,COL.gold);sfx.buy()}
 // cible de l'objectif en cours, pour la flèche du guide : {x,y,kind} en pixels monde, ou null si rien à montrer
@@ -2430,7 +2433,7 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
   // le vrai décompte, minuscule sous les cœurs, disait 4 s, et le tutoriel « Touche ◀ ▶ pour marcher » restait affiché)
   // cœur assiégé sans défenseur : l'objectif (« Touche ◀ ▶ pour marcher »…) cède la place à l'urgence
   const sos=coreSOS();
-  const dead=player&&player.dead,ob=sos?{t:'Cœur attaqué sans défense : Base > recrute des guerriers'}:dead?{t:'Retour à la base dans '+Math.max(1,Math.ceil(player.respawn))+' s'}:tut>=0?{t:TUT[tut].t()+' ('+(tut+1)+'/'+TUT.length+')'}:OBJ[stats.obj];if(ob&&!panel){const label=uiFit(ob.t,VW-48,7),ow=uiWidth(label,7)+18,ox=Math.round((VW-ow)/2),oy=top-14;
+  const dead=player&&player.dead,ob=sos?{t:'Cœur attaqué sans défense : Base > recrute des guerriers'}:dead?{t:'Retour à la base dans '+Math.max(1,Math.ceil(player.respawn))+' s'}:tut>=0?{t:TUT[tut].t()+' ('+(tut+1)+'/'+TUT.length+')'}:objLine();if(ob&&!panel){const label=uiFit(ob.t,VW-48,7),ow=uiWidth(label,7)+18,ox=Math.round((VW-ow)/2),oy=top-14;
     const al=dead||sos;ctx.fillStyle=al?'#2a0c18e6':'#05050ccc';ctx.fillRect(ox,oy,ow,11);txt(al?'!':'◇',ox+3,oy+3,al?'#ff6fae':COL.gold,7);txt(label,ox+12,oy+3,al?(sos&&Math.sin(time*6)>0?'#ffffff':'#ff9ac4'):COL.txt,7);top=oy-3}
   if(!isTouch&&player&&!panel){const h=heroDef(HERO),cd=Math.max(0,player.pwCd),lab='F '+tr(h.p)+(cd>0?' '+Math.ceil(cd)+'s':''),w=uiWidth(lab,7)+8,low=!same&&hx-w-8>=6,px=low?hx-w-8:6,py=low?hy+Math.round((sw-2-11)/2):top-13; // à gauche de la barre d'objets quand la place est libre
     ctx.fillStyle='#05050ccc';ctx.fillRect(px,py,w,11);if(cd>0){ctx.fillStyle='#ffffff18';ctx.fillRect(px,py,Math.round(w*(1-cd/h.cd)),11)}txt(lab,px+4,py+3,cd>0?COL.dim:COL.gold,7)}
