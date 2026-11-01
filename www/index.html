@@ -1591,7 +1591,7 @@ function updateAI(dt){
   {const minT=firstWave(),pc=bases[0].core.x,n=fighters.length,I=ai.intel||(ai.intel={rate:.05,prev:n});
    I.rate=I.rate*.85+Math.max(0,(n-I.prev)/2)*.15;I.prev=n;I.have=n;I.need=ai.wave;// I.have non plafonné : toute l'armée rassemblée part (avant, « 7 unités » annoncées, 20 en marche)
    if(b.order==='attack'){const atk=fighters.filter(e=>!e.raid&&!e.retreat);I.phase='march';I.eta=0;I.alive=atk.length;I.sent=ai.sent;
-     I.front=atk.length?Math.round(Math.min(...atk.map(e=>Math.abs(e.x-pc)))/T):0}
+     I.front=atk.length?Math.round(Math.min(...atk.map(e=>Math.abs(e.x-pc)))/T):0;I.frontX=atk.length?atk.reduce((m,e)=>Math.abs(e.x-pc)<Math.abs(m-pc)?e.x:m,atk[0].x):null}
    else{I.phase=threatPow>0.5&&threatPow>myPow*.7?'defend':'gather';
      I.eta=Math.round(Math.max(minT-time,(ai.wave-n)/Math.max(I.rate,.02),0));if(ai.wait)I.eta=Math.max(1,Math.round(90-(time-ai.holdT)));
      if(I.eta<=25&&!I.warned&&I.phase==='gather'){I.warned=true;toast(WARN30,4,'#ffb08a')}
@@ -2359,7 +2359,8 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
     const width=uiWidth(label,7)+padding,x=right-width,x1=x,y=narrow?cy0+44:cy0+20;
     const draw=(y=y0,dx=0,lb=label)=>{const width=uiWidth(tr(lb),7)+padding,x=x1+dx,right=x+width;box(x,y,width,11,COL.panel,'#e5534b33');
     txt(lb,right-5,y+2,col,7,'right');
-    if(marching)txt('←',x+2,y+2,col,7);
+    // flèche vers la tête de l'armée depuis l'écran (avant : « ← » fixe, même au cœur ou quand l'armée était à gauche du héros)
+    if(marching){const fx=intel.frontX,sx=fx==null?null:fx-cam.x;txt(atCore||sx==null||sx>=0&&sx<=VW?'!':sx<0?'◀':'▶',x+3,y+2,col,7)}
     else{ctx.fillStyle=col;ctx.fillRect(x+2,y+2,1,6);ctx.fillRect(x+3,y+2,4,3)}
     if(gathering)bar(x+2,y+8,width-4,2,intel.need>0?clamp(intel.have/intel.need,0,1):0,col)},y0=y;
     // panneau ouvert dessus (rectangle de l'image précédente) : il sera repeint dans sa ligne de titre, pas en fantôme sous le panneau translucide
