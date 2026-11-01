@@ -664,7 +664,7 @@ function saveGame(){if(state!=='play'||endT>0)return;try{
   const units=ents.filter(e=>e.type==='unit'&&!e.dead).map(e=>({k:e.kind,t:e.team,x:e.x,y:e.y,hp:e.hp,mh:e.maxhp,c:e.carry,n:e.carryN,s:e.state,w:e.waveNo,r:e.raid?1:0,k2:e.strike?1:0}));
   const data={v:1,seed:SEED,diff,time,stats,fg:u8b64(fg),bg:u8b64(bg),surf:Array.from(surf),surf0:Array.from(surf0),trees:trees.map(t=>[t.x,t.top,t.r]),
     player:{x:player.x,y:player.y,hp:player.hp,inv:cursorItem?(()=>{const v=player.inv.map(q=>q&&{...q}),i=v.findIndex(q=>!q);if(i>=0)v[i]={...cursorItem};return v})():player.inv,sel:player.sel}, // objet tenu dans le sac : sauvegardé dans une case libre
-    bases:bases.map(b=>({st:b.storage,up:b.upg,o:b.order,hp:b.core.hp,mh:b.core.maxhp})),units,ai:{style:ai.style,wave:ai.wave,sent:ai.sent,champT:ai.champT,waveNo:ai.waveNo,lastWave:ai.lastWave},daily,surv,rel:REL,hero:HERO};
+    bases:bases.map(b=>({st:b.storage,up:b.upg,o:b.order,hp:b.core.hp,mh:b.core.maxhp})),units,ai:{style:ai.style,wave:ai.wave,sent:ai.sent,champT:ai.champT,waveNo:ai.waveNo,lastWave:ai.lastWave},daily,surv,rel:REL,hero:HERO,log:msgLog.map(m=>({s:m.s,col:m.col,t:m.t,n:m.n}))};
   localStorage.setItem(SAVE_KEY,JSON.stringify(data))}catch(e){}}
 function loadGame(){let d;try{d=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){return false}if(!d||d.v!==1)return false;
   newGame(d.diff,d.daily||null,!!d.surv);PROF.games--;tut=-1;firstRun=false;REL=d.rel||{};HERO=d.hero||'miner';msgs=[];SEED=d.seed;fg=b64u8(d.fg);bg=b64u8(d.bg);surf=Int16Array.from(d.surf);surf0=Int16Array.from(d.surf0||d.surf);trees=d.trees.map(([x,top,r])=>({x,top,r,img:makeCanopy(r,SEED+x)}));
@@ -675,7 +675,9 @@ function loadGame(){let d;try{d=JSON.parse(localStorage.getItem(SAVE_KEY))}catch
   // vague en cours (numéro, départ) : sans eux, une vague rechargée en plein assaut se comptait repoussée (score du Siège faussé)
   if(d.ai.waveNo!=null)ai.waveNo=d.ai.waveNo;if(d.ai.lastWave!=null)ai.lastWave=d.ai.lastWave;
   for(const u of d.units){const e=recruit(u.t,u.k,true);Object.assign(e,{x:u.x,y:u.y,hp:u.hp,maxhp:u.mh,carry:u.c||{},carryN:u.n||0,state:u.s||'seek',waveNo:u.w,raid:!!u.r,strike:!!u.k2});if(u.k==='champion')ai.champ=e}
-  cam.x=player.x-VW/2;cam.y=player.y-VH*camFY();computeLight();toast('Partie reprise.',2.5,COL.gold);return true}
+  cam.x=player.x-VW/2;cam.y=player.y-VH*camFY();computeLight();
+  // le journal suit la sauvegarde (avant, une partie reprise n'avait plus que « Partie reprise. » dans son journal)
+  msgLog=Array.isArray(d.log)?d.log.filter(m=>m&&typeof m.s==='string').slice(-40):[];toast('Partie reprise.',2.5,COL.gold);return true}
 let saveT=20;
 addEventListener('pagehide',saveGame);// application passée en arrière-plan (appel, accueil du téléphone) : pause et commandes relâchées, comme à la perte du focus
 // (avant : seule la sauvegarde ; la partie continuait sans le joueur et un doigt « resté posé » faisait courir le héros au retour)
