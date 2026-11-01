@@ -1434,6 +1434,14 @@ function stairDown(e,dt,dir){e.dir=dir;e.wantMove=true;e.vx=dir*uspd(e)*.8;moveE
   // colonne VOISINE de celles qu'occupe le corps (sinon on creuserait sous ses propres pieds)
   const ax=dir>0?Math.floor((e.x+e.w-.01)/T)+1:Math.floor(e.x/T)-1,y0=Math.floor(e.y/T),y1=Math.floor((e.y+e.h-.01)/T);
   for(let y=y0;y<=y1+1;y++){const r=digStep(e,ax,y,dt,true);if(r<=0)return r}return 1}
+// pillards adverses : distance (en px) du plus proche au cœur de l'équipe, ou Infinity sans raid en cours
+const RAID_NEAR=90*T;
+// sans au moins 2 défenseurs par pillard autour de la base, le raid compte comme proche où qu'il soit (mesuré : sans armée,
+// miner pendant la traversée faisait tuer 10 à 11 mineurs sur 32 contre 1 à 6 en restant à l'abri)
+function raidDist(team,b){if(b.rdT>time)return b.rd;b.rdT=time+.5;const cx=b.core.x;let d=Infinity,n=0,def=0;
+  for(const o of ents){if(o.dead)continue;if(o.raid&&o.team!==team){n++;d=Math.min(d,Math.abs(o.x-cx))}
+    else if(o.type==='unit'&&o.team===team&&o.kind!=='miner'&&o.kind!=='champion'&&!o.raid&&Math.abs(o.x-cx)<60*T)def++}
+  return b.rd=n&&def<2*n?0:d}
 function updateGatherer(e,u,dt){
   const b=bases[e.team],core=b.core,cap=e.kind==='champion'?12:6;
   // le champion chasse ce qui s'approche, le mineur se défend au contact
@@ -1455,7 +1463,12 @@ function updateGatherer(e,u,dt){
   if(e.state==='seek'&&fleeing){const hx=core.x+11+(e.team===0?16:-16);if(Math.abs(hx-(e.x+e.w/2))>10)navigate(e,hx,dt,'climb');else{e.vx=0;moveEnt(e,dt)}return}
   // pillards adverses en chasse : le mineur à l'abri sous sa tour y attend la fin du raid (avant, 6 s après la fuite il repartait
   // vers son filon, retombait sur le pillard qui rôdait encore et y passait ; sans défenseurs, tous les mineurs en une minute)
-  if(e.kind==='miner'&&e.state==='seek'&&underTower(b,e)&&ents.some(o=>o.raid&&!o.dead&&o.team!==e.team)){e.vx=0;e.wantMove=false;moveEnt(e,dt);return}
+  // seulement quand le pillard est à moins de RAID_NEAR du cœur : avant, partis de l'autre bout du monde (200-385 cases), ils
+  // immobilisaient les mineurs pendant toute leur traversée (~50 s par raid, mesuré).
+  const rd=e.kind==='miner'?raidDist(e.team,b):Infinity;
+  // pillard approché à moins de RAID_NEAR : un mineur hors de portée de la tour rentre avant d'être rattrapé
+  if(rd<RAID_NEAR&&e.state==='seek'&&!underTower(b,e)){e.state='home';e.tgt=null}
+  if(e.kind==='miner'&&e.state==='seek'&&underTower(b,e)&&rd<RAID_NEAR){e.vx=0;e.wantMove=false;moveEnt(e,dt);return}
   if(e.state==='seek'){
     // cible bloquée ou poursuivie plus de 20 s : on la met de côté pour ne pas y revenir en boucle
     if(e.tgt&&(e.stuck>=3||time-(e.tgtT||0)>20)){(e.bad=e.bad||new Set()).add(e.tgt.tx+','+e.tgt.ty);if(e.bad.size>40)e.bad=new Set();e.tgt=null}
