@@ -630,7 +630,7 @@ let state='title', diff=1, time=0, dayLen=300, ents=[], parts=[], arrows=[], flo
 let endLog=false,logWheelT=0,logOff=0,logStack=[],logShown=0,logMore=false,lastEndChange=0,confetti=[],panelT=1,craftFx=0,endInfo={},fade=0,bloodNight=-1,weather={rain:0,target:0,t:20,flash:0},corpses=[],pops=[],bombs=[],hurtFx=0,hitStop=0,shownState='title';
 let paused=false,pauseHelp=false,endT=0,endState=null,panel=null, cursorItem=null, stats, ai, titleCam=0, hoverTile=null, mining=null;
 const DIFFS=[{n:'Paisible',inc:.55,core:1.3},{n:'Normal',inc:1,core:1},{n:'Brutal',inc:1.6,core:.85}];
-function newGame(d,dly=null,sv=false){endLog=false;
+function newGame(d,dly=null,sv=false){endLog=false;intruderT=0;
   daily=dly;diff=d;surv=sv&&!dly;genWorld(dly?dly.seed:(Math.random()*1e9)|0);fade=1;bloodNight=-1;weather={rain:0,target:0,t:20,flash:0};corpses=[];pops=[];bombs=[];visualDebris.length=0;caveSpores.length=0;caveDrips.length=0;caveSpawn=0;PROF.games++;saveProf();
   ents=[];parts=[];arrows=[];floats=[];msgs=[];msgLog=[];time=dayLen*.08;regrowT=0;panel=null;cursorItem=null;
   stats={mined:0,recruited:0,kills:0,start:time,obj:0,rk:{},chests:0,waves:0};
@@ -1072,7 +1072,9 @@ function hurt(e,dmg,src){
     else{floatText(ex,fy,'-'+dmg,col,pl&&dmg>=30);e.dmgFt=floats[floats.length-1];e.dmgFt.n=dmg;e.dmgFt.pl=pl}}if(src===player&&e.type!=='core')hitStop=Math.max(hitStop,dmg>=30?.07:.035);
   if(src&&e.type!=='core'){const dir=Math.sign((e.x+e.w/2)-(src.x+(src.w||0)/2))||1;const kb=(src.type==='player'?120:src.kind==='golem'?150:30)*(e.kind==='golem'?.3:1);e.vx+=dir*kb;if(kb>60)e.vy=Math.min(e.vy,-110)}
   burst(e.x+e.w/2,e.y+e.h/2,e.type==='core'?(e.team?'#ff8a7a':'#8ac4ff'):'#e8364b',4,50,300,.4);
-  if(e.type==='core'){shake=Math.max(shake,2);if(e.team===0&&(!e.alertT||e.alertT<time)){e.alertT=time+12;toast('Ton cœur est attaqué !',3,'#ff8a7a');buzz(120)}}
+  if(e.type==='core'){shake=Math.max(shake,2);if(e.team===0&&(!e.alertT||e.alertT<time)){e.alertT=time+12;
+    // l'alerte d'intrusion (« Ton cœur est attaqué ! Tes défenseurs accourent » ou « …personne ne le défend ») vient de le dire : pas de doublon
+    if(!(intruderT&&intruderT<=time&&time-intruderT<10))toast('Ton cœur est attaqué !',3,'#ff8a7a');buzz(120)}}
   if(e.hp<=0)kill(e,src)}
 function coreShock(c){const cx=c.x+c.w/2,cy=c.y+c.h/2;sfx.boom();shake=Math.max(shake,8);buzz(200);
   for(let i=0;i<3;i++)burst(cx,cy,i%2?'#ffffff':'#8ac4ff',26,240,150,1.1,2);
@@ -1602,7 +1604,9 @@ function updateAI(dt){
      // en plein assaut : les rouges au pied du cœur l'emportent nettement sur ce qui le garde → on le dit (une fois par vague)
      // avec quoi faire (avant : seule l'alerte d'avant-vague existait, des sièges de 4-6 min finissaient sans un mot)
      const nr=teamPow(1,pc,25*T),nb=teamPow(0,pc,25*T)+bases[0].upg.tower*.8;
-     if(!I.yieldSaid&&nr>3&&nr>nb*1.2){I.yieldSaid=true;if(bases[0].order==='attack')bases[0].recallHint=time+8;toast(bases[0].order==='attack'?'Ta défense cède ! Rappelle ton armée (Défense) ou recrute vite.':'Ta défense cède ! Recrute des troupes (Base) ou améliore la tour.',5,'#ff5a5a');buzz(200)}}
+     if(!I.yieldSaid&&nr>3&&nr>nb*1.2){I.yieldSaid=true;
+       // aucun combattant : « personne ne le défend ! Base : recrute » vient d'être dit (30 s), on ne le répète pas en troisième message
+       if(!blueGuards()&&intruderT&&intruderT<=time&&time-intruderT<30&&bases[0].order!=='attack'){}else{if(bases[0].order==='attack')bases[0].recallHint=time+8;toast(bases[0].order==='attack'?'Ta défense cède ! Rappelle ton armée (Défense) ou recrute vite.':'Ta défense cède ! Recrute des troupes (Base) ou améliore la tour.',5,'#ff5a5a');buzz(200)}}}
    else I.yieldSaid=false}
   // assaut bleu qui s'enlise au pied du cœur rouge : la moitié de la force arrivée est tombée et les rouges dominent → on le dit
   // une fois (avant : l'armée fondait en 40-60 s sans un mot, 5 assauts sur 6 anéantis jusqu'au dernier soldat)
