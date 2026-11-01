@@ -1519,9 +1519,10 @@ function updateOgre(e,dt){e.anim+=dt;
   if(e.blocked){e.smash-=dt;if(e.smash<=0){e.smash=.5;const fx=Math.floor((e.dir>0?e.x+e.w+2:e.x-2)/T);let hit=false;
     for(let y=Math.floor(e.y/T);y<=Math.floor((e.y+e.h-1)/T);y++){const t=fg[idx(fx,y)];if(t!==AIR&&t!==BEDROCK&&TD[t].solid){setT(fx,y,AIR);burst(fx*T+8,y*T+8,'#8a6d5a',5,60,200,.5);hit=true}}
     if(hit){shake=Math.max(shake,onScreen(e)?3:0);sfx.boom()}else if(e.onGround)e.vy=-JUMP}}
-  // frappe au sol : touche tout ce qui est hostile autour de lui
+  // frappe au sol : touche tout ce qui est hostile autour de lui. Cœur : 12 (avant 30). Depuis que la lune de sang dure vraiment toute la nuit,
+  // l'Ogre atteint le cœur en ~20 s et lui ôtait 60-67 % de ses PV en Normal (25-33 % en Paisible) en une minute
   if(e.atk<=0&&Math.abs(dx)<34&&Math.abs(tgt.y+tgt.h/2-(e.y+e.h/2))<44){e.atk=1.6;const cx=e.x+e.w/2,cy=e.y+e.h;
-    for(const o of[...tgtNear(cx,48)])if(o.hp&&!o.dead&&hostile(e,o)&&Math.abs(o.x+o.w/2-cx)<48&&Math.abs(o.y+o.h/2-cy)<52){hurt(o,o.type==='core'?30:26,e);if(o.type!=='core'){o.vx=Math.sign(o.x-cx||1)*220;o.vy=-180}}
+    for(const o of[...tgtNear(cx,48)])if(o.hp&&!o.dead&&hostile(e,o)&&Math.abs(o.x+o.w/2-cx)<48&&Math.abs(o.y+o.h/2-cy)<52){hurt(o,o.type==='core'?12:26,e);if(o.type!=='core'){o.vx=Math.sign(o.x-cx||1)*220;o.vy=-180}}
     pops.push({ring:1,x:cx,y:cy-4,t:.45,max:.45,col:'#ff5a5a',r:46});burst(cx,cy-2,'#b9a98f',16,90,250,.6);if(onScreen(e)){shake=Math.max(shake,6);sfx.boom()}}
   if(e.y>WH*T)e.dead=true}
 const ogreTint=new WeakMap();
