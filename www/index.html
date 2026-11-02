@@ -296,13 +296,15 @@ function buildTextures(){
   }
   // Strates précalculées : bandes larges, teinte compensée pour la lumière ambiante.
   SPR.strata={};for(const t of [DIRT,STONE,DEEP]){const c=mk(64,4096),q=c.getContext('2d');SPR.strata[t]=c;
+    // une seule lecture/écriture de pixels par strate (avant : 128 getImageData par type, ~70 ms au démarrage, plus encore sur téléphone)
+    for(let buried=0;buried<2;buried++)for(let d=0;d<16;d++)for(let v=0;v<4;v++){const sy=(buried*16+d)*128;for(let row=0;row<8;row++)q.drawImage(buried?SPR.buried[t][v]:TEX[t][v],v*16,sy+row*16)}
+    const im=q.getImageData(0,0,64,4096),a=im.data;
     for(let buried=0;buried<2;buried++)for(let d=0;d<16;d++)for(let v=0;v<4;v++){
-      const sy=(buried*16+d)*128,f=d/15;for(let row=0;row<8;row++)q.drawImage(buried?SPR.buried[t][v]:TEX[t][v],v*16,sy+row*16);
-      const im=q.getImageData(v*16,sy,16,128),a=im.data;
+      const sy=(buried*16+d)*128,f=d/15;
       for(let y=0;y<128;y++){const band=.72+.2*Math.max(-1,Math.min(1,3*Math.sin(y*Math.PI/64)))+.015*Math.sin(y*Math.PI/16),seam=y===19||y===53||y===94?.025:0;
-        for(let x=0;x<16;x++){const k=(y*16+x)*4,n=band+seam+((x*7+y*3)%19===0?.01:0);
-          a[k]+=Math.round((138-62*f)*n);a[k+1]+=Math.round((100-8*f)*n);a[k+2]+=Math.round((65+100*f)*n)}}q.putImageData(im,v*16,sy);
-    }}
+        for(let x=0;x<16;x++){const k=((sy+y)*64+v*16+x)*4,n=band+seam+((x*7+y*3)%19===0?.01:0);
+          a[k]+=Math.round((138-62*f)*n);a[k+1]+=Math.round((100-8*f)*n);a[k+2]+=Math.round((65+100*f)*n)}}
+    }q.putImageData(im,0,0);}
   // Petits vestiges enfouis : sprites transparents, palette atténuée.
   SPR.roots=[];SPR.pebbles=[];SPR.fossils=[];SPR.bio=[];
   for(let v=0;v<4;v++){const c=mk(16,16),P=pen(c.getContext('2d'));
