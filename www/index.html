@@ -2993,6 +2993,8 @@ addEventListener('mouseup',ev=>{if(ev.button===0){mouse.l=false;holdRep=null}if(
 cv.addEventListener('contextmenu',ev=>ev.preventDefault());
 cv.addEventListener('wheel',ev=>{if(logOpen()){ev.preventDefault();const n=performance.now();if(n-(logWheelT||0)<250)return;logWheelT=n;if(ev.deltaY>0)logOlder();else if(ev.deltaY<0)logNewer();return}if(state!=='play')return;ev.preventDefault();player.sel=(player.sel+(ev.deltaY>0?1:8))%9},{passive:false});
 addEventListener('keydown',ev=>{keys[ev.code]=true;audioInit();
+  // Tab ne sert qu'aux menus : en partie, le navigateur sortait le focus de la toile et figeait le jeu (pause, touches sans effet)
+  if(ev.code==='Tab')ev.preventDefault();
   if(logOpen()&&/^(ArrowDown|PageDown|ArrowUp|PageUp)$/.test(ev.code)){ev.preventDefault();if(/Down/.test(ev.code))logOlder();else logNewer();return}
   // menus au clavier : flèches ou Tab choisissent un bouton, Entrée (ou Espace une fois la sélection affichée) le valide
   // (avant : souris obligatoire sur l'écran titre, la pause et l'écran de fin)
