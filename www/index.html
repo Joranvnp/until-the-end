@@ -2984,7 +2984,7 @@ function uiClick(x,y,tol=0){const h=uiHitAt(x,y,tol);if(!h)return false;pressFx=
 // (avant, 10 recrues = 10 tapes ; s'arrête dès que la case n'est plus payable ou que le panneau se ferme)
 let holdRep=null;
 function holdTick(){if(!holdRep)return;const n=performance.now();if(n<holdRep.next)return;const h=uiHitAt(holdRep.x,holdRep.y,holdRep.tol);if(!h||!h.rep){holdRep=null;return}holdRep.next=n+220;pressFx={...h,t:n};h.fn()}
-cv.addEventListener('mousemove',ev=>{const p=toLocal(ev);mouse.x=p.x;mouse.y=p.y;mouse.inside=true;updateMouseWorld()});
+cv.addEventListener('mousemove',ev=>{kbNav=false;const p=toLocal(ev);mouse.x=p.x;mouse.y=p.y;mouse.inside=true;updateMouseWorld()});
 cv.addEventListener('mouseleave',()=>{mouse.inside=false;mouse.l=mouse.r=false;holdRep=null});
 cv.addEventListener('mousedown',ev=>{audioInit();cv.focus();const p=toLocal(ev);mouse.x=p.x;mouse.y=p.y;mouse.inside=true;updateMouseWorld();
   if(ev.button===0){if(uiClick(p.x,p.y))return;if(panel&&panelRect&&p.x>=panelRect.x&&p.x<panelRect.x+panelRect.w&&p.y>=panelRect.y&&p.y<panelRect.y+panelRect.h)return;mouse.l=true}
@@ -2994,11 +2994,17 @@ cv.addEventListener('contextmenu',ev=>ev.preventDefault());
 cv.addEventListener('wheel',ev=>{if(logOpen()){ev.preventDefault();const n=performance.now();if(n-(logWheelT||0)<250)return;logWheelT=n;if(ev.deltaY>0)logOlder();else if(ev.deltaY<0)logNewer();return}if(state!=='play')return;ev.preventDefault();player.sel=(player.sel+(ev.deltaY>0?1:8))%9},{passive:false});
 addEventListener('keydown',ev=>{keys[ev.code]=true;audioInit();
   if(logOpen()&&/^(ArrowDown|PageDown|ArrowUp|PageUp)$/.test(ev.code)){ev.preventDefault();if(/Down/.test(ev.code))logOlder();else logNewer();return}
+  // menus au clavier : flèches ou Tab choisissent un bouton, Entrée (ou Espace une fois la sélection affichée) le valide
+  // (avant : souris obligatoire sur l'écran titre, la pause et l'écran de fin)
+  if(kbMenu()&&!logOpen()){const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1],Tab:ev.shiftKey?[0,-1]:[0,1]}[ev.code];
+    if(dir){ev.preventDefault();if(!kbNav){kbNav=true;resolvePadHit()}else padMove(dir[0],dir[1]);return}
+    if(ev.code==='Enter'||ev.code==='NumpadEnter'||ev.code==='Space'&&kbNav){if(!kbNav){ev.preventDefault();kbNav=true;resolvePadHit();return} // 1er appui : montre la sélection
+      if(padHit){ev.preventDefault();pressFx={...padHit,t:performance.now()};padHit.fn();return}}}
   if(ev.code==='Escape'&&menuPanel){menuPanel=null;return}
   if(ev.code==='Escape'&&endLog&&state!=='play'){endLog=false;return}
   if(state!=='play')return;
   if(ev.code==='F9'){ev.preventDefault();if(menuPanel==='cheat'){menuPanel=null;paused=false}else openCheat();return}
-  if(ev.code.startsWith('Digit')){const n=+ev.code.slice(5);
+  if(/^(Digit|Numpad)\d$/.test(ev.code)){const n=+ev.code.slice(-1); // pavé numérique aussi
     // panneau Base ouvert : 1 à 4 recrutent mineur, guerrier, archer, golem (avant, 10 recrues = 10 clics sur « Recruter »)
     if(panel==='base'&&!paused&&n>=1&&n<=4)recruitUI(Object.keys(UNITS).filter(k=>!UNITS[k].hero)[n-1]);else if(n>=1&&n<=9)player.sel=n-1}
   if(paused&&ev.code!=='Escape'&&ev.code!=='KeyP')return;
@@ -3007,7 +3013,7 @@ addEventListener('keydown',ev=>{keys[ev.code]=true;audioInit();
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(ev.code))ev.preventDefault()});
 addEventListener('keyup',ev=>{keys[ev.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;mouse.l=mouse.r=false;if(state==='play')paused=true});
-cv.addEventListener('touchstart',ev=>{ev.preventDefault();audioInit();for(const t of ev.changedTouches){const p=toLocal(t);const ui=state!=='play'||uiHits.some(h=>p.x>=h.x&&p.x<h.x+h.w&&p.y>=h.y&&p.y<h.y+h.h)||(panel&&panelRect&&p.x>=panelRect.x&&p.x<panelRect.x+panelRect.w&&p.y>=panelRect.y&&p.y<panelRect.y+panelRect.h);
+cv.addEventListener('touchstart',ev=>{kbNav=false;ev.preventDefault();audioInit();for(const t of ev.changedTouches){const p=toLocal(t);const ui=state!=='play'||uiHits.some(h=>p.x>=h.x&&p.x<h.x+h.w&&p.y>=h.y&&p.y<h.y+h.h)||(panel&&panelRect&&p.x>=panelRect.x&&p.x<panelRect.x+panelRect.w&&p.y>=panelRect.y&&p.y<panelRect.y+panelRect.h);
   if(ui){mouse.x=p.x;mouse.y=p.y;uiClick(p.x,p.y,state!=='play'||paused||panel?Math.round(10*(window.devicePixelRatio||1)/S):0)}activeTouches.set(t.identifier,{...p,ui})}if(state==='play')touchUpdate()},{passive:false});
 cv.addEventListener('touchmove',ev=>{ev.preventDefault();for(const t of ev.changedTouches){const a=activeTouches.get(t.identifier);if(a){const p=toLocal(t);a.x=p.x;a.y=p.y}}if(state==='play')touchUpdate()},{passive:false});
 const tEnd=ev=>{for(const t of ev.changedTouches){const a=activeTouches.get(t.identifier);if(a&&a.ui)holdRep=null;activeTouches.delete(t.identifier)}if(state==='play')touchUpdate()};cv.addEventListener('touchend',tEnd);cv.addEventListener('touchcancel',tEnd);
@@ -3029,15 +3035,17 @@ let last=performance.now();
 // A saut / valider · B retour · X ou RT action · Y sac · LB/RB barre d'objets · LT base · L3 forge · Select ordre · Start pause
 // Dans les menus (titre, fin, pause, panneaux) : croix ou stick pour déplacer le focus, A pour cliquer.
 const pad={on:false,prev:[],l:false,r:false,j:false,d:false,a:false,nav:0};let padFocus=null,padHit=null;
+// clavier seul dans les menus (titre, pause, fin, réglages) : même cadre de sélection que la manette ; souris ou doigt l'effacent
+let kbNav=false;const kbMenu=()=>state!=='play'||paused||!!menuPanel;
 function padMenu(){return state!=='play'||paused||!!panel||!!menuPanel}
 function padMove(dx,dy){if(!uiHits.length)return;const c=padHit?{x:padHit.x+padHit.w/2,y:padHit.y+padHit.h/2}:{x:VW/2,y:VH/2};let best=null,bs=1e9;
   for(const h of uiHits){if(h===padHit)continue;const hx=h.x+h.w/2-c.x,hy=h.y+h.h/2-c.y,fw=hx*dx+hy*dy;if(fw<=2)continue;const sc=fw+Math.abs(hx*dy-hy*dx)*2.5;if(sc<bs){bs=sc;best=h}}
   if(best){padFocus={x:best.x+best.w/2,y:best.y+best.h/2};sfx.place()}}
-function resolvePadHit(){padHit=null;if(!pad.on||!padMenu()||!uiHits.length)return;
+function resolvePadHit(){padHit=null;if(!(pad.on&&padMenu()||kbNav&&kbMenu())||!uiHits.length)return;
   if(padFocus){let bd=1e9;for(const h of uiHits){const d=Math.hypot(h.x+h.w/2-padFocus.x,h.y+h.h/2-padFocus.y);if(d<bd){bd=d;padHit=h}}if(bd>24)padHit=null}
   if(!padHit){padHit=uiHits.reduce((a,h)=>h.w*h.h>a.w*a.h?h:a,uiHits[0]);padFocus={x:padHit.x+padHit.w/2,y:padHit.y+padHit.h/2}}}
 function pollPad(dt){const gp=navigator.getGamepads?[...navigator.getGamepads()].find(g=>g&&g.connected):null;
-  if(!gp){if(pad.on){pad.on=false;touch.l=touch.r=touch.j=touch.d=touch.a=false}return}
+  if(!gp){if(pad.on){pad.on=false;touch.l=touch.r=touch.j=touch.d=touch.a=false}if(kbNav)resolvePadHit();else padHit=null;return}
   if(!pad.on){pad.on=true;toast('Manette connectée',2)}audioInit();
   const b=i=>!!(gp.buttons[i]&&(gp.buttons[i].pressed||gp.buttons[i].value>.5)),hit=i=>b(i)&&!pad.prev[i];
   const ax=gp.axes[0]||0,ay=gp.axes[1]||0,L=b(14)||ax<-.4,R=b(15)||ax>.4,U=b(12)||ay<-.5,D=b(13)||ay>.5;
