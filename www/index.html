@@ -1497,7 +1497,11 @@ function updateGatherer(e,u,dt){
   if(e.kind==='champion'){if(Math.abs(e.x-core.x)<130)e.hp=Math.min(e.maxhp,e.hp+dt*8);
     if(e.hp<e.maxhp*.25&&e.state!=='heal'){e.state='heal';if(onScreen(e)||Math.abs(player.x-e.x)<400)toast('Le champion rouge bat en retraite pour se soigner !',2.5,'#ffd27a')}
     if(e.state==='heal'){if(e.hp>e.maxhp*.9){e.state='seek'}else{const hx=core.x+11-24;if(Math.abs(hx-(e.x+e.w/2))<T*1.5&&e.y>core.y+40)climbUp(e,dt,hx);else navigate(e,hx,dt,'climb');return}}}
-  const thr=e.kind==='champion'?pickTarget(e,u,e.state==='home'?60:120):nearestHostile(e,18);
+  let thr=e.kind==='champion'?pickTarget(e,u,e.state==='home'?60:120):nearestHostile(e,18);
+  // le champion ne poursuit pas une cible réfugiée sous la tour adverse (sauf pendant l'assaut rouge rassemblé) : il sort de sa portée
+  // (avant, il suivait le héros jusqu'au pied du château bleu et y perdait ~230 PV sur 320 en 20 s sous les flèches de la tour)
+  if(e.kind==='champion'&&thr&&thr.type!=='core'&&!(e.team===1&&massed)){const etb=bases[1-e.team];if(underTower(etb,thr)){thr=null;
+    if(underTower(etb,e)){const sd=Math.sign(core.x-etb.tower.x)||1;navigate(e,etb.tower.x+sd*(262+etb.upg.tower*18),dt,e.stuck>=2?'climb':'auto');return}}}
   // mineur menacé par un combattant : il lâche le filon et file se mettre à l'abri sous la tour, puis attend que ça se calme
   if(e.kind==='miner'){const foe=nearestHostile(e,7*T);if(foe&&(foe.type==='monster'||foe.kind!=='miner')){if(time>(e.fleeT||0)&&e.team===0&&onScreen(e))floatText(e.x+e.w/2,e.y-6,'!','#ff9a8a');e.fleeT=time+6;e.fleeFrom=foe;e.state='home';e.tgt=null}}
   const fleeing=e.kind==='miner'&&time<(e.fleeT||0);
