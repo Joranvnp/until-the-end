@@ -585,8 +585,12 @@ function genWorld(seed){
   for(let x=0;x<WW;x++){let s=0;while(s<WH&&!TD[fg[idx(x,s)]].solid)s++;surf[x]=s}
   surf0=Int16Array.from(surf); // surface d'origine (surf suit le creusage) : repère du remblai autour des châteaux
   lightSky=new Float32Array(WW*WH);lightTorch=new Float32Array(WW*WH);lightDirty=true;
-  wActive=new Set();mmC=mk(WW,WH);mmG=mmC.getContext('2d');for(let y=0;y<WH;y++)for(let x=0;x<WW;x++)mmPix(x,y);
+  wActive=new Set();mmC=mk(WW,WH);mmG=mmC.getContext('2d');mmAll();
 }
+// minicarte entière en une écriture de pixels (avant : 66 000 fillRect à chaque partie et chargement)
+function mmAll(){if(!mmG)return;const im=mmG.createImageData(WW,WH),d=im.data,C=TD.map(t=>t&&t.mm?hex(t.mm):null),N=hex('#070914');
+  for(let i=0;i<WW*WH;i++){const c=C[fg[i]]||(bg[i]?N:null);if(c){const k=i*4;d[k]=c[0];d[k+1]=c[1];d[k+2]=c[2];d[k+3]=255}}
+  mmG.putImageData(im,0,0)}
 function mmPix(x,y){if(!mmG)return;const t=fg[idx(x,y)],c=TD[t].mm;if(c){mmG.fillStyle=c;mmG.fillRect(x,y,1,1)}else{mmG.clearRect(x,y,1,1);if(bg[idx(x,y)]){mmG.fillStyle='#070914';mmG.fillRect(x,y,1,1)}}}
 function setT(x,y,t){if(x<0||y<0||x>=WW||y>=WH)return;fg[idx(x,y)]=t;mmPix(x,y);lightDirty=true;wakeWater(x,y)}
 // ---------- eau (automate cellulaire : chute, puis étalement sous pression ou vers un vide) ----------
@@ -670,7 +674,7 @@ function saveGame(){if(state!=='play'||endT>0)return;try{
   localStorage.setItem(SAVE_KEY,JSON.stringify(data))}catch(e){}}
 function loadGame(){let d;try{d=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){return false}if(!d||d.v!==1)return false;
   newGame(d.diff,d.daily||null,!!d.surv);PROF.games--;tut=-1;firstRun=false;REL=d.rel||{};HERO=d.hero||'miner';msgs=[];SEED=d.seed;fg=b64u8(d.fg);bg=b64u8(d.bg);surf=Int16Array.from(d.surf);surf0=Int16Array.from(d.surf0||d.surf);trees=d.trees.map(([x,top,r])=>({x,top,r,img:makeCanopy(r,SEED+x)}));
-  for(let y=0;y<WH;y++)for(let x=0;x<WW;x++)mmPix(x,y);
+  mmAll();
   time=d.time;stats=Object.assign({obj:0,rk:{}},d.stats);Object.assign(player,{x:d.player.x,y:d.player.y,hp:d.player.hp,maxhp:100+relV('life'),inv:d.player.inv,sel:d.player.sel});
   d.bases.forEach((s,i)=>{const b=bases[i];b.storage=s.st;b.upg={saw:0,mine:0,...s.up};b.order=s.o;b.core.hp=s.hp;b.core.maxhp=s.mh});
   ents=ents.filter(e=>e.type!=='unit');ai.style=d.ai.style;ai.wave=d.ai.wave;ai.sent=d.ai.sent;ai.champT=d.ai.champT;ai.champ=null;
