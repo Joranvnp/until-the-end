@@ -2375,9 +2375,10 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
       const s=sides[sx<0?0:1],d=sx<0?-sx:sx-VW;if(d>60*T)continue;s.n++;if(e.kind==='champion')s.ch=1;if(e.kind==='ogre')s.og=1;if(d<s.d){s.d=d;s.y=e.y-cam.y}}
     sides.forEach((s,i)=>{if(!s.n)return;const tiles=Math.max(1,Math.round(s.d/T)),near=tiles<=12,col=s.og?(near&&Math.sin(time*8)>0?'#ffffff':'#ff5a5a'):s.ch?(near&&Math.sin(time*8)>0?'#ffffff':'#ffd27a'):near&&Math.sin(time*8)>0?'#ff9a8a':COL.red,
       // repère calé au-dessus des têtes (centré sur elles, il cachait les ennemis déjà au bord de l'écran) ; « 1 CASE » au singulier
-      // le champion rouge (320+ PV, il tue le héros en quelques coups) est nommé dans le repère : on le voit venir
+      // le nombre seul (« 25 · 45 CASES ») ne disait pas ce qu'il comptait : « 25 UNITÉS · 45 CASES »
+           // le champion rouge (320+ PV, il tue le héros en quelques coups) est nommé dans le repère : on le voit venir
       // l'Ogre de sang (monstre, hors équipe rouge) était absent des repères alors qu'il fonce sur un cœur : nommé lui aussi
-      nm=[s.og&&'OGRE',s.ch&&'CHAMPION'].filter(Boolean),rest=s.n-nm.length,lab=(nm.length?nm.join(' + ')+(rest>0?' +'+rest:''):s.n)+' · '+tiles+(tiles>1?' CASES':' CASE'),w=uiWidth(lab,7)+14,x=i?VW-4-w:4;let y=Math.round(clamp(s.y-15,VH*.3,VH*.62));
+      nm=[s.og&&'OGRE',s.ch&&'CHAMPION'].filter(Boolean),rest=s.n-nm.length,lab=(nm.length?nm.join(' + ')+(rest>0?' +'+rest:''):s.n+(s.n>1?' UNITÉS':' UNITÉ'))+' · '+tiles+(tiles>1?' CASES':' CASE'),w=uiWidth(lab,7)+14,x=i?VW-4-w:4;let y=Math.round(clamp(s.y-15,VH*.3,VH*.62));
            // au-dessus des boutons tactiles du même bord (en paysage téléphone, il recouvrait FRÉNÉSIE)
            if(isTouch)for(const tb of touchBtns)if(x<tb.x+tb.w&&x+w>tb.x&&y+13>tb.y)y=Math.max(Math.round(VH*.18),Math.min(y,Math.floor(tb.y)-14));
       box(x,y,w,11,COL.panel,col);txt(i?'▶':'◀',i?x+w-3:x+3,y+2,col,7,i?'right':'left');txt(lab,i?x+w-11:x+11,y+2,col,7,i?'right':'left')})}
