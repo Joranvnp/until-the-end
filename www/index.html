@@ -666,6 +666,13 @@ const SAVE_KEY='ute-save-v1';
 const u8b64=a=>{let s='';for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));return btoa(s)};
 const b64u8=s=>{const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a};
 function hasSave(){try{return!!localStorage.getItem(SAVE_KEY)}catch(e){return false}}
+// « Continuer » dit ce qu'on reprend (mode, jour) ; relu seulement quand la sauvegarde change de taille (avant : libellé muet)
+let SAVEI={len:-1,v:null};
+function saveInfo(){let s;try{s=localStorage.getItem(SAVE_KEY)}catch(e){return null}if(!s)return null;if(s.length===SAVEI.len)return SAVEI.v;SAVEI.len=s.length;let v=null;
+  try{const d=JSON.parse(s),df=DIFFS[d&&d.diff];if(d&&d.v===1&&df&&typeof d.time==='number'){const day=Math.floor(d.time/dayLen)+1,
+    m=d.daily?['Défi du jour','Daily challenge']:d.surv?['Siège','Siege']:[df.n,{Paisible:'Peaceful',Normal:'Normal',Brutal:'Brutal'}[df.n]||df.n];
+    v=['Continuer · '+m[0]+' · jour '+day,'Continue · '+m[1]+' · day '+day];EN[v[0]]=v[1]}}catch(e){}
+  SAVEI.v=v;return v}
 function saveGame(){if(state!=='play'||endT>0)return;try{
   const units=ents.filter(e=>e.type==='unit'&&!e.dead).map(e=>({k:e.kind,t:e.team,x:e.x,y:e.y,hp:e.hp,mh:e.maxhp,c:e.carry,n:e.carryN,s:e.state,w:e.waveNo,r:e.raid?1:0,k2:e.strike?1:0}));
   const data={v:1,seed:SEED,diff,time,stats,fg:u8b64(fg),bg:u8b64(bg),surf:Array.from(surf),surf0:Array.from(surf0),trees:trees.map(t=>[t.x,t.top,t.r]),
@@ -2732,7 +2739,7 @@ function drawTitle(){
   if(port)ty=Math.max(14,Math.round((VH-lh-blk)*.5));
   if(land)ty=Math.max(6,Math.round((VH-lh-12-43)*.5));
   logo(cx,ty,tsz);txt('Mine. Forge. Détruis leur cœur.',cx,ty+lh-15,COL.dim,7,'center');
-  let y=land?Math.max(4,Math.round((VH-nb*(BH+4)-(SH+4)*2+4)/2)):ty+lh,k=0;if(sv){button(bx-slideIn(k++),y,bw,BH,'Continuer la partie',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible : lance une nouvelle partie.',3.5,COL.red)},true,true);y+=BH+4}
+  let y=land?Math.max(4,Math.round((VH-nb*(BH+4)-(SH+4)*2+4)/2)):ty+lh,k=0;if(sv){button(bx-slideIn(k++),y,bw,BH,(saveInfo()||['Continuer la partie'])[0],()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible : lance une nouvelle partie.',3.5,COL.red)},true,true);y+=BH+4}
   const D=dailyInfo(),done=PROF.daily.won===D.key;
   button(bx+slideIn(k++),y,bw,BH,(done?'★ ':'')+'Défi du jour : '+D.mod.n,()=>{audioInit();newGame(1,D)},true,!sv&&false);y+=BH+4;
   const g3=Math.floor((bw-8)/3);// ▶ : ces trois boutons lancent la partie (sinon on cherche un bouton « Jouer » qui n'existe pas)
