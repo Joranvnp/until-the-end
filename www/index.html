@@ -809,13 +809,13 @@ function findRelic(x,y){if(daily)return;const lvl=id=>PROF.relics[id]||0,pool=RE
 // ---------- héros : chacun a un pouvoir (touche F ou bouton ★), débloqués au fil des parties ----------
 const HEROES=[
   {id:'miner',n:'Mineuse',p:'Frénésie',d:'Mine 3 fois plus vite pendant 8 s',cd:40,need:'',ok:()=>true},
-  {id:'archer',n:'Archer',p:'Volée',d:'Tire 9 flèches en éventail',cd:30,need:'Abats 40 ennemis au total',ok:()=>PROF.tot.kills>=40},
-  {id:'builder',n:'Bâtisseur',p:'Rempart',d:'Élève un mur de briques devant toi',cd:35,need:'Gagne une partie',ok:()=>PROF.wins>=1}];
+  {id:'archer',n:'Archer',p:'Volée',d:'Tire 9 flèches en éventail',cd:30,need:'Abats 40 ennemis au total',ok:()=>PROF.tot.kills>=40,prog:()=>[Math.min(40,PROF.tot.kills),40]},
+  {id:'builder',n:'Bâtisseur',p:'Rempart',d:'Élève un mur de briques devant toi',cd:35,need:'Gagne une partie',ok:()=>PROF.wins>=1,prog:()=>[Math.min(1,PROF.wins),1]}];
 let HERO='miner';
 const heroDef=id=>HEROES.find(h=>h.id===id)||HEROES[0];
 const heroesOpen=()=>HEROES.filter(h=>h.ok());
 function nextHero(){const open=heroesOpen(),i=open.findIndex(h=>h.id===PROF.hero),h=open[(i+1)%open.length];PROF.hero=h.id;saveProf();
-  const locked=HEROES.filter(h=>!h.ok());toast(tr(h.n)+' · '+tr(h.p)+' : '+tr(h.d)+(locked.length?' · '+tr(locked[0].n)+' : '+tr(locked[0].need):''),4,COL.gold)}
+  const locked=HEROES.filter(h=>!h.ok());toast(tr(h.n)+' · '+tr(h.p)+' : '+tr(h.d)+(locked.length?' · '+tr(locked[0].n)+' : '+tr(locked[0].need)+(locked[0].prog?' ('+locked[0].prog().join('/')+')':''):''),4,COL.gold)}
 // annonce les héros débloqués par la partie qui vient de finir
 function heroUnlockCheck(){PROF.heroSeen=PROF.heroSeen||['miner'];for(const h of heroesOpen())if(!PROF.heroSeen.includes(h.id)){PROF.heroSeen.push(h.id);toast('Nouveau héros : '+tr(h.n)+' ('+tr(h.p)+')',5,COL.gold)}}
 function usePower(p){if(!p||p.dead||p.pwCd>0)return;const h=heroDef(HERO),pcx=p.x+p.w/2,pcy=p.y+p.h/2;
@@ -2750,7 +2750,7 @@ function drawTitle(){
   button(bx+g3b+4+slideIn(k),y,g3b,SH,'Reliques '+nr+'/'+RELICS.length,()=>{menuPanel='relic';panelT=0;sfx.place()});
   button(bx+2*(g3b+4)+slideIn(k),y,g3b,SH,'Réglages',()=>{menuPanel='set';panelT=0;sfx.place()});y+=SH+4;
   {const q=questsToday(),nd=q.list.filter(e=>e.done).length,rw=q.login!==dayKey();const hw=Math.floor((bw-4)/2);button(bx+slideIn(k),y,hw,SH,'Quêtes '+nd+'/3'+(rw?' · cadeau':''),()=>{menuPanel='quest';panelT=0;sfx.place()},true,rw);
-    button(bx+hw+4+slideIn(k++),y,hw,SH,'Héros : '+heroDef(PROF.hero).n,()=>{nextHero();sfx.place()},true);y+=SH+4}
+    button(bx+hw+4+slideIn(k++),y,hw,SH,'Héros : '+heroDef(PROF.hero).n+(heroesOpen().length<HEROES.length?' · '+heroesOpen().length+'/'+HEROES.length:''),()=>{nextHero();sfx.place()},true);y+=SH+4}
   const st=PROF.daily.streak&&PROF.daily.last>=dayKey(new Date(Date.now()-864e5))?PROF.daily.streak:0;
   if(land)y=ty+lh;
   // paysage : la description du défi passe sur deux lignes plutôt que de venir toucher la colonne de boutons
