@@ -1371,6 +1371,10 @@ function updateUnit(e,dt){
   if(e.strike){const ec=bases[1-e.team].core;const near=pickTarget(e,u,u.ranged?90:34);const tg=Math.abs(ec.x-e.x)<110?ec:near;if(tg)return engage(e,u,tg,dt);
     const dtx2=clamp(Math.floor((ec.x+11)/T),0,WW-1);if(Math.abs(ec.x+11-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx2]+1.5)return climbUp(e,dt,ec.x+11);navigate(e,ec.x+11,dt,e.stuck>=2?'climb':'auto');return}
   e.pace=1;const follow=b.order==='follow'&&e.team===0&&!player.dead;
+  // héros tombé en mode Suivre au cœur du camp rouge : l'escorte se replie vers la base où il réapparaît, en ne rendant que les coups au contact
+  // (avant, elle tenait sa position sous la tour et la garnison rouges : 3 unités sur 5 perdues pendant les 6 s d'attente)
+  if(b.order==='follow'&&e.team===0&&player.dead&&Math.abs(e.x-bases[1].core.x)<45*T){const near=nearestHostile(e,26);if(near&&e.atk<=0)meleeOrShoot(e,u,near);
+    e.boost=u.big?1.5:1.3;navigate(e,home.x+11,dt,e.stuck>=2?'climb':'auto');return}
   // escorte : l'ennemi qui frappe le héros d'abord, sauf si l'unité est elle-même au corps à corps
   // (avant : elle se retournait contre ce qui arrivait derrière elle, le héros perdait ~90 PV sur 100 en 20 s face à 3 guerriers)
   if(follow){const hf=heroFoe();if(hf&&Math.abs(hf.x-e.x)<12*T&&!nearestHostile(e,u.ranged?3*T:1.2*T))return engage(e,u,hf,dt)}
