@@ -2440,7 +2440,7 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
   for(const k of RES){const v=b0.storage[k];if(resPrev[k]!==undefined&&v>resPrev[k])resPop[k]=time;resPrev[k]=v}
   const rc=k=>time-(resPop[k]||-9)<.6?(Math.sin(time*20)>0?COL.gold:'#ffffff'):COL.txt,rb=k=>time-(resPop[k]||-9)<.25?-1:0;
   // fond sombre : les chiffres restaient illisibles par-dessus le château ou le ciel clair
-  {const r=narrow?[4,cy0+19,4*32-6,23]:[4,41,4*27,22];ctx.fillStyle='rgba(5,5,12,.82)';ctx.fillRect(...r);ctx.fillStyle='rgba(120,140,220,.28)';ctx.fillRect(r[0],r[1],r[2],1);ctx.fillRect(r[0],r[1]+r[3]-1,r[2],1)}
+  {const r=narrow?[4,cy0+19,4*32-6,23]:[4,41,4*27,22];HL.res=r;ctx.fillStyle='rgba(5,5,12,.82)';ctx.fillRect(...r);ctx.fillStyle='rgba(120,140,220,.28)';ctx.fillRect(r[0],r[1],r[2],1);ctx.fillRect(r[0],r[1]+r[3]-1,r[2],1)}
   if(narrow){ry=cy0+21;RES.forEach((k,i)=>{const x=8+(i%4)*32,y=ry+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y+rb(k),10,10);txt(uiFit(''+b0.storage[k],20,7),x+11,y+2,rc(k),7);resCell(k,x,y,31)});ry+=24+(waveVisible?14:0)}
   else{ry=38;RES.forEach((k,i)=>{const x=8+(i%4)*27,y=ry+5+Math.floor(i/4)*10;ctx.drawImage(ICON[k],x,y-2+rb(k),10,10);txt(''+b0.storage[k],x+11,y,rc(k),7);resCell(k,x,y-2,26)});ry=cy0+30+waveGap}
   let hudBottom=Math.max(62,my+mh+2,cy0+31,ry);hudLow=hudBottom;
@@ -2448,6 +2448,8 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
   {const tw=narrow?VW-32:Math.max(160,Math.min(300,mx-heroW-24));const tx=narrow?VW/2:(midW>=150?heroW+12+midW/2+4:VW/2);let y=narrow?ry:Math.max(ry,cy0+30),linesLeft=narrow?(VH>VW*1.2?4:2):Infinity; // portrait (téléphone et tablette) : le ciel est libre, on garde les messages entiers
    // les 2 plus récents, mais une alerte encore active prend la place de la plus ancienne information
    let show=msgs.slice(-2);const al=msgs.filter(toastAlert).filter(m=>!show.includes(m)).pop();if(al){const j=show.findIndex(m=>!toastAlert(m));if(j>=0){show.splice(j,1);show=msgs.filter(m=>m===al||show.includes(m))}}
+   // panneau ouvert : son alerte est déjà répétée contre le panneau (voir plus bas), on ne l'affiche pas deux fois
+   if(panel){const pa=msgs.filter(m=>toastAlert(m)||m.panel).pop();if(pa)show=show.filter(m=>m!==pa)}
    // alerte : fond rouge sombre plus opaque et liserés, pour la distinguer des simples infos en pleine bataille
    const ty0=y;for(const m of show){ctx.globalAlpha=clamp(m.t,0,1)*.9;const sl=Math.round(Math.max(0,1-(m.d-m.t)*6)*-8);y+=sl;const lines=wrapLines(m.s,tw,7,1);for(let i=0;i<lines.length&&linesLeft>0;i++,linesLeft--){const l=narrow?uiFit(linesLeft===1?lines.slice(i).join(' '):lines[i],tw,7):lines[i],width=uiWidth(l,7);ctx.fillStyle=toastAlert(m)?'#1e060ae6':'#05050cbb';ctx.fillRect(Math.round(tx-width/2)-4,y-2,width+8,9);if(toastAlert(m)){ctx.fillStyle=m.col;ctx.fillRect(Math.round(tx-width/2)-6,y-2,2,9);ctx.fillRect(Math.round(tx+width/2)+4,y-2,2,9)}txt(l,tx,y,toastAlert(m)?m.col:COL.txt,7,'center');y+=10}y+=3;ctx.globalAlpha=1}if(show.length)HL.toastR={x:tx-tw/2-6,y:ty0-2,w:tw+12,h:y-ty0};hudBottom=Math.max(hudBottom,y)}
   if(tipAt){const l=IT[tipAt.k].n+' : '+b0.storage[tipAt.k]+' en réserve',w=uiWidth(l,7)+8,x=clamp(tipAt.x-2,2,VW-w-2);box(x,tipAt.y,w,11,'rgba(5,5,12,.95)','#ffffff');txt(l,x+4,tipAt.y+2,COL.txt,7)}
@@ -2504,7 +2506,9 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
     // on la recopie dans un bandeau juste sous le panneau (au-dessus s'il n'y a pas la place) pour ne pas la rater en recrutant
     {const al=panelRect&&msgs.filter(m=>toastAlert(m)||m.panel).pop();if(al&&al.t>0){let w=Math.min(VW-8,Math.max(panelRect.w,160)),ls=wrapLines(al.s,w-10,7,true).slice(0,2),h=ls.length*9+4,cx=VW/2;
       let y=panelRect.y+panelRect.h+2;let x=Math.round(VW/2-w/2);const bot=isTouch?touchLayout().reduce((m,b)=>b.x<x+w&&b.x+b.w>x?Math.min(m,b.y):m,HL.touchY||VH):HL.touchY||VH; // sous le panneau, sauf s'il couvrirait ▼ ou ★ : alors au-dessus
-      if(y+h>bot-2)y=panelRect.y-h-2;
+      if(y+h>bot-2){y=panelRect.y-h-2;
+        // au-dessus du panneau, il recouvrait le cadre des ressources (tablette portrait) : décalé à sa droite, resserré si besoin
+        const r=HL.res;if(r&&y<r[1]+r[3]&&y+h>r[1]&&x<r[0]+r[2]){const nx=r[0]+r[2]+4,nw=Math.min(w,VW-4-nx);if(nw>=140){x=nx;w=nw;ls=wrapLines(al.s,w-10,7,true).slice(0,2);h=ls.length*9+4;cx=x+w/2;y=panelRect.y-h-2}}}
       // paysage : ni dessous (commandes) ni dessus (bord d'écran) : sous le panneau, resserré entre les commandes de gauche et de droite
       if(y<0){const g=touchGap();if(g&&g.R-g.L>=120){w=Math.min(w,g.R-g.L-8);ls=wrapLines(al.s,w-10,7,true).slice(0,2);h=ls.length*9+4;cx=(g.L+g.R)/2;x=Math.round(cx-w/2);y=panelRect.y+panelRect.h+2;if(y+h>(HL.barTop||VH)-1)y=-1}}
       // nulle part autour (iPhone SE couché) : par-dessus la 2e ligne du panneau (sous le titre, où se repeint le bandeau de vague), le temps du message
