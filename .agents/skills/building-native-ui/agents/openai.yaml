@@ -1,0 +1,10 @@
+interface:
+  display_name: "Building Native UI"
+  short_description: "Complete guide for building beautiful apps with Expo Router"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $building-native-ui to complete guide for building beautiful apps with Expo Router."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Android Distribute"
+  short_description: "Promotes a tested Android build to Google Play production"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DC2626"
+  default_prompt: "Use $ns-android-distribute to promotes a tested Android build to Google Play production."
+
+policy:
+  allow_implicit_invocation: false

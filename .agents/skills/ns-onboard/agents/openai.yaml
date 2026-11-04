@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Onboard"
+  short_description: "Runs the NowStack Mobile first-run wizard"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#4F46E5"
+  default_prompt: "Use $ns-onboard to runs the NowStack Mobile first-run wizard."
+
+policy:
+  allow_implicit_invocation: false

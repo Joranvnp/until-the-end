@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS"
+  short_description: "Route the complete NowStack Mobile lifecycle"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#4F46E5"
+  default_prompt: "Use $ns to route the complete NowStack Mobile lifecycle."
+
+policy:
+  allow_implicit_invocation: false

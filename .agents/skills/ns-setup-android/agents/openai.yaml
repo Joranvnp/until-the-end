@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Setup Android"
+  short_description: "Sets up local Android development for NowStack Mobile"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $ns-setup-android to sets up local Android development for NowStack Mobile."
+
+policy:
+  allow_implicit_invocation: false

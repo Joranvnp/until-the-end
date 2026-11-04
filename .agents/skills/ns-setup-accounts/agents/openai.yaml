@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Setup Accounts"
+  short_description: "Log in to and link NowStack Mobile external accounts"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#2563EB"
+  default_prompt: "Use $ns-setup-accounts to log in to and link NowStack Mobile external accounts."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS iOS Deeplink"
+  short_description: "Fixes and verifies iOS Universal Links for NowStack Mobile -"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $ns-ios-deeplink to fixes and verifies iOS Universal Links for NowStack Mobile -."
+
+policy:
+  allow_implicit_invocation: false

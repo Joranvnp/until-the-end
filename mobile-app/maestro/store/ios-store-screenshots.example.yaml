@@ -1,0 +1,62 @@
+# Example Maestro flow for iOS App Store screenshots.
+#
+# Copy this file to ios-store-screenshots.yaml and replace placeholder text/testIDs
+# with the real NowStack Mobile routes. This example is safe: it uses a demo mode
+# launch argument and does not require real credentials.
+#
+# Recommended app support before making this flow authoritative:
+# - deterministic store-demo mode seeded by STORE_DEMO_SEED
+# - stable testIDs/accessibility labels for screenshot checkpoints
+# - deep links for direct route setup where possible
+#
+# Run from mobile-app/:
+#   maestro test maestro/store/ios-store-screenshots.example.yaml
+
+appId: com.nowstack.mobile
+name: iOS Store Screenshot Flow Example
+---
+- launchApp:
+    clearState: true
+    arguments:
+      STORE_SCREENSHOTS: "1"
+      STORE_DEMO_SEED: "nowstack-store-demo-v1"
+      STORE_LOCALE: "fr-FR"
+      STORE_PLATFORM: "ios"
+
+# 01 - Onboarding / value proposition
+- assertVisible: "NowStack"
+- assertVisible: "Commencer"
+- takeScreenshot: ios/01-onboarding
+
+# 02 - Auth screen. Use a demo bypass or mock auth state; never real credentials.
+- tapOn: "Commencer"
+- assertVisible: "Se connecter"
+- assertVisible: "Continuer avec Apple"
+- takeScreenshot: ios/02-auth
+
+# 03 - Home / dashboard with seeded demo data.
+# Prefer a real deep link once implemented, for example:
+# - openLink: "nowstack://store/home?seed=nowstack-store-demo-v1&locale=fr-FR"
+- tapOn: "Mode démo"
+- assertVisible: "Tableau de bord"
+- takeScreenshot: ios/03-home
+
+# 04 - Core feature screen.
+# Replace the label below with the actual primary feature entry point.
+- tapOn: "Créer"
+- assertVisible: "Assistant"
+- takeScreenshot: ios/04-core-feature
+
+# 05 - Paywall / subscription screen using deterministic store copy/pricing.
+# Do not show unavailable prices or fake capabilities.
+- tapOn: "Premium"
+- assertVisible: "Débloquer NowStack"
+- assertVisible: "Restaurer"
+- takeScreenshot: ios/05-paywall
+
+# 06 - Settings / account / privacy trust screen.
+- tapOn: "Fermer"
+- tapOn: "Réglages"
+- assertVisible: "Confidentialité"
+- assertVisible: "Supprimer le compte"
+- takeScreenshot: ios/06-settings

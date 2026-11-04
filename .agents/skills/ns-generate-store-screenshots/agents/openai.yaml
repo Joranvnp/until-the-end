@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Generate Store Screenshots"
+  short_description: "Generate App Store and Google Play screenshots for NowStack"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#4F46E5"
+  default_prompt: "Use $ns-generate-store-screenshots to generate App Store and Google Play screenshots for NowStack."
+
+policy:
+  allow_implicit_invocation: false

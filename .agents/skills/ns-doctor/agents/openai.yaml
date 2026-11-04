@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Doctor"
+  short_description: "Install and verify the NowStack Mobile developer toolchain"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#059669"
+  default_prompt: "Use $ns-doctor to install and verify the NowStack Mobile developer toolchain."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Setup Apple Auth"
+  short_description: "Configures Sign in with Apple for web and iOS"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#2563EB"
+  default_prompt: "Use $ns-setup-apple-auth to configures Sign in with Apple for web and iOS."
+
+policy:
+  allow_implicit_invocation: false

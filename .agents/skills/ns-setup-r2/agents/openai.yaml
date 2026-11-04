@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Setup R2"
+  short_description: "Configures Cloudflare R2 file uploads for the Convex backend"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#0284C7"
+  default_prompt: "Use $ns-setup-r2 to configures Cloudflare R2 file uploads for the Convex backend."
+
+policy:
+  allow_implicit_invocation: false

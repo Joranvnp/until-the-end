@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Optimizer"
+  short_description: "Optimizes NowStack Mobile Convex, Expo, and web performance"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#F97316"
+  default_prompt: "Use $ns-optimizer to optimizes NowStack Mobile Convex, Expo, and web performance."
+
+policy:
+  allow_implicit_invocation: false

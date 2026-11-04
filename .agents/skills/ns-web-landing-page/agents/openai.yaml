@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Web Landing Page"
+  short_description: "Redesign the NowStack Mobile public landing page from live"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#0284C7"
+  default_prompt: "Use $ns-web-landing-page to redesign the NowStack Mobile public landing page from live."
+
+policy:
+  allow_implicit_invocation: false

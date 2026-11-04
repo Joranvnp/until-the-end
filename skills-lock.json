@@ -1,0 +1,514 @@
+{
+  "version": 2,
+  "generated_by": "scripts/sync-skill-metadata.mjs",
+  "skills": {
+    "building-native-ui": {
+      "ownership": "imported",
+      "role": "reference",
+      "source": "https://github.com/expo/skills",
+      "upstream_ref": "expo-plugin-1.8.1",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "c6446e1fa2acdab7d8b3611b2563cb01ac22569219d9a586fc52b23cc83b7179",
+      "sha256": "c6446e1fa2acdab7d8b3611b2563cb01ac22569219d9a586fc52b23cc83b7179"
+    },
+    "convex-cost-optimizer": {
+      "ownership": "imported",
+      "role": "primary",
+      "source": "convex-ai-files",
+      "upstream_ref": "reviewed-snapshot-2026-07-16",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "eb0838610beaf523def6abe08778b7f344ca34b8a842729d1a0c8f771acf2a7c",
+      "sha256": "eb0838610beaf523def6abe08778b7f344ca34b8a842729d1a0c8f771acf2a7c"
+    },
+    "convex-create-component": {
+      "ownership": "imported",
+      "role": "primary",
+      "source": "convex-ai-files",
+      "upstream_ref": "reviewed-snapshot-2026-07-16",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "cbf4a82334e28ecd757a06e6651a7a946e10e8e9d489e78eeb4511f7f26cdbbb",
+      "sha256": "cbf4a82334e28ecd757a06e6651a7a946e10e8e9d489e78eeb4511f7f26cdbbb"
+    },
+    "convex-migration-helper": {
+      "ownership": "imported",
+      "role": "primary",
+      "source": "convex-ai-files",
+      "upstream_ref": "reviewed-snapshot-2026-07-16",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "d1b445f3e62a329eeb8c2eada4a2301fad6dde8f0339bda2eb0acd577533b510",
+      "sha256": "d1b445f3e62a329eeb8c2eada4a2301fad6dde8f0339bda2eb0acd577533b510"
+    },
+    "convex-performance-audit": {
+      "ownership": "imported",
+      "role": "primary",
+      "source": "convex-ai-files",
+      "upstream_ref": "reviewed-snapshot-2026-07-16",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "81b84c938cad1c5cf336cd976247a54ea6d4eb864d820c98349928b7f0a10bf1",
+      "sha256": "81b84c938cad1c5cf336cd976247a54ea6d4eb864d820c98349928b7f0a10bf1"
+    },
+    "convex-setup-auth": {
+      "ownership": "imported",
+      "role": "primary",
+      "source": "convex-ai-files-adapted-for-nowstack",
+      "upstream_ref": "reviewed-snapshot-2026-07-16",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "3128742a16a6ca3ebf0ad47d2b5dd784922cb89b4019448d6b1470b22c9ba337",
+      "sha256": "3128742a16a6ca3ebf0ad47d2b5dd784922cb89b4019448d6b1470b22c9ba337"
+    },
+    "expo-examples": {
+      "ownership": "imported",
+      "role": "reference",
+      "source": "https://github.com/expo/skills",
+      "upstream_ref": "expo-plugin-1.8.1",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "75a3e95c81fefffe966ccc780a76c5754ee6a032dcc711dad2b4918a3fa8bae5",
+      "sha256": "75a3e95c81fefffe966ccc780a76c5754ee6a032dcc711dad2b4918a3fa8bae5"
+    },
+    "expo-ui": {
+      "ownership": "imported",
+      "role": "reference",
+      "source": "https://github.com/expo/skills",
+      "upstream_ref": "expo-plugin-1.8.1",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "2eabe253012ecdaa4434c28c5293846345e8f2c6a00a989d4cd2433d54ffddb5",
+      "sha256": "2eabe253012ecdaa4434c28c5293846345e8f2c6a00a989d4cd2433d54ffddb5"
+    },
+    "ns": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "71526ba3bdc6495f330cb7a48ec2b1dc0906b07a291f64e29e437dc6c24f08ec"
+    },
+    "ns-add-documentation": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "21ff0ae30538c73a458228128aa07cc6b66cfb4e0daa8ac1fc7a63025f5c2d37"
+    },
+    "ns-analytics": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "8e581f6d897975811e46971e59f7edc731573b3799b0e2a636f3711e5d0a917e"
+    },
+    "ns-android-beta": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "02f5d0c422fd2e75a5a8e9774eceb870a2a79598f71648a6d892aa7fc2c95ca8"
+    },
+    "ns-android-distribute": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "e4d2165c35c4118be974c310b02bab7b0f7f53a0149e49840aa6aea9984188dd"
+    },
+    "ns-android-play-console-release": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "ea8087e3e7c0f9606d185de3d9ddd63c062df8ffefc1e3513dd18f9bf1facb40"
+    },
+    "ns-architecture": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "3d1a86986e6258b696206576df8fafa7e6dd7c5666e161ff0dd2a12026115f2b"
+    },
+    "ns-check-setup": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "d27f3e93cd379dba2ac57e1c1719b9f99aaa7aa61fc72e0392c01c88e5a059fa"
+    },
+    "ns-convex": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "65e52c2a64694ff917258326490877c16cdf34d3f694a5b1af864a12d16e6219"
+    },
+    "ns-create-app": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "46e6cdbf5d72539b926bc8077a6204a23f346445cb322416b138a8d7958bcdc8"
+    },
+    "ns-deploy-android-app": {
+      "ownership": "project-owned",
+      "role": "helper",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "c3a346e08ec2736928a70cedb7f035ac2fd56967feef3fb5b2b464072a3fa96a"
+    },
+    "ns-doctor": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "612a8a4b3cb637fc76f243c9077872d6f6358263e289967908d8329a48bb710c"
+    },
+    "ns-find-asc-credentials": {
+      "ownership": "project-owned",
+      "role": "helper",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "e445c73295fad1527fd181b388e59c6e80747ab28be5f7891a8e18251429822d"
+    },
+    "ns-find-gpc-credentials": {
+      "ownership": "project-owned",
+      "role": "helper",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "a0ea00f5a46a6768c02de57090d65bd1e18186d7cd9a97f0aded9350bebdf7be"
+    },
+    "ns-generate-store-screenshots": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "dffb6f94faea9a207dacbf93bb16beaaec60efe4a4084078c7538fdf4bf61603"
+    },
+    "ns-icon": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "079d13dc744654eaed5a231856ea99059a9bab720856a88b0043caa02f584093"
+    },
+    "ns-images": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "451939d0cb3f1cb8dc24331edabc8f0002cdb9f411838091938fdb32db7f332e"
+    },
+    "ns-init-project": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "7fa2685ad5bea7c624ac28623f990d1743c9b16342cde569cc33eaeeaebd4ef2"
+    },
+    "ns-intercepted-route-using-tanstack-start": {
+      "ownership": "project-owned",
+      "role": "helper",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "40514b2d65f7d4780e6bce9eb46b0de82887bf020be1097954d52379d946b9f2"
+    },
+    "ns-ios-audit": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "499dbd0c2cf39660ad000b9a0738f19d78588c466eebcc717f076ef18bf02435"
+    },
+    "ns-ios-deeplink": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "c701013fe9e0e9967e4c34ad507152abf90cd3c904a7fae9a7747c0d7437c875"
+    },
+    "ns-ios-deploy-app": {
+      "ownership": "project-owned",
+      "role": "helper",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "9c78dc11d07ba51e3aee82ca0947ad9f963a5e88928f645738778206a90893e6"
+    },
+    "ns-ios-distribute": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "d0d954451a86ec89daa4d83056fdd4daf749d1faa24860bd391e86f17a930103"
+    },
+    "ns-ios-notification": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "f4472a1ddece96492ba080f5c7e95ba1573d6efc69350b1bca501634b05d1146"
+    },
+    "ns-ios-setup": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "4139ab3aa6ae6d542b6e8a6d82db01278c8f5d94f810256fc022d8694a971f4f"
+    },
+    "ns-ios-testflight": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "2833abf30fd9daed854cce9014c20b7be83c2b33e020206a918af5854f620970"
+    },
+    "ns-ios-verification": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "bdb2f72aa055e60e8e6fa6cef684f712370e98a84d28f2fc2994d3ead85f1e46"
+    },
+    "ns-launch-audit": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "4154767e98b712f9b27fae2994cca4d09654e6abc3f5eecae78c3ebc726028e5"
+    },
+    "ns-onboard": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "2de246859ca2bb783f88f2fa10408654654e2ccca0e910912571b988b6d3f4c5"
+    },
+    "ns-optimizer": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "d86a89a0464b2e2ae806b64e18ea946145e9142774778afdcd06880d4baa1a49"
+    },
+    "ns-plan-pricing": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "a7ecd54a1d580427147a2d6cf517277096fce1f8834c1fc237634e4e3ec9a86b"
+    },
+    "ns-prd": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "ccba1b2e35e635bfe52d9f8e7a9a56639916d32f5d3b4a85c362d12d20232bc7"
+    },
+    "ns-preview": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "595273b61122c7a6fe91b4b12c3ea1697733cb6d0313bbccd9fa7aab3d6e2ddc"
+    },
+    "ns-publish-to-production": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "17c9fcaf9ac5985354edd34f846a8c7e8f3e3fcea0463b11a51179709ac3b4a4"
+    },
+    "ns-release": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "4f6f75be9272587dc513f5499f2628ad8d563e0408ba76f12ce75524606f1d53"
+    },
+    "ns-security-audit": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "76bb2fed16b9b83ce0334db9aee89ca35f6b3a6e2defca7c41f4640df188026c"
+    },
+    "ns-set-admin": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "a9ef08e7d75a5a89d77ec1050182b384543ea8cd6e739d749c64c9dc212c5c72"
+    },
+    "ns-setup-accounts": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "c726885116aeb5116de05489c98758a9b318e5f7688300b0a69bd4ac04eeeb8e"
+    },
+    "ns-setup-android": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "ec557cd8233be3499c5b11de9c5d681e028918437eb198baba4267b6fc6fd4a6"
+    },
+    "ns-setup-app-onboard": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "3b894f54e73d93454f3b992cb9af3ea7f99110e93c9ada9f86013ecfcf1897f3"
+    },
+    "ns-setup-apple-auth": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "32e194e94b3c7e2854f929e28dc6cc9f2dc49fd6924e9abd6a6f036b037f72ec"
+    },
+    "ns-setup-email": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "6e4c725073c23eb98f0ac563e52f6723c32704142aa34a2b5d5506686855f354"
+    },
+    "ns-setup-expo": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "07e5ed7b1b237cafecb5277cd0d908de8150b80f90553349c32e865beeed93da"
+    },
+    "ns-setup-google-auth": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "0cd7fd9d05a63d0e4e54a4610a90267ed2509519d1d0787f3da86754a033a1ed"
+    },
+    "ns-setup-r2": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "520619a3ad8a42db3673bbc59cf4a8ce6d65d328818f8a0a747303273855fcf8"
+    },
+    "ns-setup-stripe": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "7652a13c67876d1bc2cd680999fd457891ec62f705abd5673573467f8a4a9e7e"
+    },
+    "ns-tasks": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "6b769d98d9b44878c2cf891d69761d37e79eb35b640ac1b059a6ab02b51d760f"
+    },
+    "ns-ui": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "391bc9fccb801d08a9a2dfaf01d2e8d25f8bbb58d2eb98877392be7dfd776cbc"
+    },
+    "ns-verify": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "99499461206c1e6d45e1e72867095c021814ec1efe69c41d9f077ae759769edd"
+    },
+    "ns-web-deploy": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "48060aaf0e959efc9cb24988fbbe55bac38393a4f2c58bf693940cba8ac9d705"
+    },
+    "ns-web-landing-page": {
+      "ownership": "project-owned",
+      "role": "primary",
+      "source": "repo",
+      "upstream_ref": null,
+      "update_policy": "project-maintained",
+      "sha256": "8fe41082a3e1007db51bc4848a7569d9d628fec31587652707627d651de9966b"
+    },
+    "upgrading-expo": {
+      "ownership": "imported",
+      "role": "reference",
+      "source": "https://github.com/expo/skills",
+      "upstream_ref": "expo-plugin-1.8.1",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "e87a75b6ab294040cc4feec344fa5001cff1fec576deed81e62727335e82fdc6",
+      "sha256": "e87a75b6ab294040cc4feec344fa5001cff1fec576deed81e62727335e82fdc6"
+    },
+    "vercel-react-native-skills": {
+      "ownership": "imported",
+      "role": "reference",
+      "source": "https://github.com/vercel-labs/agent-skills",
+      "upstream_ref": "v1.0.0",
+      "update_policy": "manual-review-required",
+      "reviewed_on": "2026-09-29",
+      "reviewed_sha256": "641779f2bc1e489c90e4f276f461da1cb908c36052d8608ef473fdd7e302403a",
+      "sha256": "641779f2bc1e489c90e4f276f461da1cb908c36052d8608ef473fdd7e302403a"
+    }
+  }
+}

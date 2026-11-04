@@ -1,0 +1,10 @@
+interface:
+  display_name: "Expo UI"
+  short_description: "Build native-feeling Expo UI with @expo/ui universal"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $expo-ui to build native-feeling Expo UI with @expo/ui universal."
+
+policy:
+  allow_implicit_invocation: true

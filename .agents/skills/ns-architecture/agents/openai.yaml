@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Architecture"
+  short_description: "Maps the NowStack Mobile PRD onto the stack"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#7C3AED"
+  default_prompt: "Use $ns-architecture to maps the NowStack Mobile PRD onto the stack."
+
+policy:
+  allow_implicit_invocation: false

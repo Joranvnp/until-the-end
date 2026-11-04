@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Android Beta"
+  short_description: "Ships a signed NowStack Mobile AAB to Play internal testing"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DC2626"
+  default_prompt: "Use $ns-android-beta to ships a signed NowStack Mobile AAB to Play internal testing."
+
+policy:
+  allow_implicit_invocation: false

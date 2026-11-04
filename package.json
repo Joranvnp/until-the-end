@@ -1,8 +1,8 @@
 {
   "name": "until-the-end",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Until The End — jeu pixel art de stratégie et de minage (web, Android, iOS)",
+  "description": "Until The End — jeu pixel art de stratégie et de minage (Android, iOS)",
   "scripts": {
     "serve": "npx serve www",
     "art": "node tools/gen-art.mjs",
@@ -12,18 +12,40 @@
     "sync": "npx cap sync",
     "apk": "npx cap sync android && cd android && ./gradlew assembleDebug",
     "aab": "npx cap sync android && cd android && ./gradlew bundleRelease",
-    "ios": "npx cap sync ios && npx cap open ios"
+    "ios": "npx cap sync ios && npx cap open ios",
+    "expo-go": "node scripts/start-expo-go.mjs",
+    "start-all": "bash scripts/start-all.sh",
+    "start-all:ios": "bash scripts/start-all.sh --ios",
+    "start-all:android": "bash scripts/start-all.sh --android",
+    "check-setup": "node scripts/check-setup.mjs",
+    "dev:convex": "convex dev",
+    "deploy:convex": "convex deploy"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1068.0",
+    "@aws-sdk/s3-request-presigner": "^3.1068.0",
+    "@better-auth/expo": "^1.5.6",
     "@capacitor/android": "^8.0.0",
     "@capacitor/app": "^8.0.0",
     "@capacitor/core": "^8.0.0",
     "@capacitor/haptics": "^8.0.0",
     "@capacitor/ios": "^8.0.0",
-    "@capacitor/share": "^8.0.3"
+    "@capacitor/share": "^8.0.3",
+    "@convex-dev/better-auth": "^0.11.5",
+    "@lumail/convex": "^0.1.1",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.8",
+    "better-auth": "^1.5.6",
+    "convex": "^1.41.0",
+    "convex-helpers": "^0.1.119",
+    "react-dom": "^19.2.7",
+    "stripe": "^22.2.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^8.0.0"
+    "@capacitor/cli": "^8.0.0",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17"
   }
 }

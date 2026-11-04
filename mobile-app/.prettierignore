@@ -1,0 +1,12 @@
+# Generated/native output — created by `expo prebuild` / `npm run ios`.
+# Without these ignores, `npm run lint` (prettier -c) fails after any native build.
+.expo/
+ios/
+android/
+dist/
+node_modules/
+credentials.json
+credentials/
+
+# Moteur du jeu recopié depuis www/index.html (npm run sync-game).
+game/engine.generated.js

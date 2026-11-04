@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS PRD"
+  short_description: "Writes the mobile-aware NowStack Mobile PRD"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#7C3AED"
+  default_prompt: "Use $ns-prd to writes the mobile-aware NowStack Mobile PRD."
+
+policy:
+  allow_implicit_invocation: false

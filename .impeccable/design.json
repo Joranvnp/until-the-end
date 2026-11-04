@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-14T00:00:00Z",
+  "title": "Design System: NowStack Mobile",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "primary", "displayName": "Ink", "canonical": "oklch(0.145 0 90)", "tonalRamp": ["oklch(0.15 0 90)", "oklch(0.27 0 90)", "oklch(0.37 0 90)", "oklch(0.46 0 90)", "oklch(0.56 0 90)", "oklch(0.70 0 90)", "oklch(0.83 0 90)", "oklch(0.95 0 90)"] },
+      "spark": { "role": "secondary", "displayName": "Spark Yellow", "canonical": "oklch(0.907 0.170 97.7)", "tonalRamp": ["oklch(0.32 0.05 97.7)", "oklch(0.45 0.08 97.7)", "oklch(0.58 0.11 97.7)", "oklch(0.70 0.14 97.7)", "oklch(0.80 0.16 97.7)", "oklch(0.86 0.17 97.7)", "oklch(0.907 0.17 97.7)", "oklch(0.95 0.09 97.7)"] },
+      "spark-ink": { "role": "secondary", "displayName": "Spark Ink", "canonical": "oklch(0.218 0 90)", "tonalRamp": ["oklch(0.15 0 90)", "oklch(0.218 0 90)", "oklch(0.30 0 90)", "oklch(0.42 0 90)", "oklch(0.56 0 90)", "oklch(0.70 0 90)", "oklch(0.83 0 90)", "oklch(0.95 0 90)"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "oklch(1.0 0 90)", "tonalRamp": ["oklch(0.15 0 90)", "oklch(0.27 0 90)", "oklch(0.37 0 90)", "oklch(0.46 0 90)", "oklch(0.56 0 90)", "oklch(0.70 0 90)", "oklch(0.85 0 90)", "oklch(1.0 0 90)"] },
+      "surface": { "role": "neutral", "displayName": "Surface Gray", "canonical": "oklch(0.970 0 90)", "tonalRamp": ["oklch(0.15 0 90)", "oklch(0.27 0 90)", "oklch(0.37 0 90)", "oklch(0.46 0 90)", "oklch(0.56 0 90)", "oklch(0.70 0 90)", "oklch(0.85 0 90)", "oklch(0.97 0 90)"] },
+      "border": { "role": "neutral", "displayName": "Hairline", "canonical": "oklch(0.922 0 90)", "tonalRamp": ["oklch(0.27 0 90)", "oklch(0.37 0 90)", "oklch(0.46 0 90)", "oklch(0.56 0 90)", "oklch(0.70 0 90)", "oklch(0.83 0 90)", "oklch(0.922 0 90)", "oklch(0.97 0 90)"] },
+      "muted-ink": { "role": "neutral", "displayName": "Muted Ink", "canonical": "oklch(0.556 0 90)", "tonalRamp": ["oklch(0.15 0 90)", "oklch(0.27 0 90)", "oklch(0.37 0 90)", "oklch(0.46 0 90)", "oklch(0.556 0 90)", "oklch(0.70 0 90)", "oklch(0.83 0 90)", "oklch(0.95 0 90)"] },
+      "inverse": { "role": "neutral", "displayName": "Inverse", "canonical": "oklch(0.985 0 90)", "tonalRamp": ["oklch(0.15 0 90)", "oklch(0.27 0 90)", "oklch(0.37 0 90)", "oklch(0.46 0 90)", "oklch(0.56 0 90)", "oklch(0.70 0 90)", "oklch(0.85 0 90)", "oklch(0.985 0 90)"] },
+      "ink-card": { "role": "neutral", "displayName": "Ink Card (dark)", "canonical": "oklch(0.205 0 90)", "tonalRamp": ["oklch(0.145 0 90)", "oklch(0.205 0 90)", "oklch(0.269 0 90)", "oklch(0.37 0 90)", "oklch(0.46 0 90)", "oklch(0.56 0 90)", "oklch(0.70 0 90)", "oklch(0.85 0 90)"] },
+      "ink-surface": { "role": "neutral", "displayName": "Ink Surface (dark)", "canonical": "oklch(0.269 0 90)", "tonalRamp": ["oklch(0.145 0 90)", "oklch(0.205 0 90)", "oklch(0.269 0 90)", "oklch(0.37 0 90)", "oklch(0.46 0 90)", "oklch(0.56 0 90)", "oklch(0.70 0 90)", "oklch(0.85 0 90)"] },
+      "success": { "role": "tertiary", "displayName": "Success Green", "canonical": "oklch(0.696 0.149 162.5)", "tonalRamp": ["oklch(0.30 0.06 162.5)", "oklch(0.40 0.09 162.5)", "oklch(0.50 0.11 162.5)", "oklch(0.58 0.13 162.5)", "oklch(0.66 0.145 162.5)", "oklch(0.696 0.149 162.5)", "oklch(0.80 0.12 162.5)", "oklch(0.92 0.05 162.5)"] },
+      "warning": { "role": "tertiary", "displayName": "Warning Amber", "canonical": "oklch(0.769 0.165 70.1)", "tonalRamp": ["oklch(0.35 0.07 70.1)", "oklch(0.46 0.10 70.1)", "oklch(0.57 0.13 70.1)", "oklch(0.66 0.15 70.1)", "oklch(0.72 0.16 70.1)", "oklch(0.769 0.165 70.1)", "oklch(0.85 0.13 70.1)", "oklch(0.93 0.06 70.1)"] },
+      "destructive": { "role": "tertiary", "displayName": "Destructive Red", "canonical": "oklch(0.637 0.208 25.3)", "tonalRamp": ["oklch(0.35 0.10 25.3)", "oklch(0.45 0.14 25.3)", "oklch(0.53 0.18 25.3)", "oklch(0.60 0.20 25.3)", "oklch(0.637 0.208 25.3)", "oklch(0.70 0.18 25.3)", "oklch(0.82 0.11 25.3)", "oklch(0.93 0.04 25.3)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Instrument Serif)", "purpose": "Reserved editorial display for rare landing brand moments. Loaded but not currently applied; never in product UI." },
+      "heading": { "displayName": "Heading (Geist / DM Sans)", "purpose": "Page and section titles. Medium weight (500), tight tracking." },
+      "title": { "displayName": "Title", "purpose": "Card titles, screen titles, list headers." },
+      "body": { "displayName": "Body", "purpose": "Default copy. Cap prose at 65-75ch." },
+      "label": { "displayName": "Label / Eyebrow", "purpose": "Field labels and at most one section eyebrow. Uppercase, tracked. Used sparingly." },
+      "mono": { "displayName": "Mono (Geist Mono)", "purpose": "Code blocks and technical values in the in-app tutorials." }
+    },
+    "shadows": [
+      { "name": "shadow-sm", "value": "0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1)", "purpose": "The default lift for floating chips, elevated cards, and dropdowns. The only shadow most surfaces ever use." },
+      { "name": "shadow-md", "value": "0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1)", "purpose": "Popovers and small menus." },
+      { "name": "shadow-lg", "value": "0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1)", "purpose": "Sheets and larger overlays. Used rarely." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default easing for state transitions and reveals. Exponential ease-out, no bounce." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Hover, focus, and press feedback." },
+      { "name": "duration-base", "value": "200ms", "purpose": "Most state transitions." },
+      { "name": "reveal-fade-in", "value": "fade-in 0.7s ease-out (opacity 0 to 1, translateY 8px to 0)", "purpose": "Section reveal on the landing. Must have a still fallback under prefers-reduced-motion." },
+      { "name": "ambient-orbit", "value": "spin 28s / 60s / 80s linear infinite", "purpose": "The hero orbit rings only. Extremely slow, masked, grayscale. The single piece of ambient decoration." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The default action. Ink-filled full pill with an inverse label. Mobile is a generous 52px pill; web is more compact.",
+      "html": "<button class=\"ds-btn-primary\">Continue</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 16px 24px; border: none; border-radius: 9999px; background: #0A0A0A; color: #FAFAFA; font-family: 'Geist Variable', system-ui, sans-serif; font-weight: 700; font-size: 17px; transition: background 150ms cubic-bezier(0.22,1,0.36,1), transform 150ms cubic-bezier(0.22,1,0.36,1); } .ds-btn-primary:hover { background: #1f1f1f; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(10,10,10,0.25); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Brand Button",
+      "kind": "button",
+      "refersTo": "button-brand",
+      "description": "The single highest-intent action (onboarding, paywall, get started). The one place the Spark yellow appears as a fill. At most one per screen.",
+      "html": "<button class=\"ds-btn-brand\">Get started</button>",
+      "css": ".ds-btn-brand { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 16px 24px; border: none; border-radius: 9999px; background: #FFE040; color: #1A1A1A; font-family: 'Geist Variable', system-ui, sans-serif; font-weight: 700; font-size: 17px; transition: background 150ms cubic-bezier(0.22,1,0.36,1), transform 150ms cubic-bezier(0.22,1,0.36,1); } .ds-btn-brand:hover { background: #F2D32B; } .ds-btn-brand:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(255,224,64,0.45); } .ds-btn-brand:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Lower-emphasis action. Surface-gray fill, ink label, modest 10px radius.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; padding: 14px 22px; border: none; border-radius: 10px; background: #F5F5F5; color: #0A0A0A; font-family: 'Geist Variable', system-ui, sans-serif; font-weight: 600; font-size: 15px; transition: background 150ms cubic-bezier(0.22,1,0.36,1); } .ds-btn-secondary:hover { background: #ECECEC; } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(10,10,10,0.18); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Quiet action on a paper surface. Hairline border, ink label, fills to surface gray on hover.",
+      "html": "<button class=\"ds-btn-outline\">Learn more</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; padding: 14px 22px; border: 1px solid #E5E5E5; border-radius: 10px; background: #FFFFFF; color: #0A0A0A; font-family: 'Geist Variable', system-ui, sans-serif; font-weight: 600; font-size: 15px; transition: background 150ms cubic-bezier(0.22,1,0.36,1); } .ds-btn-outline:hover { background: #F5F5F5; } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(10,10,10,0.18); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The default container. Flat by default: a 1px hairline (expressed as a 10% ink ring), white paper, 16px radius, no drop shadow at rest. Never nested.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Last sync</div><div class=\"ds-card-body\">All 142 moments are up to date across your devices.</div></div>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 6px; padding: 16px 20px; border-radius: 16px; background: #FFFFFF; box-shadow: inset 0 0 0 1px rgba(10,10,10,0.10); } .ds-card-title { font-family: 'Geist Variable', system-ui, sans-serif; font-weight: 500; font-size: 15px; color: #0A0A0A; } .ds-card-body { font-family: 'Geist Variable', system-ui, sans-serif; font-weight: 400; font-size: 15px; line-height: 1.5; color: #737373; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Single-line field. Hairline border, paper fill, 12px radius, 44px min height. Focus shifts the border to ink with a subtle ring; no heavy glow.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"What just happened?\" />",
+      "css": ".ds-input { width: 100%; min-height: 44px; padding: 12px 16px; box-sizing: border-box; border: 1px solid #E5E5E5; border-radius: 12px; background: #FFFFFF; color: #0A0A0A; font-family: 'Geist Variable', system-ui, sans-serif; font-size: 14px; line-height: 1.4; transition: border-color 150ms cubic-bezier(0.22,1,0.36,1), box-shadow 150ms cubic-bezier(0.22,1,0.36,1); } .ds-input::placeholder { color: #737373; } .ds-input:focus { outline: none; border-color: #0A0A0A; box-shadow: 0 0 0 3px rgba(10,10,10,0.12); }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Compact status or metadata chip. Surface fill, ink text, full-pill. Status variants may use a faint semantic wash.",
+      "html": "<span class=\"ds-badge\">Synced</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; background: #F5F5F5; color: #0A0A0A; font-family: 'Geist Variable', system-ui, sans-serif; font-weight: 600; font-size: 12px; }"
+    },
+    {
+      "name": "Section Eyebrow",
+      "kind": "custom",
+      "refersTo": "label",
+      "description": "The one uppercase tracked label style. For field labels and at most one section eyebrow. Never stacked above every section.",
+      "html": "<span class=\"ds-eyebrow\">Now on every device</span>",
+      "css": ".ds-eyebrow { font-family: 'Geist Variable', system-ui, sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: #737373; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Ink & Spark",
+    "overview": "NowStack is rendered almost entirely in ink and paper - near-black type on white, with gray for everything secondary - and lit by exactly one chromatic color: a confident yellow (#FFE040). The discipline is the design. A buyer reads this interface the way they read clean code: nothing is decorative, every weight and border is load-bearing, and the one spot of color means 'this is the thing to press.' It should feel like the considered, production version of an app a senior engineer already shipped once - calm, exact, and quietly expensive. The system carries one identity across four surfaces (the Expo mobile app, the web landing, the signed-in /app, and the /admin dashboard). They differ in density, not in language: the same ink-pill primary button, the same hairline-bordered card, the same yellow spark.",
+    "keyCharacteristics": [
+      "Monochrome foundation (ink #0A0A0A, paper #FFFFFF, gray #737373) plus a single yellow spark.",
+      "Primary actions are an ink-filled full pill; the highest-intent moment can wear the yellow.",
+      "Flat by default - depth is a 1px hairline, not a drop shadow.",
+      "Clean medium-weight sans (Geist on web, DM Sans on mobile); Geist Mono for code.",
+      "Modest radii (8-16px) and generous touch targets (>=44px), never over-rounded.",
+      "First-class light and dark themes; the mono palette inverts cleanly."
+    ],
+    "rules": [
+      { "name": "The Single Spark Rule", "body": "The yellow #FFE040 appears on <=10% of any screen - ideally one element. Its rarity is the entire point; two yellows on a screen is a bug. If a screen needs a second emphasis, use ink weight, not a second color.", "section": "colors" },
+      { "name": "The No-Indigo Rule", "body": "The default shadcn --primary (oklch 0.488 0.243 264) is a vestigial create-app default, not the brand. Never use indigo, violet, sky, or blue as a UI accent. Re-point --primary to Ink so /app and /admin match the landing.", "section": "colors" },
+      { "name": "The Medium-Weight Rule", "body": "Headings sit at 500 (medium), not 700/800. A refined product whispers; size and -0.02em tracking carry the hierarchy. Black, heavy display weights read as a louder, cheaper product.", "section": "typography" },
+      { "name": "The Sparing-Label Rule", "body": "The uppercase tracked Label style is for field labels and at most one section eyebrow - never a kicker stacked above every section.", "section": "typography" },
+      { "name": "The Hairline Rule", "body": "A resting card is a 1px line, not a shadow. If you reach for a drop shadow on a static surface, you've over-lifted it - use the hairline instead.", "section": "elevation" },
+      { "name": "The No-Ghost-Card Rule", "body": "Never combine a 1px border with a soft wide drop shadow (blur >= 16px) on the same element. Pick one: a hairline OR a defined shadow-sm (blur <= 8px).", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the palette monochrome and ration the yellow: ink, paper, and gray carry the page; #FFE040 marks the one thing to press.",
+      "Do make the primary CTA an ink-filled full pill, and reserve the yellow pill for the single highest-intent action on a screen.",
+      "Do convey depth with a 1px hairline (ring-1 ring-foreground/10 / border-border); add shadow-sm only to lift floating or interactive elements.",
+      "Do set headings at medium weight (500) with tight tracking (-0.02em); let size, not heaviness, carry hierarchy.",
+      "Do keep one identity across mobile, landing, /app, and /admin - same buttons, cards, and spark everywhere.",
+      "Do use #1A1A1A (Spark-Ink) for text on the yellow - it reads at 12:1.",
+      "Do honor prefers-reduced-motion: every reveal and the hero orbit need a still fallback."
+    ],
+    "donts": [
+      "Don't reintroduce the default shadcn indigo-violet accent, or any indigo / violet / sky / blue as a UI accent. Re-point --primary to Ink.",
+      "Don't use gradient orbs, blurred color blobs, or decorative glows as background filler.",
+      "Don't use glassmorphism as a default surface - translucency is allowed only for the occasional floating chip, never for primary panels.",
+      "Don't build the hero-metric template (giant number, tiny label, gradient accent, repeat).",
+      "Don't ship identical icon + heading + paragraph card grids repeated down a page.",
+      "Don't stack a tiny uppercase tracked eyebrow over every section.",
+      "Don't put white text on the yellow (1.06:1, unreadable) - always Spark-Ink.",
+      "Don't pair a 1px border with a wide soft shadow - the 'ghost card' is forbidden.",
+      "Don't over-round: cards top out at ~18px, non-pill buttons at 10px.",
+      "Don't use Muted-Ink (#737373) for primary body copy - it's the 4.5:1 floor; use Ink.",
+      "Don't let anything read as a free, auto-generated template. It's a $200 product; restraint is the proof."
+    ]
+  }
+}

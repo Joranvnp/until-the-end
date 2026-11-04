@@ -4,6 +4,15 @@ Jeu 2D pixel art façon Terraria, en un seul fichier `www/index.html` (HTML + Ja
 Emballé pour Android et iOS avec Capacitor (`android/`, `ios/`, `capacitor.config.json`) : voir `PUBLIER_PLAY_STORE.md` et `PUBLIER_APP_STORE.md`.
 Inspiré du projet LÖVE2D d'origine (`3 - Projets/until-the-end` sur Google Drive) et de son document `UNTIL_THE_END_Reference_Complète.md`.
 
+## Portage natif en cours (branche `expo-port`)
+Le jeu est porté en vraie app mobile sur le socle NowStack (Expo + React Native, Convex, better-auth, achats Apple/Google/Stripe).
+- `mobile-app/` (app Expo, identité dans `site-config.ts` : bundle `com.joranvnp.untiltheend`, version 2.0.0), `convex/` (backend), `web-app/` (site, landing et pages légales).
+- Règles du socle : lire `AGENTS.md` et `.agents/rules/*` avant de toucher ces dossiers. Couleurs uniquement dans `mobile-app/lib/theme.ts` (thème sombre unique).
+- Vérifier : `cd mobile-app && npx tsc --noEmit && npm run lint`.
+- `www/` reste la référence du gameplay jusqu'à la parité, puis Capacitor (`android/`, `ios/`) sera retiré.
+- Parcours façon jeu (fait le 2026-11-01) : écran de chargement (`components/ui/loading.tsx`, barre pixel + astuces), écran titre `app/onboarding/index.tsx` (Jouer en invité / S'inscrire / Se connecter, mode invité dans `lib/guest-store`), camp `app/(app)/(tabs)/home.tsx`, réglages et paywall en français. Composants jeu dans `components/game/` (GameButton, GamePanel, GameLogo, MenuBackdrop), polices Pixelify Sans et Press Start 2P. Les boutons Jouer/Défi/Boutique du camp ouvrent l'écran de jeu.
+- Jeu natif (fait le 2026-11-01, sans WebView) : `mobile-app/scripts/sync-game.mjs` recopie le script de `www/index.html` dans `game/engine.generated.js` (ne pas modifier à la main) ; relancer `cd mobile-app && npm run sync-game` après chaque changement du jeu web. Le moteur tourne sur des faux window/document/canvas : `game/canvas.ts` (Canvas2D → Skia, une SkPicture par frame), `game/env.ts` (stockage AsyncStorage, sons react-native-audio-api, tactile, haptique, partage), `game/runtime.ts` (une instance par lancement). Écran : `app/(app)/game.tsx`.
+
 ## Lancer
 Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx cap sync` (fait aussi par la CI, workflows Android et iOS). Pour les tests headless : `npx playwright` avec Chromium.
 

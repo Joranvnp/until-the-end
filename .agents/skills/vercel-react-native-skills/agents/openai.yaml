@@ -1,0 +1,10 @@
+interface:
+  display_name: "Vercel React Native Skills"
+  short_description: "Apply Vercels React Native and Expo performance practices"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $vercel-react-native-skills to apply Vercels React Native and Expo performance practices."
+
+policy:
+  allow_implicit_invocation: true

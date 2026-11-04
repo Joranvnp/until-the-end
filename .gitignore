@@ -1,5 +1,4 @@
-node_modules/
-.claude/
+# Jeu actuel (Capacitor, supprimé en fin de portage)
 # Android (généré / secrets)
 android/app/build/
 android/build/
@@ -8,3 +7,72 @@ android/local.properties
 *.keystore
 *.jks
 keystore.properties
+
+# Socle NowStack (Expo + Convex)
+# Dependencies
+node_modules/
+mobile-app/node_modules/
+web-app/node_modules/
+
+# Environment
+.env
+.env.local
+.env.production
+.env*.local
+
+# Expo
+.expo/
+mobile-app/.expo/
+mobile-app/ios/
+mobile-app/android/
+mobile-app/dist/
+expo-env.d.ts
+npm-debug.*
+
+# Build
+dist/
+web-app/dist/
+web-app/.vinxi/
+web-app/.output/
+web-app/.tanstack/
+web-build/
+
+# Generated store assets
+documents/store-screenshots/
+
+# Certificates / Secrets
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+mobile-app/credentials.json
+mobile-app/credentials/
+mobile-app/google-play-service-account.json
+
+# OS
+.DS_Store
+*.swp
+
+# Convex
+.convex/
+
+# Vercel
+.vercel
+web-app/.env.vercel-admin
+
+# Claude Code / agent session data
+.claude/tasks/
+.claude/teams/
+.claude/projects/
+
+# Agent-generated working artifacts
+.agents/output/
+.agents/artifacts/
+
+# Metro health check
+.metro-health-check*
+
+# start-all dev launcher logs
+logs/

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "templateNote": "Repo-neutral source template for planning Google Play release metadata. This is not a raw gpc workflow file; adapt it to gpc commands before use.",
+  "tooling": {
+    "defaultBinaryUpload": "gpc publish",
+    "metadataOptions": [
+      "gpc listings push for Play listing metadata",
+      "gpc listings images upload for Play screenshots and graphics",
+      "fastlane supply fallback if gpc is blocked"
+    ],
+    "auth": "Google Play service account supplied through gpc auth login, GPC_SERVICE_ACCOUNT, or untracked local runtime config"
+  },
+  "packageName": "com.nowstack.mobile",
+  "release": {
+    "track": "internal",
+    "status": "draft",
+    "userFraction": null,
+    "inAppUpdatePriority": 0,
+    "versionCodes": [
+      1
+    ],
+    "releaseNotes": [
+      {
+        "language": "fr-FR",
+        "text": "Première version mobile de NowStack. Remplacez cette note par le texte final validé avant upload."
+      },
+      {
+        "language": "en-US",
+        "text": "First NowStack mobile release. Replace this note with final approved copy before upload."
+      }
+    ]
+  },
+  "listing": {
+    "defaultLanguage": "fr-FR",
+    "localizations": {
+      "fr-FR": {
+        "title": "NowStack",
+        "shortDescription": "Votre assistant mobile",
+        "fullDescription": "NowStack vous aide à gérer vos workflows, votre compte et vos actions clés depuis Android. Remplacez ce texte par la description finale validée marketing/legal avant upload.",
+        "video": null
+      },
+      "en-US": {
+        "title": "NowStack",
+        "shortDescription": "Your mobile assistant",
+        "fullDescription": "NowStack helps you manage workflows, account actions, and mobile productivity from Android. Replace this placeholder with final approved copy before upload.",
+        "video": null
+      }
+    }
+  },
+  "graphics": {
+    "sourceManifest": "documents/store-screenshots/YYYY-MM-DD/manifest.json",
+    "phoneScreenshots": [
+      "documents/store-screenshots/YYYY-MM-DD/android/phone/fr-FR/01-onboarding.png",
+      "documents/store-screenshots/YYYY-MM-DD/android/phone/fr-FR/02-auth.png",
+      "documents/store-screenshots/YYYY-MM-DD/android/phone/fr-FR/03-home.png",
+      "documents/store-screenshots/YYYY-MM-DD/android/phone/fr-FR/04-core-feature.png",
+      "documents/store-screenshots/YYYY-MM-DD/android/phone/fr-FR/05-paywall.png",
+      "documents/store-screenshots/YYYY-MM-DD/android/phone/fr-FR/06-settings.png"
+    ],
+    "sevenInchScreenshots": [],
+    "tenInchScreenshots": [],
+    "featureGraphic": null,
+    "icon": null
+  },
+  "appAccess": {
+    "requiresLogin": false,
+    "instructions": "Use seeded demo mode; no real credentials required. Replace if production review needs a real reviewer account. Do not store real credentials in git."
+  },
+  "manualComplianceGates": [
+    "Developer account verification",
+    "Data Safety form",
+    "Content rating questionnaire",
+    "Target audience and ads declarations",
+    "Privacy policy verification",
+    "Final Play review approval"
+  ],
+  "containsSecrets": false
+}

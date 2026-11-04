@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Images"
+  short_description: "Generate and install NowStack Mobile onboarding backgrounds,"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $ns-images to generate and install NowStack Mobile onboarding backgrounds,."
+
+policy:
+  allow_implicit_invocation: false

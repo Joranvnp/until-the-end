@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "1.0",
+  "templateNote": "Repo-neutral source template for planning App Store metadata. This is not a raw asc workflow file; adapt it to the chosen asc commands before use.",
+  "tooling": {
+    "defaultBinaryUpload": "asc publish appstore",
+    "metadataOptions": [
+      "asc metadata/localization commands",
+      "asc screenshot/store media commands"
+    ],
+    "auth": "App Store Connect API key supplied through asc auth login or untracked local runtime config"
+  },
+  "app": {
+    "bundleId": "com.nowstack.mobile",
+    "sku": "nowstack-mobile-ios",
+    "primaryLocale": "fr-FR",
+    "name": "NowStack",
+    "subtitle": "Votre assistant mobile",
+    "category": "PRODUCTIVITY",
+    "contentRightsDeclaration": "DOES_NOT_USE_THIRD_PARTY_CONTENT"
+  },
+  "version": {
+    "versionString": "1.0.0",
+    "copyright": "2026 NowStack",
+    "releaseType": "MANUAL",
+    "phasedRelease": false
+  },
+  "localizations": {
+    "fr-FR": {
+      "name": "NowStack",
+      "subtitle": "Votre assistant mobile",
+      "promotionalText": "Préparez, pilotez et suivez votre activité depuis une app mobile moderne.",
+      "description": "NowStack vous aide à gérer vos workflows, votre compte et vos actions clés depuis iPhone. Remplacez ce texte par la description finale validée marketing/legal avant upload.",
+      "keywords": "productivité,workflow,assistant,mobile",
+      "whatsNew": "Première version mobile de NowStack.",
+      "supportUrl": "https://example.com/support",
+      "marketingUrl": "https://example.com",
+      "privacyPolicyUrl": "https://example.com/privacy"
+    },
+    "en-US": {
+      "name": "NowStack",
+      "subtitle": "Your mobile assistant",
+      "promotionalText": "Manage your key workflows from a modern mobile app.",
+      "description": "NowStack helps you manage workflows, account actions, and mobile productivity. Replace this placeholder with final approved copy before upload.",
+      "keywords": "productivity,workflow,assistant,mobile",
+      "whatsNew": "First NowStack mobile release.",
+      "supportUrl": "https://example.com/support",
+      "marketingUrl": "https://example.com",
+      "privacyPolicyUrl": "https://example.com/privacy"
+    }
+  },
+  "screenshots": {
+    "sourceManifest": "documents/store-screenshots/YYYY-MM-DD/manifest.json",
+    "iphone67": [
+      "documents/store-screenshots/YYYY-MM-DD/ios/iphone-67/fr-FR/01-onboarding.png",
+      "documents/store-screenshots/YYYY-MM-DD/ios/iphone-67/fr-FR/02-auth.png",
+      "documents/store-screenshots/YYYY-MM-DD/ios/iphone-67/fr-FR/03-home.png",
+      "documents/store-screenshots/YYYY-MM-DD/ios/iphone-67/fr-FR/04-core-feature.png",
+      "documents/store-screenshots/YYYY-MM-DD/ios/iphone-67/fr-FR/05-paywall.png",
+      "documents/store-screenshots/YYYY-MM-DD/ios/iphone-67/fr-FR/06-settings.png"
+    ],
+    "ipad129": []
+  },
+  "reviewInfo": {
+    "firstName": "App",
+    "lastName": "Reviewer",
+    "phoneNumber": "+33000000000",
+    "emailAddress": "support@example.com",
+    "demoAccountName": "Demo mode enabled in app; no real credentials required",
+    "demoAccountPassword": null,
+    "notes": "Use seeded demo mode. No production customer data is required. Replace contact placeholders before submission. Do not store real reviewer credentials in git."
+  },
+  "complianceManualGates": [
+    "App Privacy questionnaire",
+    "Export compliance",
+    "Age rating",
+    "IAP/product review if applicable",
+    "Final App Review submission approval"
+  ],
+  "containsSecrets": false
+}
