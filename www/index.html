@@ -2681,7 +2681,10 @@ function forgeUp(){if(time<fuT&&time>fuT-1)return fuV;fuT=time+.5;const tv=it=>i
 function recruitUI(k){const u=UNITS[k],b=bases[0],s=trocFor(b.storage,u.cost);if(s>=0&&recruit(0,k))toast(u.n+' recruté !'+trocNote(s),2,'#9fd0ff');else lackMsg(u.cost,b.storage,1)}
 // courbe des combattants bleus et rouges (écran de fin, menu pause) à partir de stats.hist
 function armyChart(hist,cx0,cy0,cw,CH){const mx=Math.max(4,...hist.map(h=>Math.max(h[0],h[1])));
-  ctx.fillStyle='#05050c';ctx.fillRect(cx0-2,cy0-2,cw+4,CH+4);txt('Armées',cx0,cy0,COL.dim,6,'left');txt(''+mx,cx0+cw,cy0,COL.dim,6,'right');
+  ctx.fillStyle='#05050c';ctx.fillRect(cx0-2,cy0-2,cw+4,CH+4);
+  // durée et repères de temps : la courbe ne disait pas quand la partie avait basculé (un point toutes les 10 s)
+  const dur=(hist.length-1)*10,step=dur>600?300:60;ctx.fillStyle='#e8ecff14';for(let t=step;t<dur;t+=step)ctx.fillRect(Math.round(cx0+t/dur*cw),cy0+8,1,CH-8);
+  const dl=dur>=60?Math.floor(dur/60)+' min':dur+' s',lt=tr('Armées')+' · '+dl,room=cw/2-uiWidth(tr('Toi'),6)-10;txt(uiWidth(lt,6)<=room?lt:uiWidth(tr('Armées'),6)<=room?tr('Armées'):dl,cx0,cy0,COL.dim,6,'left');txt(''+mx,cx0+cw,cy0,COL.dim,6,'right');
   for(const[k,col]of[[1,'#ff5a4a'],[0,'#6fb8ff']]){ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();hist.forEach((h,i)=>{const px=cx0+i/(hist.length-1)*cw,py=cy0+CH-1-h[k]/mx*(CH-9);i?ctx.lineTo(px,py):ctx.moveTo(px,py)});ctx.stroke()}
   const la=tr('Toi'),lb=tr('Ennemi'),lw=uiWidth(la,6);txt(la,cx0+cw/2-lw-6,cy0,'#6fb8ff',6,'left');txt(lb,cx0+cw/2+6,cy0,'#ff5a4a',6,'left')}
 // ligne d'effet d'un objet (info-bulles de la barre et du sac)
