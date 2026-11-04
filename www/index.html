@@ -2472,23 +2472,27 @@ function drawHUD(cx=cam.x,cy=cam.y){HL.waveDraw=null;HL.toastR=null;
   if(tipAt){const l=IT[tipAt.k].n+' : '+b0.storage[tipAt.k]+' en réserve',w=uiWidth(l,7)+8,x=clamp(tipAt.x-2,2,VW-w-2);box(x,tipAt.y,w,11,'rgba(5,5,12,.95)','#ffffff');txt(l,x+4,tipAt.y+2,COL.txt,7)}
   // bas de l'écran : barre d'objets + commandes (sur la même ligne si la place le permet)
   const sw=Math.min(isTouch?(VW>VH?28:34):24,Math.floor((VW-8)/9)),hy=VH-sw-4,hx=Math.round(VW/2-(9*sw)/2);
-  const btns=[['= Menu',34,()=>{paused=true;pauseHelp=false;sfx.place()},false],['◇ Base',40,()=>togglePanel('base'),panel==='base'],['+ Forge',40,()=>togglePanel('craft'),panel==='craft'],['▣ Sac',34,()=>togglePanel('inv'),panel==='inv'],['→ '+ORDERS[b0.order],52,toggleOrder,b0.order!=='defend']];
+  const btns=[['= Menu',34,()=>{paused=true;pauseHelp=false;sfx.place()},false],['◇ Base',40,()=>togglePanel('base'),panel==='base'],['+ Forge',40,()=>togglePanel('craft'),panel==='craft'],['▣ Sac',34,()=>togglePanel('inv'),panel==='inv'],['→ '+ORDERS[b0.order],52,orderBtn,b0.order!=='defend']];
   // raccourcis affichés : ceux de la manette quand elle est branchée (« BASE B » contredisait « B FRÉNÉSIE » : B est la compétence à la manette)
   if(pad.on){[' LT',' L3',' Y',' SEL'].forEach((k,i)=>{btns[i+1][0]+=k;btns[i+1][1]+=uiWidth(k)+2})}
   else if(!isTouch){btns[1][0]+=' B';btns[2][0]+=' C';btns[3][0]+=' E';btns[4][0]+=' R';btns.slice(1).forEach(b=>b[1]+=8)}
   const bw=btns.reduce((a,b)=>a+b[1]+3,0);const same=hx>=bw+12;
   // PC (souris + raccourcis clavier) : boutons plats de 15 px, la rangée masque moins le terrain sous le joueur
   const bh=isTouch?sw:Math.min(sw,15);
-  let bx=same?6:Math.round(VW/2-bw/2),by=same?hy-1+sw-2-bh+1:hy-bh-3;HL.left=Math.min(bx,hx);HL.right=Math.max(bx+bw,hx+9*sw);
-  for(const[l,wd,fn,on]of btns){button(bx,by,wd,bh,l,fn,true,on);if(fn===btns[1][2]&&tutHL('base'))drawTutRing(bx,by,wd,bh);if(fn===toggleOrder&&b0.order==='defend'&&time<(b0.readyHint||0))drawTutRing(bx,by,wd,bh);
+  let bx=same?6:Math.round(VW/2-bw/2),by=same?hy-1+sw-2-bh+1:hy-bh-3,obx=0,owd=0;HL.left=Math.min(bx,hx);HL.right=Math.max(bx+bw,hx+9*sw);
+  for(const[l,wd,fn,on]of btns){button(bx,by,wd,bh,l,fn,true,on);if(fn===btns[1][2]&&tutHL('base'))drawTutRing(bx,by,wd,bh);if(fn===orderBtn&&b0.order==='defend'&&time<(b0.readyHint||0))drawTutRing(bx,by,wd,bh);
     // alerte « rappelle ton armée » : le bouton Ordre clignote tant que l'armée est encore en Assaut
-    if(fn===toggleOrder&&b0.order==='attack'&&time<(b0.recallHint||0))drawTutRing(bx,by,wd,bh);
+    if(fn===orderBtn&&b0.order==='attack'&&time<(b0.recallHint||0))drawTutRing(bx,by,wd,bh);
     // petite étiquette « ordre » au-dessus : le bouton affiche l'ordre EN COURS de l'armée (pas une action à faire)
-    if(fn===toggleOrder){const l=tr('Ordre').toUpperCase(),w=uiWidth(l,7)+4;ctx.fillStyle='#05050cbb';ctx.fillRect(bx,by-10,w,9);txt(l,bx+2,by-9,COL.dim,7)}
+    if(fn===orderBtn){uiHits[uiHits.length-1].om=1;obx=bx;owd=wd;const l=tr('Ordre').toUpperCase(),w=uiWidth(l,7)+4;ctx.fillStyle='#05050cbb';ctx.fillRect(bx,by-10,w,9);txt(l,bx+2,by-9,COL.dim,7)}
     // pastille dorée sur Base quand une amélioration est payable (les générateurs remplissent la réserve sans qu'on regarde)
     if(fn===btns[1][2]&&panel!=='base'&&UPG.some(u=>b0.upg[u.id]<3&&canPay(b0.storage,upgCost(u,b0.upg[u.id])))){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2-r,2*r+2,2*r+2);ctx.fillStyle=COL.gold;ctx.fillRect(bx+wd-2*r-2,by-1-r,2*r,2*r)}
     // même pastille, verte, sur Forge quand une pioche ou une épée meilleure que celles du sac est fabricable (le ▲ de la forge)
     if(fn===btns[2][2]&&panel!=='craft'&&forgeUp()){const r=Math.sin(time*4)>0?3:2;ctx.fillStyle='#05050c';ctx.fillRect(bx+wd-2*r-3,by-2-r,2*r+2,2*r+2);ctx.fillStyle='#7dff9a';ctx.fillRect(bx+wd-2*r-2,by-1-r,2*r,2*r)}bx+=wd+3}
+  // menu des ordres au-dessus du bouton : choix direct, l'ordre en cours en surbrillance
+  if(orderMenu&&(paused||panel||state!=='play'||time>orderMenuT))orderMenu=false;
+  HL.om=null;if(orderMenu&&owd){const ow=Math.max(owd,uiWidth(tr('→ Défense'))+12),ox=Math.min(obx,VW-ow-4),oh=bh;let oy=by-12-3*(oh+3);HL.om={x:ox,y:oy,w:ow,h:3*(oh+3)};
+    for(const o of['attack','defend','follow']){button(ox,oy,ow,oh,ORDERS[o],()=>{orderMenu=false;if(o!==bases[0].order)setOrder(o);else sfx.place()},true,o===b0.order);uiHits[uiHits.length-1].om=1;oy+=oh+3}}
   for(let i=0;i<9;i++){const x=hx+i*sw,s=p.inv[i],on=i===p.sel;box(x,hy,sw-2,sw-2,'rgba(5,5,12,.9)',on?'#ffffff':'#e8ecff44');
     if(s){const bo=on&&time-selT<.2?-Math.round(Math.sin((time-selT)/.2*Math.PI)*3):0;const iz=sw>=34?32:sw>=27?24:16;ctx.drawImage(ICON[s.id],Math.round(x+(sw-2-iz)/2),Math.round(hy+(sw-2-iz)/2)+bo,iz,iz);if(s.n>1)qty(s.n,x+sw-4,hy+sw-11)}
     // numéro sur une pastille sombre : lisible même quand l'icône remplit la case (PC)
@@ -2601,7 +2605,11 @@ function watchAssault(dt){if((aslT-=dt)>0)return;aslT=1;const b=bases[0];
   if(!a.warned&&a.sent>=4&&n<=Math.max(1,Math.floor(a.sent*.35))){a.warned=true;toast('Ton assaut tourne mal : '+n+'/'+a.sent+' combattants debout. Repasse en Défense pour sauver les survivants.',5,'#ffb08a')}
   // armée anéantie : sans ça les recrues suivantes partaient seules, une à une, mourir devant le cœur rouge
   if(a.sent>=4&&n===0){b.order='defend';b.asl=null;toast('Ton armée est tombée : retour en Défense, les prochaines recrues gardent la base.',5,'#ffb08a');sfx.place()}}
-function toggleOrder(){const b=bases[0];b.order=b.order==='attack'?'defend':b.order==='defend'?'follow':'attack';if(b.order==='attack')stats.assaults=(stats.assaults||0)+1;
+// touche R / Select : on fait tourner les ordres ; bouton Ordre (doigt, souris) : menu des 3 ordres
+// (avant, passer de Suivre à Défense obligeait à traverser Assaut : l'armée s'élançait, avertissement, compteur d'assauts)
+function toggleOrder(){const b=bases[0];setOrder(b.order==='attack'?'defend':b.order==='defend'?'follow':'attack')}
+let orderMenu=false,orderMenuT=0;const orderBtn=()=>{orderMenu=!orderMenu;orderMenuT=time+6;sfx.place()};
+function setOrder(o){const b=bases[0];b.order=o;if(b.order==='attack')stats.assaults=(stats.assaults||0)+1;
   // assaut lancé avec une armée bien plus faible que ce qui garde le cœur rouge : on prévient (sans bloquer) au lieu de la laisser fondre en silence
   // mode Siège : le cœur rouge est invulnérable, l'assaut ne peut pas gagner la partie (avant : aucun mot, l'armée allait taper un cœur intouchable)
   if(b.order==='attack'&&surv){toast('Mode Siège : le cœur rouge est invulnérable. L\'assaut ne fait qu\'affaiblir l\'armée rouge, et ta base reste sans défense.',4.5,'#ffc27a');sfx.place();return}
@@ -2990,7 +2998,9 @@ function touchIcon(ic,size){
 }
 function drawTouch(){const R=panel&&panelRect;
   // un panneau ouvert qui mord sur un bouton (★ sur tablette) : bouton masqué et inactif plutôt qu'à moitié recouvert
-  touchBtns=touchLayout().filter(b=>!R||b.x>=R.x+R.w||b.x+b.w<=R.x||b.y>=R.y+R.h||b.y+b.h<=R.y);const p=player,sel=p&&p.inv[p.sel];
+  const out=(b,R)=>!R||b.x>=R.x+R.w||b.x+b.w<=R.x||b.y>=R.y+R.h||b.y+b.h<=R.y;
+  // menu des ordres ouvert : les boutons qu'il recouvre (★, ▲ en portrait) sont masqués le temps du choix
+  touchBtns=touchLayout().filter(b=>out(b,R)&&out(b,orderMenu&&HL.om));const p=player,sel=p&&p.inv[p.sel];
   ctx.save();ctx.imageSmoothingEnabled=false;
   for(const b of touchBtns){const x=Math.round(b.x),y=Math.round(b.y),W=Math.round(b.w),H=Math.round(b.h),pressed=touch[b.k];
     const action=b.k==='a',cut=action?Math.round(W*.29):3,edge=pressed?COL.ok:'#e8ecffcc';
@@ -3051,7 +3061,7 @@ function toLocal(ev){const r=cv.getBoundingClientRect(),d=cv.width/r.width;retur
 // au doigt, un appui qui frôle un bouton (à tol px près) l'active quand même : les petits boutons des panneaux restent faciles à toucher
 function uiHitAt(x,y,tol=0){for(let i=uiHits.length-1;i>=0;i--){const h=uiHits[i];if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h)return h}
   let best=null,bd=tol;for(const h of uiHits){const d=Math.hypot(Math.max(h.x-x,0,x-(h.x+h.w)),Math.max(h.y-y,0,y-(h.y+h.h)));if(d<=bd){bd=d;best=h}}return best}
-function uiClick(x,y,tol=0){const h=uiHitAt(x,y,tol);if(!h)return false;pressFx={...h,t:performance.now()};h.fn();holdRep=h.rep?{x,y,tol,next:performance.now()+450}:null;return true}
+function uiClick(x,y,tol=0){const h=uiHitAt(x,y,tol);if(!h)return false;if(orderMenu&&!h.om)orderMenu=false;pressFx={...h,t:performance.now()};h.fn();holdRep=h.rep?{x,y,tol,next:performance.now()+450}:null;return true}
 // bouton maintenu (Recruter) : il se répète tant que le doigt ou le clic reste dessus et que c'est payable
 // (avant, 10 recrues = 10 tapes ; s'arrête dès que la case n'est plus payable ou que le panneau se ferme)
 let holdRep=null;
