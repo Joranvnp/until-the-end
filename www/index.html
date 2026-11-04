@@ -2266,7 +2266,10 @@ const UI_ACCENTS={É:['001','010'],È:['100','010'],Ê:['010','101'],Ë:['101','
 for(const [c,rows]of Object.entries(UI_ACCENTS))UI_GLYPHS[c]=[...rows,...UI_GLYPHS[c.normalize('NFD')[0]]];
 UI_GLYPHS['Ç']=[...UI_GLYPHS.C,'001','010'];
 UI_GLYPHS['Œ']=['01111','10100','10110','10100','01111'];
-function uiLetters(s){return [...String(tr(s)).toUpperCase().normalize('NFC')].map(c=>UI_GLYPHS[c]?c:c.normalize('NFD').replace(/[\u0300-\u036f]/g,'')).join('')}
+// caches de texte : le HUD retraduisait et redessinait chaque lettre pixel par pixel à chaque image (~3 ms par image, plus que le monde)
+const ULC=new Map(),TXI=new Map();
+function uiLetters(s){const k=(PROF.set.en?'1':'0')+s;let v=ULC.get(k);if(v!==undefined)return v;
+  v=[...String(tr(s)).toUpperCase().normalize('NFC')].map(c=>UI_GLYPHS[c]?c:c.normalize('NFD').replace(/[\u0300-\u036f]/g,'')).join('');if(ULC.size>3000)ULC.clear();ULC.set(k,v);return v}
 function uiScale(size){return Math.max(1,Math.floor(size/7))}
 function uiWidth(s,size=8){const z=uiScale(size);return Math.max(0,[...uiLetters(s)].reduce((n,c)=>n+(UI_GLYPHS[c]||UI_GLYPHS['?'])[0].length+1,0)-1)*z}
 // niveau sur 3 : étoiles pleines en couleur, étoiles restantes en gris (le glyphe ☆ creux était illisible en 5 px)
@@ -2274,8 +2277,15 @@ function stars(l,x,y,col,size,align){const f='★'.repeat(l);if(align==='right')
 function uiFit(s,width,size=8){s=tr(s);if(uiWidth(s,size)<=width)return s;let t=String(s);while(t&&uiWidth(t+'…',size)>width)t=t.slice(0,-1);return t+'…'}
 // TXC : toile cible (le HUD par défaut, la couche monde pour les nombres flottants)
 let TXC=null;
-function txt(s,x,y,col=COL.txt,size=8,align='left'){const g=TXC||ctx,z=uiScale(size),width=uiWidth(s,size);x=Math.round(x-(align==='center'?width/2:align==='right'?width:0));y=Math.round(y);g.fillStyle=col;
-  for(const c of uiLetters(s)){const glyph=UI_GLYPHS[c]||UI_GLYPHS['?'];for(let j=0;j<glyph.length;j++)for(let i=0;i<glyph[j].length;i++)if(glyph[j][i]==='1')g.fillRect(x+i*z,y+(j-(UI_ACCENTS[c]?2:0))*z,z,z);x+=(glyph[0].length+1)*z}}
+function txt(s,x,y,col=COL.txt,size=8,align='left'){const g=TXC||ctx,z=uiScale(size),width=uiWidth(s,size);x=Math.round(x-(align==='center'?width/2:align==='right'?width:0));y=Math.round(y);
+  // image du texte mise en cache (lettres, couleur, taille) : un drawImage au lieu de centaines de fillRect
+  const L=uiLetters(s);if(typeof col==='string'&&width>0){const k=L+'|'+col+'|'+z;let im=TXI.get(k);
+    if(!im){im=document.createElement('canvas');im.width=width+z;im.height=11*z;const q=im.getContext('2d');q.fillStyle=col;let cx=0;
+      for(const c of L){const glyph=UI_GLYPHS[c]||UI_GLYPHS['?'];for(let j=0;j<glyph.length;j++)for(let i=0;i<glyph[j].length;i++)if(glyph[j][i]==='1')q.fillRect(cx+i*z,(j+3-(UI_ACCENTS[c]?2:0))*z,z,z);cx+=(glyph[0].length+1)*z}
+      if(TXI.size>1500)TXI.clear();TXI.set(k,im)}
+    g.drawImage(im,x,y-3*z);return}
+  g.fillStyle=col;
+  for(const c of L){const glyph=UI_GLYPHS[c]||UI_GLYPHS['?'];for(let j=0;j<glyph.length;j++)for(let i=0;i<glyph[j].length;i++)if(glyph[j][i]==='1')g.fillRect(x+i*z,y+(j-(UI_ACCENTS[c]?2:0))*z,z,z);x+=(glyph[0].length+1)*z}}
 // quantité d'objet : chiffres détourés de noir pour rester lisibles par-dessus l'icône
 function qty(n,x,y){const s=''+n;for(const[dx,dy]of[[-1,0],[1,0],[0,-1],[0,1]])txt(s,x+dx,y+dy,'#05050c',7,'right');txt(s,x,y,COL.txt,7,'right')}
 function wtxt(g,s,x,y,col,size=7,align='center'){TXC=g;txt(s,x+1,y+1,'#05050c',size,align);txt(s,x,y,col,size,align);TXC=null}
