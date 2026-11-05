@@ -1,62 +1,56 @@
 import { Pressable, View, type PressableProps } from 'react-native';
 import { Text } from '@/components/ui/text';
+import { PixelFrame } from '@/components/game/pixel-frame';
 import { cva, type VariantProps } from '@/lib/cva';
 import { cn } from '@/lib/utils';
 
-// Square pixel panel button, like the web menu: dark fill, thin light edge,
-// gold "hero" variant for the main action, red for the dangerous ones.
-const panelVariants = cva(
-  'w-full flex-row items-center border-2 active:opacity-80 disabled:opacity-50',
-  {
-    variants: {
-      variant: {
-        hero: 'border-primary bg-hero',
-        panel: 'border-edge bg-panel',
-        ally: 'border-ally bg-panel',
-        danger: 'border-destructive bg-panel',
-      },
-      size: {
-        lg: 'min-h-[64px] px-5 py-3',
-        md: 'min-h-[52px] px-4 py-2',
-      },
+// Content layout per size; the frame itself (outline, bevel, shadow) is PixelFrame.
+const contentVariants = cva('flex-row items-center', {
+  variants: {
+    variant: { hero: '', panel: '', ally: '', danger: '' },
+    size: {
+      lg: 'min-h-[64px] px-6 py-3',
+      md: 'min-h-[52px] px-5 py-2',
     },
-    defaultVariants: { variant: 'panel', size: 'md' },
-  }
-);
+  },
+  defaultVariants: { variant: 'panel', size: 'md' },
+});
 
 const labelVariants = cva('font-pixel-bold uppercase tracking-[2px]', {
   variants: {
     variant: {
-      hero: 'text-primary',
+      hero: 'text-hero-foreground',
       panel: 'text-foreground',
       ally: 'text-foreground',
-      danger: 'text-destructive',
+      danger: 'text-foreground',
     },
     size: { lg: 'text-[22px]', md: 'text-[17px]' },
   },
   defaultVariants: { variant: 'panel', size: 'md' },
 });
 
-const accentVariants = cva('mr-3 w-[4px] self-stretch', {
+const sublabelVariants = cva('mt-0.5 font-pixel text-[13px]', {
   variants: {
     variant: {
-      hero: 'bg-primary',
-      panel: 'bg-edge',
-      ally: 'bg-ally',
-      danger: 'bg-destructive',
+      hero: 'text-hero-foreground opacity-75',
+      panel: 'text-muted-foreground',
+      ally: 'text-foreground opacity-75',
+      danger: 'text-foreground opacity-75',
     },
   },
   defaultVariants: { variant: 'panel' },
 });
 
 export type GameButtonProps = Omit<PressableProps, 'children'> &
-  VariantProps<typeof panelVariants> & {
+  VariantProps<typeof contentVariants> & {
     label: string;
     sublabel?: string;
     icon?: React.ReactNode;
     className?: string;
   };
 
+// Pixel-art menu button: gold "hero" for the main action, blue for the player's
+// side, red for dangerous ones, slate for the rest.
 export function GameButton({
   label,
   sublabel,
@@ -64,21 +58,28 @@ export function GameButton({
   variant,
   size,
   className,
+  disabled,
   ...props
 }: GameButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      className={cn(panelVariants({ variant, size }), className)}
+      accessibilityState={{ disabled: !!disabled }}
+      disabled={disabled}
+      className={cn('w-full', disabled && 'opacity-50', className)}
       {...props}>
-      <View className={accentVariants({ variant })} />
-      {icon && <View className="mr-3">{icon}</View>}
-      <View className="flex-1">
-        <Text className={labelVariants({ variant, size })}>{label}</Text>
-        {sublabel && (
-          <Text className="mt-0.5 font-pixel text-[13px] text-muted-foreground">{sublabel}</Text>
-        )}
-      </View>
+      {({ pressed }) => (
+        <PixelFrame
+          tone={variant ?? 'panel'}
+          pressed={pressed}
+          contentClassName={contentVariants({ variant, size })}>
+          {icon && <View className="mr-3">{icon}</View>}
+          <View className="flex-1">
+            <Text className={labelVariants({ variant, size })}>{label}</Text>
+            {sublabel && <Text className={sublabelVariants({ variant })}>{sublabel}</Text>}
+          </View>
+        </PixelFrame>
+      )}
     </Pressable>
   );
 }

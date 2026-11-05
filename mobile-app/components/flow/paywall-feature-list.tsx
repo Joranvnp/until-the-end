@@ -3,6 +3,8 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { SiteConfig } from '@site-config';
 import { Text } from '@/components/ui/text';
+import { GamePanel } from '@/components/game/game-panel';
+import { PixelFrame } from '@/components/game/pixel-frame';
 import { useTheme } from '@/lib/theme-store';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
@@ -30,19 +32,17 @@ export function PaywallFeatureList() {
   return (
     <Animated.View entering={FadeInDown.duration(400).delay(200)} className="gap-3">
       {FEATURES.map((feature) => (
-        <View
-          key={feature.title}
-          className="flex-row items-center gap-4 border-2 border-edge bg-panel p-3">
-          <View className="size-11 items-center justify-center border-2 border-primary bg-hero">
-            <Ionicons name={feature.icon} size={20} color={colors.primary} />
-          </View>
+        <GamePanel key={feature.title} contentClassName="flex-row items-center gap-4 p-3">
+          <PixelFrame tone="hero" contentClassName="size-11 items-center justify-center">
+            <Ionicons name={feature.icon} size={20} color={colors['hero-foreground']} />
+          </PixelFrame>
           <View className="flex-1">
             <Text className="font-pixel-bold text-[16px] uppercase tracking-[1px] text-foreground">
               {feature.title}
             </Text>
             <Text className="font-sans text-[14px] text-muted-foreground">{feature.subtitle}</Text>
           </View>
-        </View>
+        </GamePanel>
       ))}
     </Animated.View>
   );

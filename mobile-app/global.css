@@ -38,4 +38,18 @@
   --color-edge: #8a8eaa;
   --color-hero: #2b2110;
   --color-ally: #4f9df5;
+  --color-ink: #06060f;
+  --color-hero-fill: #f2b941;
+  --color-hero-light: #ffe680;
+  --color-hero-dark: #a8661c;
+  --color-hero-foreground: #2a1606;
+  --color-btn-fill: #1e1c38;
+  --color-btn-light: #3c3966;
+  --color-btn-dark: #0f0e20;
+  --color-ally-fill: #1d4785;
+  --color-ally-light: #4f9df5;
+  --color-ally-dark: #0f2750;
+  --color-danger-fill: #5c1b20;
+  --color-danger-light: #e5534b;
+  --color-danger-dark: #2e0b0e;
 }

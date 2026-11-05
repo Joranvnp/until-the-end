@@ -1,6 +1,19 @@
-import { View, type ViewProps } from 'react-native';
+import { PixelFrame } from '@/components/game/pixel-frame';
 import { cn } from '@/lib/utils';
 
-export function GamePanel({ className, ...props }: ViewProps & { className?: string }) {
-  return <View className={cn('border-2 border-edge bg-panel', className)} {...props} />;
+type GamePanelProps = {
+  /** Layout of the panel in its parent (width, flex). */
+  className?: string;
+  /** Spacing inside the frame. */
+  contentClassName?: string;
+  children: React.ReactNode;
+};
+
+// Translucent pixel window for grouping menu content (settings sections, title card).
+export function GamePanel({ className, contentClassName, children }: GamePanelProps) {
+  return (
+    <PixelFrame tone="window" className={className} contentClassName={cn('grow', contentClassName)}>
+      {children}
+    </PixelFrame>
+  );
 }

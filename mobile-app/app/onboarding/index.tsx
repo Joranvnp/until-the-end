@@ -82,7 +82,7 @@ export default function TitleScreen() {
                 key={view}
                 entering={FadeInDown.duration(300)}
                 className="w-full min-w-[300px] max-w-[440px] flex-1">
-                <GamePanel className="p-5">
+                <GamePanel contentClassName="p-5">
                   <Text className="mb-1 font-pixel-bold text-[20px] uppercase tracking-[2px] text-foreground">
                     {view === 'signup' ? "S'inscrire" : 'Se connecter'}
                   </Text>

@@ -57,6 +57,22 @@ export type ThemeColors = {
   edge: string;
   hero: string;
   ally: string;
+  // Pixel frames (components/game/pixel-frame.tsx): ink outline, then per tone a
+  // fill with a light top bevel and a dark bottom bevel.
+  ink: string;
+  'hero-fill': string;
+  'hero-light': string;
+  'hero-dark': string;
+  'hero-foreground': string;
+  'btn-fill': string;
+  'btn-light': string;
+  'btn-dark': string;
+  'ally-fill': string;
+  'ally-light': string;
+  'ally-dark': string;
+  'danger-fill': string;
+  'danger-light': string;
+  'danger-dark': string;
 };
 
 export const themes: Record<ColorScheme, ThemeColors> = {
@@ -93,6 +109,20 @@ export const themes: Record<ColorScheme, ThemeColors> = {
     edge: '#E5E5E5',
     hero: '#FFF7D6',
     ally: '#2563EB',
+    ink: '#06060F',
+    'hero-fill': '#F2B941',
+    'hero-light': '#FFE680',
+    'hero-dark': '#A8661C',
+    'hero-foreground': '#2A1606',
+    'btn-fill': '#1E1C38',
+    'btn-light': '#3C3966',
+    'btn-dark': '#0F0E20',
+    'ally-fill': '#1D4785',
+    'ally-light': '#4F9DF5',
+    'ally-dark': '#0F2750',
+    'danger-fill': '#5C1B20',
+    'danger-light': '#E5534B',
+    'danger-dark': '#2E0B0E',
   },
   dark: {
     background: '#0B0A16',
@@ -126,6 +156,20 @@ export const themes: Record<ColorScheme, ThemeColors> = {
     edge: '#8A8EAA',
     hero: '#2B2110',
     ally: '#4F9DF5',
+    ink: '#06060F',
+    'hero-fill': '#F2B941',
+    'hero-light': '#FFE680',
+    'hero-dark': '#A8661C',
+    'hero-foreground': '#2A1606',
+    'btn-fill': '#1E1C38',
+    'btn-light': '#3C3966',
+    'btn-dark': '#0F0E20',
+    'ally-fill': '#1D4785',
+    'ally-light': '#4F9DF5',
+    'ally-dark': '#0F2750',
+    'danger-fill': '#5C1B20',
+    'danger-light': '#E5534B',
+    'danger-dark': '#2E0B0E',
   },
 };
 

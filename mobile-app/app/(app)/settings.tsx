@@ -146,7 +146,7 @@ export default function SettingsScreen() {
           ...sidePadding,
         }}>
         <View className="flex-row flex-wrap gap-6">
-          <GamePanel className="min-w-[300px] flex-1 p-4">
+          <GamePanel className="min-w-[300px] flex-1" contentClassName="p-4">
             <SectionTitle>Compte</SectionTitle>
             <AccountSection />
 
@@ -173,7 +173,7 @@ export default function SettingsScreen() {
             )}
           </GamePanel>
 
-          <GamePanel className="min-w-[300px] flex-1 p-4">
+          <GamePanel className="min-w-[300px] flex-1" contentClassName="p-4">
             <SectionTitle>Aide</SectionTitle>
             <HelpSection />
           </GamePanel>
