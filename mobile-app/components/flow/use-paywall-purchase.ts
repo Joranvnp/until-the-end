@@ -25,12 +25,12 @@ export function usePaywallPurchase() {
 
   useEffect(() => {
     if (shouldSkipDevPaywall) {
-      router.replace('/(app)/(tabs)/home');
+      router.replace('/(app)/home');
     }
   }, [router, shouldSkipDevPaywall]);
 
   const navigateToApp = () => {
-    router.replace('/(app)/(tabs)/home');
+    router.replace('/(app)/home');
   };
 
   const closePaywall = () => {
@@ -39,7 +39,7 @@ export function usePaywallPurchase() {
       return;
     }
 
-    router.replace(isAuthenticated ? '/(app)/(tabs)/home' : '/onboarding');
+    router.replace(isAuthenticated ? '/(app)/home' : '/onboarding');
   };
 
   const handleDevPurchase = async () => {

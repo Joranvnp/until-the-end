@@ -71,7 +71,7 @@ export function useSignInFlow(onSuccess?: () => void) {
       if (onSuccess) {
         onSuccess();
       } else {
-        router.replace('/(app)/(tabs)/home');
+        router.replace('/(app)/home');
       }
     }
   }, [waitingForAuth, isAuthenticated, router, onSuccess]);

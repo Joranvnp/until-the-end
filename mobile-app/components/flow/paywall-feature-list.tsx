@@ -28,7 +28,7 @@ const FEATURES: { icon: IoniconName; title: string; subtitle: string }[] = [
 export function PaywallFeatureList() {
   const { colors } = useTheme();
   return (
-    <Animated.View entering={FadeInDown.duration(400).delay(200)} className="mt-10 gap-4">
+    <Animated.View entering={FadeInDown.duration(400).delay(200)} className="gap-3">
       {FEATURES.map((feature) => (
         <View
           key={feature.title}

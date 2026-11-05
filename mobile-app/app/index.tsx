@@ -43,7 +43,7 @@ export default function Index() {
   }
 
   if (isStoreDemo) {
-    return <Redirect href="/(app)/(tabs)/home" />;
+    return <Redirect href="/(app)/home" />;
   }
 
   if (isAuthenticated) {
@@ -51,11 +51,11 @@ export default function Index() {
       return <Redirect href="/(flow)/paywall" />;
     }
 
-    return <Redirect href="/(app)/(tabs)/home" />;
+    return <Redirect href="/(app)/home" />;
   }
 
   if (isGuest) {
-    return <Redirect href="/(app)/(tabs)/home" />;
+    return <Redirect href="/(app)/home" />;
   }
 
   return <Redirect href="/onboarding" />;

@@ -113,7 +113,7 @@ export default function AdminScreen() {
           </View>
           <Button
             variant="secondary"
-            onPress={() => router.replace('/(app)/(tabs)/settings' as never)}
+            onPress={() => router.replace('/(app)/settings' as never)}
             className="mt-8">
             Retour aux réglages
           </Button>

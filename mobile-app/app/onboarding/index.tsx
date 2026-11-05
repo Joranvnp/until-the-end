@@ -14,7 +14,7 @@ import { useGuest } from '@/lib/guest-store';
 
 type TitleView = 'menu' | 'signin' | 'signup';
 
-// Title screen: the menu art and logo, then the three ways in.
+// Title screen in landscape: logo on the left, the three ways in (or the form) on the right.
 export default function TitleScreen() {
   const router = useRouter();
   const { enterGuest, leaveGuest } = useGuest();
@@ -22,12 +22,12 @@ export default function TitleScreen() {
 
   const playAsGuest = async () => {
     await enterGuest();
-    router.replace('/(app)/(tabs)/home');
+    router.replace('/(app)/home');
   };
 
   const onSignedIn = () => {
     void leaveGuest();
-    router.replace('/(app)/(tabs)/home');
+    router.replace('/(app)/home');
   };
 
   return (
@@ -38,10 +38,12 @@ export default function TitleScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <SafeAreaView className="flex-1">
           <ScrollView
-            contentContainerClassName="flex-grow justify-between px-6 py-8"
+            contentContainerClassName="flex-grow flex-row flex-wrap items-center justify-center gap-x-10 gap-y-6 px-6 py-6"
             keyboardShouldPersistTaps="handled"
             bounces={false}>
-            <Animated.View entering={FadeIn.duration(600)} className="mt-6 items-center">
+            <Animated.View
+              entering={FadeIn.duration(600)}
+              className="min-w-[280px] flex-1 items-center">
               <GameLogo size={view === 'menu' ? 'lg' : 'md'} tagline={view === 'menu'} />
             </Animated.View>
 
@@ -49,7 +51,7 @@ export default function TitleScreen() {
               <Animated.View
                 key="menu"
                 entering={FadeInDown.duration(400).delay(150)}
-                className="mt-10 w-full max-w-[420px] self-center">
+                className="w-full min-w-[280px] max-w-[400px] flex-1">
                 <GameButton
                   variant="hero"
                   size="lg"
@@ -79,7 +81,7 @@ export default function TitleScreen() {
               <Animated.View
                 key={view}
                 entering={FadeInDown.duration(300)}
-                className="mt-8 w-full max-w-[420px] self-center">
+                className="w-full min-w-[300px] max-w-[440px] flex-1">
                 <GamePanel className="p-5">
                   <Text className="mb-1 font-pixel-bold text-[20px] uppercase tracking-[2px] text-foreground">
                     {view === 'signup' ? "S'inscrire" : 'Se connecter'}

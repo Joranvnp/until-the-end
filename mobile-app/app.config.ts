@@ -64,8 +64,8 @@ const expoConfig = (ctx) => ({
     typedRoutes: true,
     tsconfigPaths: true,
   },
-  // Le jeu se joue en portrait comme en paysage, sur téléphone et tablette.
-  orientation: 'default',
+  // Le jeu se joue en paysage uniquement, comme Stardew Valley ou Terraria sur mobile.
+  orientation: 'landscape',
   icon: './assets/icon.png',
   // Thème unique sombre : le jeu n'a pas de version claire.
   userInterfaceStyle: 'dark',
@@ -77,7 +77,8 @@ const expoConfig = (ctx) => ({
   assetBundlePatterns: ['**/*'],
   ios: {
     supportsTablet: true,
-    requireFullScreen: false,
+    // Paysage seul : iPad exige le plein écran (pas de Split View).
+    requireFullScreen: true,
     bundleIdentifier: SiteConfig.bundleId,
     usesAppleSignIn: true,
     infoPlist: {
