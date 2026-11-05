@@ -23,7 +23,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <MenuBackdrop dim={0.35} />
+      <MenuBackdrop art="camp" dim={0.4} />
 
       <View
         className="absolute z-10 flex-row gap-2"

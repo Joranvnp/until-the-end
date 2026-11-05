@@ -9,12 +9,18 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '@/lib/theme-store';
 
-const MENU_ART = require('@/assets/art/menu.png');
+// Both illustrations are 960x540 (see docs/direction-artistique.md).
+const ARTS = {
+  menu: require('@/assets/art/menu.png'),
+  camp: require('@/assets/art/camp.png'),
+};
 const ART_RATIO = 960 / 540;
 
-// The title illustration from the web game (www/art/menu.png), slowly panning like
-// `menuBackdrop()` does there, with a night veil so text stays readable.
-export function MenuBackdrop({ dim = 0.35 }: { dim?: number }) {
+type MenuBackdropProps = { art?: keyof typeof ARTS; dim?: number };
+
+// A menu illustration slowly panning like `menuBackdrop()` in the web game, with a
+// night veil so text stays readable.
+export function MenuBackdrop({ art = 'menu', dim = 0.35 }: MenuBackdropProps) {
   const { width, height } = useWindowDimensions();
   const { colors } = useTheme();
   const artHeight = height * 1.08;
@@ -37,7 +43,7 @@ export function MenuBackdrop({ dim = 0.35 }: { dim?: number }) {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <Animated.Image
-        source={MENU_ART}
+        source={ARTS[art]}
         resizeMode="cover"
         style={[
           {

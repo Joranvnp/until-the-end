@@ -33,6 +33,7 @@ Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx ca
 
 ## Visuels
 `npm run art` régénère icônes, écran de démarrage et visuels Play Store (`tools/gen-art.mjs`), puis `npm run assets` pour Android et iOS (captures App Store dans `store/ios/`, anglais dans `store/en/`).
+Assets générés par IA (Higgsfield : fonds de menu, logo, concepts, sprites) : suivre `docs/direction-artistique.md` (palette, STYLE FORMULA figée, réduction au plus proche voisin, coût validé avant toute génération).
 
 ## Sons
 `npm run audio` régénère `www/audio/*.mp3` (synthèse DSP + ffmpeg, `tools/gen-audio.mjs`). Le moteur (`loadSounds`/`playSnd`/`music`) retombe sur la synthèse `synth` si un fichier manque. Menu : illustration `www/art/menu.png`.
