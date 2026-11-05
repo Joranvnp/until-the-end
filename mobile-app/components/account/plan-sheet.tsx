@@ -40,7 +40,7 @@ export function PlanSheet({ visible, loading, onClose, onPurchase }: PlanSheetPr
         <BlurView intensity={28} tint={resolved} style={StyleSheet.absoluteFill} />
         <View className="bg-black/10" style={StyleSheet.absoluteFill} />
         <Pressable
-          accessibilityLabel="Close plan sheet"
+          accessibilityLabel="Fermer les offres"
           accessibilityRole="button"
           disabled={loading}
           onPress={onClose}
@@ -63,12 +63,12 @@ export function PlanSheet({ visible, loading, onClose, onPurchase }: PlanSheetPr
             ],
           }}>
           <View className="mb-2 flex-row items-center justify-between px-6">
-            <Text className="font-pixel-bold text-[20px] text-foreground">Plan</Text>
+            <Text className="font-pixel-bold text-[20px] text-foreground">Offre</Text>
             <Button
               variant="secondary"
               size="icon"
               disabled={loading}
-              accessibilityLabel="Close"
+              accessibilityLabel="Fermer"
               onPress={onClose}
               className="rounded-none">
               <Ionicons name="close" size={18} color={colors['muted-foreground']} />
@@ -80,17 +80,17 @@ export function PlanSheet({ visible, loading, onClose, onPurchase }: PlanSheetPr
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 18 }}>
             <Text className="mt-3 font-pixel-bold text-[30px] leading-[36px] text-foreground">
-              Lifetime Access
+              Jeu complet à vie
             </Text>
             <Text className="mt-2 text-[15px] leading-6 text-muted-foreground">
-              Upgrade once and keep access without a subscription.
+              Débloque tout le jeu une fois pour toutes, sans abonnement.
             </Text>
 
             <View className="mt-7 flex-row items-end gap-1">
               <Text className="font-pixel-bold text-[44px] leading-[48px] text-foreground">
                 {SiteConfig.payment.priceDisplay}
               </Text>
-              <Text className="pb-2 text-[14px] text-muted-foreground">one-time</Text>
+              <Text className="pb-2 text-[14px] text-muted-foreground">une seule fois</Text>
             </View>
 
             <View className="mt-7 gap-5">
@@ -115,14 +115,14 @@ export function PlanSheet({ visible, loading, onClose, onPurchase }: PlanSheetPr
           <View className="px-6 pt-2">
             <Button
               disabled={loading}
-              accessibilityLabel={loading ? 'Unlocking lifetime access' : 'Unlock lifetime access'}
+              accessibilityLabel={loading ? 'Déblocage du jeu complet' : 'Débloquer le jeu complet'}
               onPress={() => void onPurchase()}
               className="rounded-none">
               {loading ? (
                 <ActivityIndicator color={colors['primary-foreground']} />
               ) : (
                 <Text className="font-pixel-bold text-[17px] text-primary-foreground">
-                  Unlock lifetime access
+                  Débloquer le jeu complet
                 </Text>
               )}
             </Button>

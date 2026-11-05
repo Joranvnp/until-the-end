@@ -52,7 +52,7 @@ export function ChangeNameSheet({
   const submitName = async () => {
     const trimmedName = draftName.trim();
     if (!trimmedName) {
-      onErrorChange('Name is required.');
+      onErrorChange('Choisis un pseudo.');
       return;
     }
 
@@ -73,7 +73,7 @@ export function ChangeNameSheet({
           <BlurView intensity={28} tint={resolved} style={StyleSheet.absoluteFill} />
           <View className="bg-black/10" style={StyleSheet.absoluteFill} />
           <Pressable
-            accessibilityLabel="Close change name sheet"
+            accessibilityLabel="Fermer"
             accessibilityRole="button"
             disabled={saving}
             onPress={onClose}
@@ -95,12 +95,12 @@ export function ChangeNameSheet({
               ],
             }}>
             <View className="mb-5 flex-row items-center justify-between">
-              <Text className="font-pixel-bold text-[20px] text-foreground">Change name</Text>
+              <Text className="font-pixel-bold text-[20px] text-foreground">Changer de pseudo</Text>
               <Button
                 variant="secondary"
                 size="icon"
                 disabled={saving}
-                accessibilityLabel="Close"
+                accessibilityLabel="Fermer"
                 onPress={onClose}
                 className="rounded-none">
                 <Ionicons name="close" size={18} color={colors['muted-foreground']} />
@@ -108,7 +108,7 @@ export function ChangeNameSheet({
             </View>
 
             <Input
-              label="Name"
+              label="Pseudo"
               value={draftName}
               onChangeText={(text) => {
                 setDraftName(text);
@@ -127,14 +127,14 @@ export function ChangeNameSheet({
             <View className="mt-5">
               <Button
                 disabled={saving}
-                accessibilityLabel={saving ? 'Changing name' : 'Change the name'}
+                accessibilityLabel={saving ? 'Enregistrement du pseudo' : 'Enregistrer le pseudo'}
                 onPress={() => void submitName()}
                 className="rounded-none">
                 {saving ? (
                   <ActivityIndicator color={colors['primary-foreground']} />
                 ) : (
                   <Text className="font-pixel-bold text-[17px] text-primary-foreground">
-                    Change the name
+                    Enregistrer
                   </Text>
                 )}
               </Button>

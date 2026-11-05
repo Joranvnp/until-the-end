@@ -12,17 +12,17 @@ export type PlanFeature = {
 export const PLAN_FEATURES: PlanFeature[] = [
   {
     icon: 'card-outline',
-    title: 'Pay once',
-    subtitle: `${SiteConfig.payment.priceDisplay}, one single payment`,
+    title: 'Un seul paiement',
+    subtitle: `${SiteConfig.payment.priceDisplay}, payé une seule fois`,
   },
   {
     icon: 'infinite-outline',
-    title: 'Lifetime access',
-    subtitle: 'No subscription, no renewal, no expiry',
+    title: 'Accès à vie',
+    subtitle: 'Sans abonnement, sans renouvellement, sans date de fin',
   },
   {
     icon: 'sparkles-outline',
-    title: 'Future updates',
-    subtitle: 'Keep access as the app improves',
+    title: 'Mises à jour incluses',
+    subtitle: 'Tu gardes tout ce qui arrive ensuite',
   },
 ];

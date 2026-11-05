@@ -27,13 +27,13 @@ export function AccountDetailsSection({
   return (
     <View className="px-6">
       <Text className="mb-3 font-pixel-bold text-[13px] uppercase tracking-wider text-muted-foreground">
-        Account
+        Compte
       </Text>
       <View className="rounded-none bg-secondary">
-        <AccountDetailRow label="Email" value={email ?? '-'} />
+        <AccountDetailRow label="E-mail" value={email ?? '-'} />
         <AccountDetailRow
-          label="Name"
-          value={name ?? 'not defined'}
+          label="Pseudo"
+          value={name ?? 'non défini'}
           mutedValue={!name}
           bordered
           action={
@@ -42,20 +42,20 @@ export function AccountDetailsSection({
               size="xs"
               onPress={onChangeName}
               className="h-7 rounded-none px-3">
-              <Text className="font-pixel-bold text-[13px] text-primary">Change</Text>
+              <Text className="font-pixel-bold text-[13px] text-primary">Modifier</Text>
             </Button>
           }
         />
         <AccountDetailRow
-          label="Plan"
+          label="Offre"
           value={planLabel}
           bordered
           onPress={canOpenPlan ? onOpenPlan : undefined}
-          accessibilityHint="Opens available plans"
+          accessibilityHint="Ouvre les offres disponibles"
           action={
             canOpenPlan ? (
               <View className="flex-row items-center gap-1">
-                <Text className="font-pixel-bold text-[13px] text-primary">View plans</Text>
+                <Text className="font-pixel-bold text-[13px] text-primary">Voir les offres</Text>
                 <Ionicons name="chevron-forward" size={14} color={colors.primary} />
               </View>
             ) : undefined

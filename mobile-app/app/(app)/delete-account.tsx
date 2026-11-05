@@ -68,7 +68,7 @@ export default function DeleteAccountScreen() {
       holdProgress.value = withTiming(0, { duration: 180 });
       deleteFill.value = 0;
       setDeleting(false);
-      Alert.alert('Something went wrong', 'Could not complete account deletion. Try again.');
+      Alert.alert('Une erreur est survenue', 'Impossible de supprimer le compte. Réessaie.');
     }
   }, [
     anonymizeAccount,
@@ -138,7 +138,11 @@ export default function DeleteAccountScreen() {
               ? 'font-pixel-bold text-[16px] text-[#FECACA]'
               : 'font-pixel-bold text-[16px] text-destructive'
           }>
-          {deleting ? 'Deleting...' : isHolding ? 'Keep holding' : 'Hold to delete'}
+          {deleting
+            ? 'Suppression…'
+            : isHolding
+              ? 'Continue d’appuyer'
+              : 'Maintiens pour supprimer'}
         </Text>
         <Text
           className={
@@ -146,7 +150,7 @@ export default function DeleteAccountScreen() {
               ? 'font-sans text-[12px] leading-4 text-[#FCA5A5]'
               : 'font-sans text-[12px] leading-4 text-muted-foreground'
           }>
-          {deleting ? 'Clearing your account' : isHolding ? 'Almost there' : '5 seconds'}
+          {deleting ? 'Effacement du compte' : isHolding ? 'Presque fini' : '5 secondes'}
         </Text>
       </View>
       <Ionicons
@@ -162,7 +166,7 @@ export default function DeleteAccountScreen() {
       <View className="flex-row items-center px-5 pb-3" style={{ paddingTop: insets.top + 12 }}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Back to settings"
+          accessibilityLabel="Retour aux réglages"
           onPress={() => router.back()}
           disabled={deleting}
           className={
@@ -206,7 +210,7 @@ export default function DeleteAccountScreen() {
                 ? 'mb-3 text-center font-pixel-bold text-[30px] leading-[36px] text-[#FECACA]'
                 : 'mb-3 text-center font-pixel-bold text-[30px] leading-[36px] text-foreground'
             }>
-            Leaving, huh?
+            Tu nous quittes ?
           </Text>
           <Text
             className={
@@ -214,7 +218,7 @@ export default function DeleteAccountScreen() {
                 ? 'mb-7 text-center font-sans text-[16px] leading-[23px] text-[#FCA5A5]'
                 : 'mb-7 text-center font-sans text-[16px] leading-[23px] text-muted-foreground'
             }>
-            Okay. One thing first.
+            D’accord. Juste une chose avant.
           </Text>
           <Text
             className={
@@ -222,8 +226,8 @@ export default function DeleteAccountScreen() {
                 ? 'max-w-[300px] text-center font-sans text-[16px] leading-[25px] text-[#FECACA]'
                 : 'max-w-[300px] text-center font-sans text-[16px] leading-[25px] text-foreground'
             }>
-            This deletes your account, your saved moments, and your local setup. There is no
-            bringing them back.
+            Cela supprime ton compte, tes éclats, tes tenues et tes records. Impossible de les
+            récupérer ensuite.
           </Text>
         </View>
       </View>
@@ -231,8 +235,8 @@ export default function DeleteAccountScreen() {
       <View className="px-6" style={{ paddingBottom: insets.bottom + 18 }}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Hold for five seconds to delete account"
-          accessibilityHint="Keep pressing until the page fills."
+          accessibilityLabel="Maintiens cinq secondes pour supprimer le compte"
+          accessibilityHint="Garde le doigt appuyé jusqu’à ce que l’écran se remplisse."
           accessibilityState={{ busy: deleting, disabled: deleting || !userId }}
           delayLongPress={HOLD_DURATION_MS}
           onPressIn={handlePressIn}

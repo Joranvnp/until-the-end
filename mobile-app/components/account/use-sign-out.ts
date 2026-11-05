@@ -9,10 +9,10 @@ export function useSignOut() {
   const { signOut } = useAuth();
 
   const confirmSignOut = () => {
-    Alert.alert('Sign out', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('Se déconnecter', 'Tu es sûr ?', [
+      { text: 'Annuler', style: 'cancel' },
       {
-        text: 'Sign out',
+        text: 'Se déconnecter',
         style: 'destructive',
         onPress: async () => {
           posthog.capture('user_logged_out');

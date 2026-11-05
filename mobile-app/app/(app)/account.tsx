@@ -18,7 +18,7 @@ export default function AccountScreen() {
   return (
     <>
       <BlurHeaderScreen
-        title="Account"
+        title="Compte"
         showBack
         contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 32 }}>
         <View className="flex-1 justify-between">

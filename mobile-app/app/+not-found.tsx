@@ -4,12 +4,12 @@ import { Text, View } from 'react-native';
 export default function NotFoundScreen() {
   return (
     <View className="flex flex-1 items-center justify-center bg-background">
-      <Stack.Screen options={{ title: 'Not Found' }} />
+      <Stack.Screen options={{ title: 'Introuvable' }} />
       <Text className="mb-4 font-pixel-bold text-xl text-foreground">
-        {"This page doesn't exist."}
+        {'Cette page n’existe pas.'}
       </Text>
       <Link href="/">
-        <Text className="text-[15px] text-muted-foreground underline">Go home</Text>
+        <Text className="text-[15px] text-muted-foreground underline">Retour au camp</Text>
       </Link>
     </View>
   );

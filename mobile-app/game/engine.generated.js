@@ -2078,8 +2078,16 @@ function drawTouch(){touchBtns=touchLayout();const p=player,sel=p&&p.inv[p.sel];
   for(const b of touchBtns)if(tutHL(b.k))drawTutRing(Math.round(b.x),Math.round(b.y),Math.round(b.w),Math.round(b.h));
   ctx.restore()}
 const activeTouches=new Map();
-function touchUpdate(){for(const k in touch)touch[k]=false;let worldTouch=null;
-  for(const[,t]of activeTouches){let hit=false;for(const b of touchBtns)if(t.x>=b.x&&t.x<b.x+b.w&&t.y>=b.y&&t.y<b.y+b.h){touch[b.k]=true;hit=true}if(!hit&&!t.ui)worldTouch=t}
+// Distance d'un point au bouton (0 dedans). Un doigt posé près d'un bouton le garde même en glissant hors du dessin.
+function btnDist(t,b){return Math.hypot(Math.max(b.x-t.x,0,t.x-b.x-b.w),Math.max(b.y-t.y,0,t.y-b.y-b.h))}
+function nearestBtn(t,reach){let best=null,bd=Infinity;for(const b of touchBtns){const d=btnDist(t,b);if(d<bd){bd=d;best=b}}return best&&bd<=reach?best:null}
+const touchReach=()=>{const b=touchBtns[0];return b?Math.round(b.w*.35):14};
+function touchUpdate(){const was={...touch};for(const k in touch)touch[k]=false;let worldTouch=null;
+  for(const[,t]of activeTouches){if(t.ui)continue;
+    // Un doigt parti d'un bouton reste une commande : il glisse de ◀ à ▶ sans jamais miner le monde par erreur.
+    if(t.btn){const b=nearestBtn(t,touchReach()*2.5);if(b)touch[b.k]=true;continue}
+    worldTouch=t}
+  for(const k in touch)if(touch[k]&&!was[k])buzz(k==='a'?14:8);
   if(worldTouch){mouse.x=worldTouch.x;mouse.y=worldTouch.y;mouse.l=true;mouse.inside=true}else mouse.l=false;updateMouseWorld()}
 // Visée automatique du bouton d'action : ennemi proche pour l'épée/l'arc, sinon le bloc devant (ou dessous avec ▼).
 function autoAim(it){const p=player,pcx=p.x+p.w/2,pcy=p.y+6;
@@ -2122,7 +2130,7 @@ addEventListener('keydown',ev=>{keys[ev.code]=true;audioInit();
 addEventListener('keyup',ev=>{keys[ev.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;mouse.l=mouse.r=false;if(state==='play')paused=true});
 cv.addEventListener('touchstart',ev=>{ev.preventDefault();audioInit();for(const t of ev.changedTouches){const p=toLocal(t);const ui=state!=='play'||uiHits.some(h=>p.x>=h.x&&p.x<h.x+h.w&&p.y>=h.y&&p.y<h.y+h.h)||(panel&&panelRect&&p.x>=panelRect.x&&p.x<panelRect.x+panelRect.w&&p.y>=panelRect.y&&p.y<panelRect.y+panelRect.h);
-  if(ui){mouse.x=p.x;mouse.y=p.y;uiClick(p.x,p.y)}activeTouches.set(t.identifier,{...p,ui})}if(state==='play')touchUpdate()},{passive:false});
+  if(ui){mouse.x=p.x;mouse.y=p.y;uiClick(p.x,p.y)}activeTouches.set(t.identifier,{...p,ui,btn:!ui&&state==='play'&&!!nearestBtn(p,touchReach())})}if(state==='play')touchUpdate()},{passive:false});
 cv.addEventListener('touchmove',ev=>{ev.preventDefault();for(const t of ev.changedTouches){const a=activeTouches.get(t.identifier);if(a){const p=toLocal(t);a.x=p.x;a.y=p.y}}if(state==='play')touchUpdate()},{passive:false});
 const tEnd=ev=>{for(const t of ev.changedTouches)activeTouches.delete(t.identifier);if(state==='play')touchUpdate()};cv.addEventListener('touchend',tEnd);cv.addEventListener('touchcancel',tEnd);
 

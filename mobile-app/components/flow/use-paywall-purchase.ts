@@ -74,13 +74,13 @@ export function usePaywallPurchase() {
       });
 
       if (init.error) {
-        Alert.alert('Error', init.error.message);
+        Alert.alert('Erreur', init.error.message);
         return;
       }
 
       const presented = await presentPaymentSheet();
       if (presented.error) {
-        Alert.alert('Error', presented.error.message);
+        Alert.alert('Erreur', presented.error.message);
         return;
       }
 
@@ -88,14 +88,14 @@ export function usePaywallPurchase() {
         paymentIntentId: sheet.paymentIntentId,
       });
       if (!confirmation.paid) {
-        Alert.alert('Payment pending', 'Your payment is not complete yet.');
+        Alert.alert('Paiement en attente', 'Ton paiement n’est pas encore terminé.');
         return;
       }
 
       posthog.capture('paywall_stripe_success');
       navigateToApp();
     } catch {
-      Alert.alert('Error', 'Payment failed. Please try again.');
+      Alert.alert('Erreur', 'Le paiement a échoué. Réessaie.');
     } finally {
       setLoading(false);
     }
@@ -109,7 +109,7 @@ export function usePaywallPurchase() {
         const purchaseToken = purchase.purchaseToken;
         const transactionId = purchase.transactionId ?? purchase.id;
         if (!purchaseToken || !transactionId) {
-          throw new Error('Store purchase is missing receipt data.');
+          throw new Error('Le reçu de l’achat est introuvable.');
         }
 
         await validatePurchase({
@@ -129,7 +129,7 @@ export function usePaywallPurchase() {
       });
     } catch (e: unknown) {
       if (getErrorCode(e) !== 'E_USER_CANCELLED') {
-        Alert.alert('Error', 'Purchase failed. Please try again.');
+        Alert.alert('Erreur', 'L’achat a échoué. Réessaie.');
       }
     } finally {
       setLoading(false);

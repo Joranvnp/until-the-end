@@ -14,13 +14,13 @@ export function AccountActions() {
         variant="secondary"
         onPress={confirmSignOut}
         className="h-auto items-center rounded-none py-4">
-        <Text className="font-pixel-bold text-[17px] text-destructive">Sign out</Text>
+        <Text className="font-pixel-bold text-[17px] text-destructive">Se déconnecter</Text>
       </Button>
       <Button
         variant="ghost"
         onPress={() => router.push('/(app)/delete-account')}
         className="mt-2 h-auto items-center rounded-none py-3">
-        <Text className="font-pixel-bold text-[17px] text-destructive">Delete account</Text>
+        <Text className="font-pixel-bold text-[17px] text-destructive">Supprimer le compte</Text>
       </Button>
     </View>
   );

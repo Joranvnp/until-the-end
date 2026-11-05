@@ -24,7 +24,7 @@ export function useSocialSignIn({ setLoading, onSignedIn }: SocialSignInOptions)
       });
 
       if (!credential.identityToken) {
-        Alert.alert('Error', 'Could not get Apple credentials.');
+        Alert.alert('Erreur', 'Impossible de récupérer les identifiants Apple.');
         return;
       }
 
@@ -34,14 +34,14 @@ export function useSocialSignIn({ setLoading, onSignedIn }: SocialSignInOptions)
       });
 
       if (error) {
-        Alert.alert('Error', error.message ?? 'Apple sign-in failed.');
+        Alert.alert('Erreur', error.message ?? 'La connexion avec Apple a échoué.');
         return;
       }
 
       onSignedIn('apple');
     } catch (e: unknown) {
       if (getErrorCode(e) !== 'ERR_REQUEST_CANCELED') {
-        Alert.alert('Error', 'Apple sign-in failed. Please try again.');
+        Alert.alert('Erreur', 'La connexion avec Apple a échoué. Réessaie.');
       }
     } finally {
       setLoading(false);
@@ -60,8 +60,8 @@ export function useSocialSignIn({ setLoading, onSignedIn }: SocialSignInOptions)
       onSignedIn('google');
     } catch (e: unknown) {
       Alert.alert(
-        'Error',
-        e instanceof Error ? e.message : 'Google sign-in failed. Please try again.'
+        'Erreur',
+        e instanceof Error ? e.message : 'La connexion avec Google a échoué. Réessaie.'
       );
     } finally {
       setLoading(false);
@@ -80,8 +80,8 @@ export function useSocialSignIn({ setLoading, onSignedIn }: SocialSignInOptions)
       onSignedIn('github');
     } catch (e: unknown) {
       Alert.alert(
-        'Error',
-        e instanceof Error ? e.message : 'GitHub sign-in failed. Please try again.'
+        'Erreur',
+        e instanceof Error ? e.message : 'La connexion avec GitHub a échoué. Réessaie.'
       );
     } finally {
       setLoading(false);

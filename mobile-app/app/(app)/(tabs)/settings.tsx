@@ -82,6 +82,12 @@ export default function SettingsScreen() {
         </Text>
         <View className="gap-2.5">
           <ListItem
+            title="Comment jouer"
+            description="But, commandes, unités et dangers"
+            showChevron
+            onPress={() => router.push('/(app)/tutorials')}
+          />
+          <ListItem
             title="Nous écrire"
             description={SiteConfig.company.email}
             showChevron

@@ -21,7 +21,9 @@ export function useChangeName() {
       setSheetOpen(false);
     } catch (submitError) {
       const message =
-        submitError instanceof Error ? submitError.message : 'Could not update name. Try again.';
+        submitError instanceof Error
+          ? submitError.message
+          : 'Impossible de changer le pseudo. Réessaie.';
       setError(message);
     } finally {
       setSaving(false);

@@ -7,7 +7,10 @@ export default function TutorialsScreen() {
   const router = useRouter();
 
   return (
-    <BlurHeaderScreen title="Tutorials" contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}>
+    <BlurHeaderScreen
+      title="Comment jouer"
+      showBack
+      contentContainerStyle={{ paddingHorizontal: 16, gap: 10 }}>
       {TUTORIAL_LIST.map((tutorial) => (
         <ListItem
           key={tutorial.slug}

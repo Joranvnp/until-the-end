@@ -74,7 +74,7 @@ export default function AdminScreen() {
     try {
       await Linking.openURL(url);
     } catch {
-      Alert.alert('Could not open link', 'Try again in a moment.');
+      Alert.alert('Impossible d’ouvrir le lien', 'Réessaie dans un instant.');
     }
   };
 
@@ -86,10 +86,10 @@ export default function AdminScreen() {
             <Ionicons name="shield-checkmark-outline" size={28} color={colors.foreground} />
           </View>
           <Text className="text-center font-pixel-bold text-[20px] text-foreground">
-            Checking admin access
+            Vérification de l’accès admin
           </Text>
           <Text className="mt-2 text-center text-[15px] leading-[22px] text-muted-foreground">
-            Admin tools load after your account permissions are confirmed.
+            Les outils admin s’affichent une fois les droits du compte confirmés.
           </Text>
         </View>
       </BlurHeaderScreen>
@@ -105,17 +105,17 @@ export default function AdminScreen() {
               <Ionicons name="lock-closed-outline" size={28} color={colors.foreground} />
             </View>
             <Text className="text-center font-pixel-bold text-[22px] text-foreground">
-              Admin access required
+              Accès admin requis
             </Text>
             <Text className="mt-2 text-center text-[15px] leading-[22px] text-muted-foreground">
-              This page is only available to accounts with admin permissions.
+              Cette page est réservée aux comptes administrateurs.
             </Text>
           </View>
           <Button
             variant="secondary"
             onPress={() => router.replace('/(app)/(tabs)/settings' as never)}
             className="mt-8">
-            Back to Settings
+            Retour aux réglages
           </Button>
         </View>
       </BlurHeaderScreen>
@@ -134,15 +134,15 @@ export default function AdminScreen() {
         <View className="gap-2.5">
           <AdminListItem
             icon="play-circle-outline"
-            title="Preview onboarding"
-            description="Open the first-run flow"
+            title="Revoir l’écran titre"
+            description="Ouvre le parcours de premier lancement"
             showChevron
             onPress={() => router.push('/onboarding')}
           />
           <AdminListItem
             icon="open-outline"
-            title="Open web admin"
-            description="Manage production data in the dashboard"
+            title="Ouvrir l’admin web"
+            description="Gérer les données de production"
             showChevron
             onPress={() => openUrl(SiteConfig.urls.admin)}
           />

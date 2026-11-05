@@ -36,10 +36,10 @@ export function usePlan() {
 
   const planLabel =
     entitlement === undefined
-      ? 'Checking...'
+      ? 'Vérification…'
       : entitlement.active
-        ? 'Lifetime access'
-        : 'No active plan';
+        ? 'Jeu complet'
+        : 'Version gratuite';
   const canOpenPlan = entitlement !== undefined && !entitlement.active;
 
   const openSheet = () => {
@@ -55,7 +55,7 @@ export function usePlan() {
       const purchaseToken = storePurchase.purchaseToken;
       const transactionId = storePurchase.transactionId ?? storePurchase.id;
       if (!purchaseToken || !transactionId) {
-        throw new Error('Store purchase is missing receipt data.');
+        throw new Error('Le reçu de l’achat est introuvable.');
       }
 
       await validatePurchase({
@@ -86,13 +86,13 @@ export function usePlan() {
     });
 
     if (init.error) {
-      Alert.alert('Error', init.error.message);
+      Alert.alert('Erreur', init.error.message);
       return false;
     }
 
     const presented = await presentPaymentSheet();
     if (presented.error) {
-      Alert.alert('Error', presented.error.message);
+      Alert.alert('Erreur', presented.error.message);
       return false;
     }
 
@@ -100,7 +100,7 @@ export function usePlan() {
       paymentIntentId: sheet.paymentIntentId,
     });
     if (!confirmation.paid) {
-      Alert.alert('Payment pending', 'Your payment is not complete yet.');
+      Alert.alert('Paiement en attente', 'Ton paiement n’est pas encore terminé.');
       return false;
     }
 
@@ -135,7 +135,7 @@ export function usePlan() {
       if (paid) setSheetOpen(false);
     } catch (purchaseError) {
       if (getErrorCode(purchaseError) !== 'E_USER_CANCELLED') {
-        Alert.alert('Error', 'Purchase failed. Please try again.');
+        Alert.alert('Erreur', 'L’achat a échoué. Réessaie.');
       }
     } finally {
       setLoading(false);

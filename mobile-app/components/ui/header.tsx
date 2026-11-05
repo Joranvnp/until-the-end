@@ -49,7 +49,7 @@ export function Header({
         <Pressable
           onPress={handleBack}
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel="Retour"
           hitSlop={12}
           style={({ pressed }) => [
             {

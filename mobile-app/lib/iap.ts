@@ -22,18 +22,18 @@ const NOOP_IAP: IAPResult = {
   product: null,
   loading: false,
   purchase: async () => {
-    throw new Error('IAP not available on this platform');
+    throw new Error('Achats intégrés indisponibles sur cet appareil');
   },
   finishCurrentTransaction: async () => {},
-  error: 'IAP not available on this platform',
+  error: 'Achats intégrés indisponibles sur cet appareil',
 };
 
 const EXPO_GO_IAP: IAPResult = {
   ...NOOP_IAP,
-  error: 'In-app purchases require a development build.',
+  error: 'Les achats intégrés demandent une build de développement.',
   purchase: async () => {
     throw new Error(
-      'In-app purchases are disabled in Expo Go. Use npm run ios or npm run android.'
+      'Achats intégrés désactivés dans Expo Go. Utilise npm run ios ou npm run android.'
     );
   },
 };
