@@ -5,8 +5,6 @@ import { expoClient } from '@better-auth/expo/client';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 
-console.log('[AUTH-CLIENT] baseURL:', process.env.EXPO_PUBLIC_CONVEX_SITE_URL);
-
 export const authClient = createAuthClient({
   baseURL: process.env.EXPO_PUBLIC_CONVEX_SITE_URL,
   plugins: [

@@ -52,8 +52,6 @@ export function useStoreIAP(): IAPResult {
   return result;
 }
 
-export const useAppleIAP = useStoreIAP;
-
 function useStoreIAPInternal(): IAPResult {
   const onReceiptRef = useRef<((purchase: Purchase) => Promise<void>) | null>(null);
   const resolveRef = useRef<(() => void) | null>(null);

@@ -3,7 +3,6 @@ export type TutorialSlug = 'but' | 'commandes' | 'unites' | 'dangers';
 export type TutorialSection = {
   title: string;
   body: string;
-  code?: { title: string; snippet: string };
 };
 
 export type Tutorial = {
