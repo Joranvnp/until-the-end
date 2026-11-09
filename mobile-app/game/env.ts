@@ -52,8 +52,9 @@ const AUDIO: Record<string, number> = {
 };
 const IMAGES: Record<string, number> = {
   'art/menu.png': require('../../www/art/menu.png'),
+  'art/fin-victoire.png': require('../../www/art/fin-victoire.png'),
+  'art/fin-defaite.png': require('../../www/art/fin-defaite.png'),
   'art/bg-far.png': require('../../www/art/bg-far.png'),
-  'art/units.png': require('../../www/art/units.png'),
   'art/bg-near.png': require('../../www/art/bg-near.png'),
 };
 

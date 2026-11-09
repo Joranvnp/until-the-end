@@ -29,11 +29,13 @@ Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx ca
 - JOUEUR, COMBAT, UNITÉS (navigate, climbUp/pilier, digStep, engage, cohésion d'armée computeArmies).
 - IA ADVERSE : updateAI (styles eco/rush/équilibre, défense, raids, vagues groupées, retraite), champion.
 - RENDU : couches monde/lumière (multiply) + halo, atmosphère.
-- INTERFACE : HUD adaptatif (drawHUD, mode large/étroit), panneaux Base/Forge/Sac, menu pause, contrôles tactiles.
+- INTERFACE : HUD adaptatif (drawHUD, mode large/étroit), panneaux Base/Forge/Sac, menu pause, contrôles tactiles. Le HUD en jeu a ses propres utilitaires pixel art (`hudFrame`, `hudPix`, `hudBar`, `hudSlot`, `hudBtn`, `hudGlint`, `resGain`), décrits dans `docs/direction-artistique.md` (section HUD en jeu) . Les menus (titre, pause, panneaux du menu, fin) utilisent les primitives `MTONE`, `mframe`, `mbox`, `mbutton`, `mhead`, `mveil` alignées sur `PixelFrame` (section Menus du même guide) ; les panneaux Base/Forge/Sac aussi. `button`/`box`/`panelHead` ne servent plus qu'au reste de l'interface.
 
 ## Visuels
 Décor en calques (parallaxe) : 4 images Higgsfield (`art/calques/`) converties en pixel art à 4 tons par `python3 tools/gen-calques.py`, incrustées dans `index.html` entre `// <calques>` et `// </calques>`, coloriées au rendu selon le ciel (`drawCalque`). Procédure complète : skill `.claude/skills/calques-decor`. Skills pixel art installées : `codixel` (sprite à partir d'une image de référence) et `pixelfx` (effets animés en code).
 `npm run art` régénère icônes, écran de démarrage et visuels Play Store (`tools/gen-art.mjs`), puis `npm run assets` pour Android et iOS (captures App Store dans `store/ios/`, anglais dans `store/en/`).
+Sprites HD (Higgsfield façon Animal Well) : `www/art/units-hd.png` (personnages et monstres, ~34 px), `tiles-hd.png` (16 variantes par matière), `trees-hd.png` (canopées), générés par `python3 tools/gen-hd-art.py` depuis `art/hd-sources/`. Chargés par `UNIT_ART`, `HD_TILES` et `TREE_ART` avec repli procédural. Ajouter toute nouvelle image à `IMAGES` dans `mobile-app/game/env.ts`.
+Héros modulaire : le sprite HD Higgsfield du héros découpé en calques et animé par code (`heroHDParts`, `heroHDFrame`, `heroHDDoll`, `heroPick`), recolorié par `headCol`/`tunic`, avec ou sans épée selon l'objet en main ; repli procédural `heroFrame`. Préréglages `OUTFITS[].look`, surcharge future `PROF.look`. Détails dans `docs/direction-artistique.md` (« Héros modulaire »).
 Assets générés par IA (Higgsfield : fonds de menu, logo, concepts, sprites) : suivre `docs/direction-artistique.md` (palette, STYLE FORMULA figée, réduction au plus proche voisin, coût validé avant toute génération).
 
 ## Sons
