@@ -581,10 +581,13 @@ export class ImageElement {
   }
   set src(v: string) {
     this.source = v;
-    this.resolve(v)
-      .then((uri) =>
-        uri ? Skia.Data.fromURI(uri) : Promise.reject(new Error('image introuvable ' + v))
-      )
+    const inline = v.startsWith('data:') ? Skia.Data.fromBase64(v.slice(v.indexOf(',') + 1)) : null;
+    (inline
+      ? Promise.resolve(inline)
+      : this.resolve(v).then((uri) =>
+          uri ? Skia.Data.fromURI(uri) : Promise.reject(new Error('image introuvable ' + v))
+        )
+    )
       .then((data) => {
         const img = Skia.Image.MakeImageFromEncoded(data);
         if (!img) throw new Error('image illisible ' + v);
