@@ -44,6 +44,7 @@
 
 ## Version 1.2 — en cours (rendre le jeu addictif et prêt pour le Play Store)
 ### Graphismes et animations (Codex)
+- [x] Personnages et monstres façon Animal Well, plus grands (cadre 24x32) : volume éclairé en 5 tons décalés en teinte, liseré de lumière, vraie marche (pieds et mains qui alternent), yeux des monstres, lampe du mineur et golem fantôme qui brillent dans le noir après l'éclairage
 - [x] Décor en calques : montagnes lointaines, grand pic, ruines et forêt (images Higgsfield pixelisées en 4 tons), parallaxe, couleurs qui suivent le ciel (aube, nuit, lune de sang), brume entre les plans
 - [ ] Animations manquantes : marche/minage/attaque des unités, cycle de marche du joueur, coups de pioche, chute des arbres, ouverture des coffres
 - [ ] Monstres animés (respiration, attaque, mort), projectiles et impacts plus lisibles

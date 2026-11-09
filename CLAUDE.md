@@ -13,7 +13,7 @@ Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx ca
 3. Graphismes ensuite (direction : ambiance façon Animal Well, lumière colorée, brume, grottes vivantes).
 
 ## Repères dans le code (sections `// ====` de index.html)
-- GÉNÉRATION DES TEXTURES PIXEL ART : tuiles, personnages, château, canopées, tout est dessiné par code.
+- GÉNÉRATION DES TEXTURES PIXEL ART : tuiles, personnages, château, canopées, tout est dessiné par code. Personnages : `humanoid` (cadre 24x32, `roundBody` + `hueRamp` + `selout`), `golemSet`, `slimeFrames` ; les pixels lumineux vont dans `c.emi`, dessinés après l'éclairage par `drawEmissive`.
 - MONDE : génération (montagne centrale, grottes, filons, eau, lianes, champignons), éclairage BFS coloré.
 - ÉTAT DU JEU : newGame, sauvegarde/chargement (localStorage, clé `ute-save-v1`), profil (`ute-profile-v1` : réglages PROF.set, succès ACH/unlock, records, défi du jour MODS/dailyInfo), objectifs (OBJ).
 - Bombes (throwBomb/explode), coffres (tuile CHEST), lune de sang (isBlood), météo (weather), effets (pops, corpses, updateFx/updateWorldFx, drawOverlays).
