@@ -44,6 +44,7 @@
 
 ## Version 1.2 — en cours (rendre le jeu addictif et prêt pour le Play Store)
 ### Graphismes et animations (Codex)
+- [x] Décor en calques : montagnes lointaines, grand pic, ruines et forêt (images Higgsfield pixelisées en 4 tons), parallaxe, couleurs qui suivent le ciel (aube, nuit, lune de sang), brume entre les plans
 - [ ] Animations manquantes : marche/minage/attaque des unités, cycle de marche du joueur, coups de pioche, chute des arbres, ouverture des coffres
 - [ ] Monstres animés (respiration, attaque, mort), projectiles et impacts plus lisibles
 - [ ] Interface : icônes d'objets redessinées, transitions de panneaux, retour visuel sur chaque bouton tactile

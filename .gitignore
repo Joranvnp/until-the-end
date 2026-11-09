@@ -1,5 +1,6 @@
 node_modules/
-.claude/
+.claude/*
+!.claude/skills/
 # Android (généré / secrets)
 android/app/build/
 android/build/
