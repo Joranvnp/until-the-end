@@ -1518,7 +1518,7 @@ function meleeOrShoot(e,u,tgt){e.vx=0;e.dir=Math.sign(tgt.x+tgt.w/2-(e.x+e.w/2))
   if(u.ranged&&(e.miss||0)>=4&&tgt.type!=='core'){e.miss=0;e.atk=0;e.blindT=time+12;e.ptc=null;return}
   if(u.ranged){const sx=e.x+e.w/2,sy=e.y+6,tx=tgt.x+tgt.w/2,ty=tgt.y+tgt.h/2,dd=Math.abs(tx-sx),v=250,tt=dd/v;// cœur derrière les murs du château (archer posé sur le toit, au ras d'un créneau) : tir en cloche qui passe par-dessus la maçonnerie
     const lob=tgt.type==='core'&&(e.miss||0)>=2;arrows.push({x:sx,y:sy,vx:Math.sign(tx-sx)*v,vy:(ty-sy)/Math.max(tt,.1)-150*tt,team:e.team,dmg:udmg(e),life:3,src:e,lob:lob?tgt:null});
-    if(e.team===0&&BOON.volley&&!lob)arrows.push({x:sx,y:sy-2,vx:Math.sign(tx-sx)*v*.94,vy:(ty-sy)/Math.max(tt,.1)-150*tt-26,team:e.team,dmg:udmg(e)*.6,life:3,src:e,lob:null});if(onScreen(e))sfx.bow()}
+    if(e.team===0&&BOON.volley&&!lob)arrows.push({x:sx,y:sy-2,vx:Math.sign(tx-sx)*v*.94,vy:(ty-sy)/Math.max(tt,.1)-150*tt-26,team:e.team,dmg:udmg(e)*.6,life:3,src:e,lob:null,twin:1});if(onScreen(e))sfx.bow()}
   else{hurt(tgt,udmg(e),e);if(e.kind==='golem')shake=Math.max(shake,onScreen(e)?2:0)}}
 // écran en hauteur (portrait) : HUD en haut, commandes tactiles en bas, le ciel au-dessus est vide
 // -> le joueur est placé à 36 % de la hauteur, on voit plus de sous-sol
@@ -1836,7 +1836,7 @@ function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw
 function updateArrows(dt){for(const a of arrows){a.vy+=300*dt;a.x+=a.vx*dt;a.y+=a.vy*dt;a.life-=dt;
   if(a.stuck)continue;
   if(a.lob&&!a.lob.dead&&a.x>a.lob.x-1&&a.x<a.lob.x+a.lob.w+1&&a.y>a.lob.y-1&&a.y<a.lob.y+a.lob.h+1){visualPuff(a.x,a.y,'#ffe8ad');hurt(a.lob,a.dmg,a.src);if(a.src)a.src.miss=0;a.life=0;continue}
-  if(!a.lob&&solidAt(Math.floor(a.x/T),Math.floor(a.y/T))){visualPuff(a.x,a.y,'#a9bacb');a.stuck=true;a.life=Math.min(a.life,1.2);if(a.src&&a.src.type==='unit')a.src.miss=(a.src.miss||0)+1;continue}
+  if(!a.lob&&solidAt(Math.floor(a.x/T),Math.floor(a.y/T))){visualPuff(a.x,a.y,'#a9bacb');a.stuck=true;a.life=Math.min(a.life,1.2);if(a.src&&a.src.type==='unit'&&!a.twin)a.src.miss=(a.src.miss||0)+1;continue}
   for(const e of ents){if(e.dead||!e.hp||e.type==='item'||e.team===a.team)continue;
     if(a.x>e.x-1&&a.x<e.x+e.w+1&&a.y>e.y-1&&a.y<e.y+e.h+1){visualPuff(a.x,a.y,'#ffe8ad');hurt(e,a.dmg,a.src);if(a.src)a.src.miss=0;a.life=0;break}}}
   arrows=arrows.filter(a=>a.life>0)}
