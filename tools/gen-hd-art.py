@@ -43,11 +43,15 @@ def keyed(n):
 
 
 def shrink(im, h, colors=28):
-    """Réduction en moyenne de boîte puis palette restreinte ; retire le liseré de couleur clé."""
+    """Réduction en moyenne de boîte puis palette restreinte ; retire le liseré de couleur clé.
+    La moyenne est pondérée par l'opacité : la couleur clé du fond ne se mélange pas aux pixels du bord."""
     w = max(1, round(im.width * h / im.height))
-    al = np.asarray(im)[..., 3]
-    rgb = im.convert('RGB').resize((w, h), Image.BOX)
-    aa = np.asarray(Image.fromarray(al).resize((w, h), Image.BOX)) > 140
+    a = np.asarray(im).astype(np.float32)
+    al = a[..., 3]
+    pm = Image.fromarray((a[..., :3] * (al[..., None] / 255)).astype(np.uint8), 'RGB').resize((w, h), Image.BOX)
+    cov = np.asarray(Image.fromarray(al.astype(np.uint8)).resize((w, h), Image.BOX)).astype(np.float32) / 255
+    rgb = Image.fromarray((np.asarray(pm) / np.maximum(cov[..., None], .02)).clip(0, 255).astype(np.uint8), 'RGB')
+    aa = cov * 255 > 140
     c = np.asarray(rgb).astype(int)
     r, g, b = c[..., 0], c[..., 1], c[..., 2]
     if im.spill == 'm':
@@ -98,7 +102,7 @@ if '--add' in sys.argv:
     sys.exit(0)
 
 UNITS = {'hero': 34, 'warrior0': 34, 'warrior1': 34, 'archer0': 34, 'archer1': 34, 'miner0': 34, 'miner1': 34,
-         'champion0': 36, 'champion1': 36, 'zombie': 34, 'golem0': 40, 'golem1': 40, 'slime': 16, 'core0': 38, 'core1': 38}
+         'champion0': 36, 'champion1': 36, 'zombie': 34, 'golem0': 40, 'golem1': 40, 'slime': 16, 'core0': 44, 'core1': 44}
 sp = {n: shrink(keyed(n), h) for n, h in UNITS.items()}
 s = np.asarray(sp['slime']).copy()
 s[..., [0, 1, 2]] = s[..., [1, 0, 2]]  # slime rouge de l'ennemi

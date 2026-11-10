@@ -72,6 +72,12 @@
 - [x] 4 nouveaux succès (21 au total) : Stratège, Fin du cauchemar, Tueur d'ogre, Forteresse
 - [x] `npm test` : tests de fumée sans écran (règles du jeu, sauvegarde, migrations, anglais, 4 tailles d'écran)
 
+## Fait (2026-11-10) — rejouabilité : bénédictions
+- [x] Bénédictions : au début de la partie puis à chaque aube, le jeu se fige et propose 1 bonus parmi 3, valable pour la partie en cours (25 bonus : économie, armée, héros, base ; certains montent jusqu'au niveau 3, les rares ont un cadre doré)
+- [x] Une relance du tirage par partie ; tirage lié à la graine du monde (identique pour tous en défi du jour, inchangé si on quitte et reprend)
+- [x] Liste des bénédictions acquises dans le menu Pause (bouton Bonus), succès « Béni des anciens », sauvegarde, anglais, manette et touches 1/2/3
+- [x] Cœurs bleu et rouge en cristal flottant sur leur socle (GPT Image 2), à la place des cœurs en forme de cœur
+
 ## Version 1.2 — reste à faire (rendre le jeu addictif et prêt pour le Play Store)
 ### Graphismes et animations (Codex)
 - [x] Personnages et monstres façon Animal Well, plus grands (cadre 24x32) : volume éclairé en 5 tons décalés en teinte, liseré de lumière, vraie marche (pieds et mains qui alternent), yeux des monstres, lampe du mineur et golem fantôme qui brillent dans le noir après l'éclairage

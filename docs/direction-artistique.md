@@ -233,7 +233,8 @@ Personnages, monstres, cœurs, arbres et tuiles du terrain viennent de Higgsfiel
 - Tuiles : une bande 64x64 par matière, soit 16 variantes 16x16 choisies selon la position, assombrie pour coller au terrain.
 - Arbres : 4 canopées sans tronc, les troncs restent des tuiles LOG.
 - Guérisseurs et ogre de sang (ajoutés le 2026-11-10) : `gpt_image_2_6`, qualité high, 1k carré, avec un sprite existant en référence (`medias` = identifiant de la génération d'origine dans l'historique Higgsfield, rôle `image_references`). Ce modèle ignore le fond uni demandé et rend un fond noir avec halo, impossible à détourer : toujours passer `background: "transparent"`, puis poser le résultat sur magenta (bleus) ou vert (rouges) avant de le ranger dans `art/hd-sources/`. Le guérisseur rouge a été généré à partir du guérisseur bleu pour obtenir une paire aux mêmes proportions.
-- Ajouter une unité sans toucher aux autres : `python3 tools/gen-hd-art.py --add nom:hauteur`.
+- Cœurs de base (refaits le 2026-11-10, même recette `gpt_image_2_6`) : un cristal taillé qui flotte au-dessus d'un socle gravé de runes, bleu pour le joueur, rouge sur socle de fer noir hérissé pour l'ennemi (le rouge est généré avec le bleu en référence pour garder taille et proportions). 44 px de haut. `artCore` coupe l'image à la première ligne vide du bas : le cristal monte et descend, le socle reste fixe, et les pixels clairs du cristal vont dans le calque lumineux.
+- Ajouter une unité sans toucher aux autres : `python3 tools/gen-hd-art.py --add nom:hauteur`. La réduction pondère les couleurs par l'opacité, la couleur clé du fond ne bave donc plus sur les bords.
 - Chaque image a un repli procédural si elle ne charge pas. Toute nouvelle image doit aussi être ajoutée à `IMAGES` dans `mobile-app/game/env.ts`.
 
 ### Sprites animés (si besoin)
