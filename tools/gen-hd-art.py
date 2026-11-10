@@ -1,6 +1,9 @@
 """Convertit les images Higgsfield de art/hd-sources/ en sprites pixel art pour le jeu.
 
 Usage : python3 tools/gen-hd-art.py [dossier_sortie]   (défaut : www/art)
+        python3 tools/gen-hd-art.py --add nom:hauteur [nom:hauteur ...]
+        Ajoute des sprites à droite de www/art/units-hd.png SANS régénérer le reste, puis affiche leurs rectangles
+        à recopier dans UNIT_ART.r. À préférer pour toute nouvelle unité : voir la remarque sur les sources ci-dessous.
 Besoin : Pillow et numpy.
 
 Sorties :
@@ -9,7 +12,8 @@ Sorties :
 - tiles-hd.png : 64 px de large, une bande de 64x64 par matière (16 variantes 16x16), ordre HD_TILES.row
 Les trois images sont aussi intégrées en base64 dans index.html (bloc // <hd-art>).
 Les sources sont sur fond vert ou magenta uni (détourage par couleur clé).
-Les sources du dépôt sont réduites à 512 px : le résultat peut différer de quelques pixels des PNG livrés.
+Les sources du dépôt sont réduites à 512 px : une régénération complète ne redonne PAS les PNG livrés
+(tailles et pixels différents, vérifié le 2026-11-10). Pour ajouter une unité, utiliser --add, qui ne touche pas aux sprites existants.
 """
 import base64
 import json
@@ -22,7 +26,7 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'art', 'hd-sources')
-OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'www', 'art')
+OUT = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('--') else os.path.join(ROOT, 'www', 'art')
 
 
 def keyed(n):
@@ -66,6 +70,32 @@ def atlas(ims, name):
     at.save(os.path.join(OUT, name))
     print(name, json.dumps(R, separators=(',', ':')))
 
+
+if '--add' in sys.argv:
+    # ajout sans régénération : l'atlas existant est recopié tel quel, les nouveaux sprites sont collés à sa droite
+    old = Image.open(os.path.join(OUT, 'units-hd.png')).convert('RGBA')
+    new = {}
+    for a in sys.argv[sys.argv.index('--add') + 1:]:
+        n, h = a.split(':')
+        new[n] = shrink(keyed(n), int(h))
+    at = Image.new('RGBA', (old.width + sum(i.width + 1 for i in new.values()), max([old.height] + [i.height for i in new.values()])))
+    at.paste(old, (0, 0))
+    x, R = old.width + 1, {}
+    for n, i in new.items():
+        at.paste(i, (x, 0))
+        R[n] = [x, 0, i.width, i.height]
+        x += i.width + 1
+    at.save(os.path.join(OUT, 'units-hd.png'))
+    print('units-hd.png, rectangles à ajouter à UNIT_ART.r :', json.dumps(R, separators=(',', ':')))
+    HTML = os.path.join(ROOT, 'www', 'index.html')
+    html = open(HTML, encoding='utf-8').read()
+    b64 = base64.b64encode(open(os.path.join(OUT, 'units-hd.png'), 'rb').read()).decode()
+    html, k = re.subn(r"const UNITS_HD='data:image/png;base64,[^']*';", "const UNITS_HD='data:image/png;base64," + b64 + "';", html)
+    if k != 1:
+        raise SystemExit('const UNITS_HD introuvable dans www/index.html')
+    open(HTML, 'w', encoding='utf-8').write(html)
+    print('index.html : UNITS_HD mis à jour')
+    sys.exit(0)
 
 UNITS = {'hero': 34, 'warrior0': 34, 'warrior1': 34, 'archer0': 34, 'archer1': 34, 'miner0': 34, 'miner1': 34,
          'champion0': 36, 'champion1': 36, 'zombie': 34, 'golem0': 40, 'golem1': 40, 'slime': 16, 'core0': 38, 'core1': 38}
