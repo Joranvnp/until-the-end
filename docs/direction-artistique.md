@@ -78,6 +78,27 @@ Règle : **une source de lumière par zone visuelle**. Le chaud (or, orange) est
 - **Héros** : capuche **jaune or** (`#ffe066`), visage dans l'ombre, il doit ressortir sur tous les fonds. Alliés **bleus** (`#4f9df5`), ennemis **rouges** (`#e5534b`).
 - Monstres : silhouettes simples et lisibles, deux ou trois tons par matière, yeux brillants. Animations courtes (4 images), mouvements discrets.
 
+### Style « peuple d'ombre » (unités et monstres, choisi par l'auteur le 2026-11-10)
+
+Référence : `art/concepts/peuple-ombre-reference.png` (direction **B** retenue). Les 3 autres directions proposées et écartées sont dans `art/concepts/directions-a-b-c-d.png` : A esprits animaux, C esprits-lanternes, D bestioles des cavernes. Génération Higgsfield de la planche B : `e7b44b8a-f6a0-47fe-80ca-eecc3615fcc9`. Passer cet identifiant en `image_references` pour rester dans le style ; le réseau des sessions cloud bloque le téléversement d'images locales.
+
+**Ce qui fait le style**
+- **Silhouettes sombres** : le corps est presque noir (luminance médiane 52/255 sur les sprites du jeu). On lit le personnage à sa forme, pas à ses couleurs.
+- **Seuls quelques détails brillent** : yeux, lampe frontale, cristal, plumet. C'est à peine 3 % des pixels, tous dans `c.emi` (pixels émissifs) : visibles même la nuit.
+- **Liseré de lumière froide** (`#aab9eb` mélangé à 45 %) sur le bord haut et gauche, ajouté par `tools/gen-persos.py` : la silhouette se détache des fonds sombres.
+- **Pas de contour noir épais** ni de couleurs vives sur le corps. Tissus déchirés, capuches, capes en lambeaux, métal sombre.
+- **Couleur d'équipe dans les détails** : le plumet, les yeux, la capuche sont bleus pour nous et rouges pour l'ennemi. Les variantes rouges se font par rotation de teinte, le corps reste sombre.
+- **Teintes mesurées sur les sprites** : ombres `#050205` `#1d121d` `#361820`, tissus `#37304f` `#64556e` `#7f6c87`, rouges ennemis `#5e1b27` `#6a3b4d`. Les lumières ressortent en cyan `#7fd8ff`, rouge `#ff5a4a`, vert `#c9ff7a` et jaune pâle `#ffe58a`.
+- **Le héros n'est pas dans ce style** : il garde sa capuche jaune pour ressortir (héros modulaire, ci-dessous).
+
+**Prompt Higgsfield d'une spritesheet** (`gpt_image_2_6`, 21:9, `quality: high`, `resolution: 2k`, 2,75 crédits, planche B en référence) :
+
+> Same dark eerie pixel art style as the reference lineup (shadow folk: dark silhouettes lit by a soft rim light, only eyes and magic details glow). Create a game sprite sheet of <PERSONNAGE : description courte, équipement, ce qui brille>. Layout: a grid of 2 rows x 6 columns of equal cells, one pose per cell, always facing right in strict side view, same size and same baseline in every cell. Row 1: a 6-frame walk cycle. Row 2: 2 idle breathing frames, 1 jump frame, then 3 attack frames (<préparation>, <coup>, <retour>). Crisp hard-edged pixel art, no glow halos, no bloom. IMPORTANT: NO ground, NO ground line, NO grass, NO shadow under the feet, nothing but the character. No grid lines, no text. Solid flat pure magenta #FF00FF background everywhere.
+
+Utiliser un fond vert `#00FF00` à la place du magenta si le personnage est violet ou rose. Ensuite : source réduite de moitié dans `art/persos/<nom>.png`, entrée dans `PERSOS` de `tools/gen-persos.py` (hauteur en pixels de jeu, nombre de couleurs, variantes d'équipe), lancer `python3 tools/gen-persos.py`, puis `npm test`.
+
+**À éviter (refusé par l'auteur)** : le style « chibi » mignon et coloré (gros yeux, joues roses, couleurs vives), les blobs procéduraux retouchés, l'herbe ou la ligne de sol sous les sprites.
+
 ### Héros modulaire (`// HÉROS MODULAIRE` dans `mobile-app/game/engine.js`, fait le 2026-11-09)
 
 Le héros **est le sprite HD Higgsfield** (`hero` dans `units-hd.png`, capuche or, visage noir, yeux en croix), **découpé en calques par code** pour l'animer et préparer une **boutique de personnalisation**. Le héros entièrement procédural (`heroFrame`, `heroDollProc`) reste en repli si l'image HD manque.

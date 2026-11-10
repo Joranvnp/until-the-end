@@ -15,6 +15,8 @@
 
 - **Style des unités et monstres : direction B « peuple d'ombre »**, choisie sur une planche de 4 concepts Higgsfield.
   Silhouettes sombres, liseré de lumière froide, seuls les yeux, la lampe du mineur et le cristal du guérisseur brillent.
+  Fiche complète du style (référence, palette, prompt exact, à éviter) : `docs/direction-artistique.md`, section « Style « peuple d'ombre » » ;
+  image de référence `art/concepts/peuple-ombre-reference.png`.
 - **Le héros n'est pas concerné** : c'est le héros modulaire (sprite HD jaune découpé en calques, tenues, objet tenu dans la pose).
   Ne pas le remplacer par un sprite de planche.
 - Il veut des personnages **animés** (marche, repos, saut, attaque) générés avec Higgsfield, pas seulement dessinés par code.
