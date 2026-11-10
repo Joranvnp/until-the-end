@@ -9,16 +9,17 @@ Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx ca
 
 ## Priorités de l'auteur
 1. Fonctionnalités et interface : tout lisible et utilisable sur téléphone (portrait/paysage), tablette et ordinateur.
-2. Intelligence artificielle : IA adverse (commandant, champion rouge, vagues, raids) et IA des unités (déplacement, minage, combat, ordres Assaut/Défense/Suivre).
+2. Intelligence artificielle : IA adverse (commandant, champion rouge, vagues, raids) et IA des unités (déplacement, minage, combat, ordres Assaut/Défense/Tenir/Suivre).
 3. Graphismes ensuite (direction : ambiance façon Animal Well, lumière colorée, brume, grottes vivantes).
 
 ## Repères dans le code (sections `// ====` de index.html)
 - GÉNÉRATION DES TEXTURES PIXEL ART : tuiles, personnages, château, canopées, tout est dessiné par code.
 - MONDE : génération (montagne centrale, grottes, filons, eau, lianes, champignons), éclairage BFS coloré.
-- ÉTAT DU JEU : newGame, sauvegarde/chargement (localStorage, clé `ute-save-v1`), profil (`ute-profile-v1` : réglages PROF.set, succès ACH/unlock, records, défi du jour MODS/dailyInfo), objectifs (OBJ).
+- ÉTAT DU JEU : difficultés (table `DIFFS`, 5 niveaux, `DF()` = niveau en cours, `iq` = ce que sait faire le commandant rouge), newGame, sauvegarde/chargement (localStorage, clé `ute-save-v1`), profil (`ute-profile-v1` : réglages PROF.set, succès ACH/unlock, records, défi du jour MODS/dailyInfo), objectifs (OBJ).
 - Bombes (throwBomb/explode), coffres (tuile CHEST), lune de sang (isBlood), météo (weather), effets (pops, corpses, updateFx/updateWorldFx, drawOverlays).
-- JOUEUR, COMBAT, UNITÉS (navigate, climbUp/pilier, digStep, engage, cohésion d'armée computeArmies).
-- IA ADVERSE : updateAI (styles eco/rush/équilibre, défense, raids, vagues groupées, retraite), champion.
+- JOUEUR (rappel à la base startRecall, potion rapide drinkPotion), COMBAT (onde de choc coreSurge), UNITÉS (navigate, climbUp/pilier, digStep, engage, cohésion et formation computeArmies/armyFront, soin healStep, ordres Assaut/Défense/Tenir/Suivre).
+- MONSTRES : slimes, zombies, ogre de sang (boss de la lune de sang, spawnOgre/updateOgre).
+- IA ADVERSE : updateAI (styles eco/rush/équilibre, composition, défense, raids, contre-attaque, vagues groupées, champion en tête, commandos, repli, dernier carré, vétérans), champion.
 - RENDU : couches monde/lumière (multiply) + halo, atmosphère.
 - INTERFACE : HUD adaptatif (drawHUD, mode large/étroit), panneaux Base/Forge/Sac, menu pause, contrôles tactiles.
 
@@ -26,6 +27,7 @@ Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx ca
 `npm run art` régénère icônes, écran de démarrage et visuels Play Store (`tools/gen-art.mjs`), puis `npm run assets` pour Android et iOS (captures App Store dans `store/ios/`, anglais dans `store/en/`).
 
 ## Tests utilisés
+- `npm test` (`tools/test.mjs`) : tests de fumée sans écran, à relancer après toute modification du jeu.
 - Simulation accélérée : `__game.newGame(1)` puis `__game.step(n)` (exposé sur window pour les tests ; `__game.dbg` donne accès à la météo, aux bombes, aux succès et aux panneaux).
 - Vérifier : aucune erreur console, une partie AFK se termine en défaite, une grosse armée finit par gagner,
   captures à 1366x768, 390x844 (mobile portrait), 844x390 (paysage), 1024x768 (tablette).

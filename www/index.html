@@ -121,6 +121,7 @@ const UNITS={
   miner:{n:'Mineur',hp:60,dmg:4,spd:40,cost:{wood:8,stone:6},range:12,cd:1,d:'Rapporte du minerai'},
   warrior:{n:'Guerrier',hp:120,dmg:12,spd:42,cost:{stone:10,copper:4},range:12,cd:.8,d:'Mêlée solide'},
   archer:{n:'Archer',hp:70,dmg:10,spd:40,cost:{wood:12,iron:3},range:120,cd:1.4,ranged:true,d:'Tire à distance'},
+  healer:{n:'Guérisseur',hp:65,dmg:0,spd:40,cost:{wood:10,coal:5,silver:2},range:70,cd:1.3,heal:16,d:'Soigne les alliés proches'},
   golem:{n:'Golem',hp:460,dmg:34,spd:24,cost:{stone:25,silver:4,gold:2},range:14,cd:1.6,big:true,d:'Colosse qui brise tout'},
   champion:{n:'Champion rouge',hp:320,dmg:18,spd:48,cost:{},range:12,cd:.7,hero:true,d:''},
 };
@@ -284,8 +285,8 @@ function buildTextures(){
 
 // Bottom-aligned pixel creatures; all poses retain the original frame bounds.
 function humanoid(o,p){const c=mk(18,26),P=pen(c.getContext('2d')),ink='#05050c';
-  const role=o.role,hero=role==='hero',boss=role==='champion',zombie=role==='zombie';
-  const body=hero?'#f2c9a0':zombie?'#9eafa0':o.tunic,lo=hero?'#c98f6b':zombie?'#627c76':shade(body,-.35),hi=hero?'#ffe4c6':zombie?'#c5d3b0':shade(body,.35);
+  const role=o.role,hero=role==='hero',boss=role==='champion',ogre=role==='ogre',zombie=role==='zombie';
+  const body=hero?'#f2c9a0':zombie?'#9eafa0':ogre?'#b03a52':o.tunic,lo=hero?'#c98f6b':zombie?'#627c76':ogre?'#641f3a':shade(body,-.35),hi=hero?'#ffe4c6':zombie?'#c5d3b0':ogre?'#e8707f':shade(body,.35);
   const w=(boss?12:hero?10:9)+(p.bob?1:0)-(p.jump?1:0),h=(boss?12:hero?10:9)-(p.bob?1:0)+(p.jump?3:0);
   const x=Math.floor((18-w)/2)+(p.atk?1:0),y=24-h;
   if(hero){const tail=p.lf||0;P(x-2,y+3,3,Math.max(2,h-4),'#a95572');P(x-3,y+h-3+Math.sign(tail),3,2,'#703c62')}
@@ -297,6 +298,9 @@ function humanoid(o,p){const c=mk(18,26),P=pen(c.getContext('2d')),ink='#05050c'
   P(x+2,24-(step>0?1:0),2,1,lo);P(x+w-4,24-(step<0?1:0),2,1,body);
   const ey=y+Math.floor(h*.4),ex=x+w-7;
   if(zombie){for(const xx of[ex,ex+4]){P(xx,ey,1,1,ink);P(xx+2,ey,1,1,ink);P(xx+1,ey+1,1,1,ink);P(xx,ey+2,1,1,ink);P(xx+2,ey+2,1,1,ink)}P(ex+1,ey+3,1,1,lo)}
+  // ogre de la lune de sang : yeux de braise, cornes et crocs (dessiné deux fois plus grand en jeu)
+  else if(ogre){for(const xx of[ex,ex+4]){P(xx,ey,2,2,'#ffe066');P(xx,ey-1,2,1,ink)}P(ex,ey+4,6,1,ink);P(ex+1,ey+5,1,1,'#f3e6d0');P(ex+4,ey+5,1,1,'#f3e6d0');
+    P(x+1,y-2,1,2,'#f3e6d0');P(x+2,y-1,1,1,'#f3e6d0');P(x+w-2,y-2,1,2,'#f3e6d0');P(x+w-3,y-1,1,1,'#f3e6d0')}
   else{for(const xx of[ex,ex+4]){P(xx,ey,3,3,ink);P(xx,ey,1,1,'#ffffff')}}
   const arm=p.wind?-2:p.atk?2:(p.lf||0);
   P(x-1,y+h-5-arm,2,3,lo);P(x+w-1,y+h-5+arm,2,3,hi);
@@ -305,6 +309,9 @@ function humanoid(o,p){const c=mk(18,26),P=pen(c.getContext('2d')),ink='#05050c'
   if(role==='archer'){P(x+3,y-4,1,1,hi);P(x+2,y-3,3,1,body);P(x+1,y-2,5,1,body);P(x,y-1,w-2,2,lo);P(x,y+1,1,4,lo);
     const bx=p.atk?16:14;P(bx-1,ey,1,1,hi);P(bx,ey+1,1,1,hi);P(bx+1,ey+2,1,3,hi);P(bx,ey+5,1,1,hi);P(bx-1,ey+6,1,1,hi);if(p.wind){P(bx-2,ey+1,1,1,hi);P(bx-3,ey+2,1,3,hi);P(bx-2,ey+5,1,1,hi);P(bx-4,ey+3,6,1,'#fff0bd')}else P(bx-1,ey+1,1,5,lo);if(p.atk)P(13,ey+3,4,1,'#fff0bd')}
   if(role==='miner'){P(x+2,y-2,w-4,1,hi);P(x+1,y-1,w-2,2,lo);P(x,y+1,w,1,lo);P(x+w-4,y-1,3,2,ink);P(x+w-3,y-1,1,1,'#ffe580')}
+  // guérisseur : capuche claire et bâton à gemme verte, qui se lève quand il soigne
+  if(role==='healer'){P(x+2,y-2,w-4,1,'#ffffff');P(x+1,y-1,w-2,2,'#dfe4ff');P(x,y+1,1,3,'#dfe4ff');P(x+w-1,y+1,1,3,'#b9bfe6');
+    const sx=p.atk?15:14,sy=y-3-(p.atk?2:0);P(sx,sy+2,1,24-sy-2,'#c9a56a');P(sx-1,sy,3,3,'#7dffb0');P(sx,sy+1,1,1,'#ffffff')}
   if(boss){P(x-1,y-3,1,3,hi);P(x,y-1,2,2,hi);P(x+w,y-3,1,3,hi);P(x+w-2,y-1,2,2,hi);
     P(x+3,y-3,6,2,'#ffce47');for(const dx of[3,5,8])P(x+dx,y-5,1,2,'#ffce47');P(x+5,y-2,1,1,'#ff6868')}
   if(role==='warrior'||role==='miner'||boss){const wx=p.atk?13:12,wy=p.atk?21:23;
@@ -369,10 +376,12 @@ function buildSprites(){
     SPR['warrior'+t]=charSet({...base,role:'warrior',helm:'#52647c',plume:tc,trim:'#a6bcc9'});
     SPR['archer'+t]=charSet({...base,role:'archer',hood:t?'#783e52':'#35587b'});
     SPR['miner'+t]=charSet({...base,role:'miner',hard:'#bb904f',beard:'#684b55'});
+    SPR['healer'+t]=charSet({...base,role:'healer'});
     SPR['golem'+t]=golemSet(tc);SPR['core'+t]=coreSprite(tc);SPR['castle'+t]=castleSprite(t)}
   SPR.champion0=charSet({role:'champion',tunic:'#4f9df5'});
   SPR.champion1=charSet({role:'champion',skin:'#ae8e93',tunic:'#e5534b',pants:'#302238',boots:'#161626',helm:'#43394f',plume:'#ff8666',cape:'#942f4c',belt:'#ceaa6b'});
   SPR.zombie=charSet({role:'zombie',skin:'#87a18b',hair:'#303d46',tunic:'#665575',pants:'#303047',boots:'#1b2130'});
+  SPR.ogre=charSet({role:'ogre'});
   SPR.slime=slimeFrames('#8273d9');SPR.slimeB=slimeFrames('#628ee7');
   SPR.arrow=(()=>{const c=mk(10,3),P=pen(c.getContext('2d'));P(0,0,2,1,'#92a9b9');P(1,1,8,1,'#797dc4');P(0,2,2,1,'#92a9b9');P(7,0,1,3,'#778ba4');P(8,1,2,1,'#dce3d8');return c})();
   const met={1:['#4e4e8b','#8f9bcf'],2:ORE[COPPER].slice(1),3:ORE[IRON].slice(1),4:ORE[DIAMOND].slice(1)};
@@ -493,18 +502,31 @@ function computeLight(){
 let state='title', diff=1, time=0, dayLen=300, ents=[], parts=[], arrows=[], floats=[], msgs=[], bases=[], player, cam={x:0,y:0}, shake=0;
 let lastEndChange=0,confetti=[],panelT=1,craftFx=0,endInfo={},fade=0,bloodNight=-1,weather={rain:0,target:0,t:20,flash:0},corpses=[],pops=[],bombs=[],hurtFx=0,hitStop=0,shownState='title';
 let paused=false,pauseHelp=false,endT=0,endState=null,panel=null, cursorItem=null, stats, ai, titleCam=0, hoverTile=null, mining=null;
-const DIFFS=[{n:'Paisible',inc:.55,core:1.3},{n:'Normal',inc:1,core:1},{n:'Brutal',inc:1.6,core:.85}];
+// Cinq niveaux : chacun règle l'économie rouge, le rythme des vagues et surtout ce que le commandant sait faire (iq).
+//  inc revenu rouge · ecore/pcore PV des cœurs · first délai avant la 1re vague · wave/grow/wmax taille des vagues · cap effectif rouge max
+//  rest pause après une vague repoussée · champ PV du champion · mon monstres la nuit · hurt dégâts subis par le héros · resp délai de retour
+//  think cadence du commandant · surge onde de choc de secours de ton cœur · iq : 0 passif, 1 contre et pille, 2 champion en tête et tir concentré,
+//  3 commandos et repli tactique, 4 vétérans (chaque vague lancée renforce les suivantes)
+const DIFFS=[
+  {id:'p',n:'Paisible',d:'Ennemi lent et prudent. Idéal pour découvrir.',ach:'win0',inc:.6,ecore:.9,pcore:1.25,first:330,wave:5,grow:2,wmax:18,cap:20,rest:150,champ:250,mon:4,hurt:.7,resp:4,think:2.4,miners:0,strike:0,surge:90,iq:0},
+  {id:'n',n:'Normal',d:'Le rouge contre tes troupes et pille tes mineurs.',ach:'win1',inc:1,ecore:1,pcore:1,first:210,wave:7,grow:3,wmax:28,cap:30,rest:45,champ:336,mon:8,hurt:1,resp:6,think:2,miners:0,strike:3,surge:60,iq:1},
+  {id:'h',n:'Difficile',d:'Vagues rapprochées, le champion mène l\'assaut.',ach:'winh',inc:1.3,ecore:1.1,pcore:1,first:170,wave:8,grow:3,wmax:30,cap:34,rest:35,champ:380,mon:10,hurt:1.1,resp:7,think:1.7,miners:0,strike:3,surge:40,iq:2},
+  {id:'b',n:'Brutal',d:'Commandos sur ton cœur, monstres en nombre.',ach:'win2',inc:1.6,ecore:1.2,pcore:1,first:120,wave:8,grow:4,wmax:32,cap:38,rest:25,champ:416,mon:11,hurt:1.2,resp:8,think:1.4,miners:1,strike:4,surge:0,iq:3},
+  {id:'c',n:'Cauchemar',d:'L\'ennemi se renforce à chaque vague. Sans pitié.',ach:'winc',inc:2.2,ecore:1.35,pcore:.9,first:80,wave:9,grow:5,wmax:40,cap:48,rest:12,champ:520,mon:14,hurt:1.35,resp:10,think:1.1,miners:1,strike:5,surge:0,iq:4,lock:true}];
+const DF=()=>DIFFS[diff];
+// Cauchemar s'ouvre après une victoire en Difficile ou en Brutal
+const diffOpen=i=>!DIFFS[i].lock||!!(PROF.ach.winh||PROF.ach.win2||PROF.ach.winc);
 function newGame(d,dly=null,sv=false){
   daily=dly;diff=d;surv=sv&&!dly;genWorld(dly?dly.seed:(Math.random()*1e9)|0);fade=1;bloodNight=-1;weather={rain:0,target:0,t:20,flash:0};corpses=[];pops=[];bombs=[];visualDebris.length=0;PROF.games++;saveProf();
   ents=[];parts=[];arrows=[];floats=[];msgs=[];time=dayLen*.08;panel=null;cursorItem=null;
-  stats={mined:0,recruited:0,kills:0,start:time,obj:0,rk:{},chests:0,waves:0};
+  stats={mined:0,recruited:0,kills:0,start:time,obj:0,rk:{},chests:0,waves:0,ogres:0,coreHit:0};
   bases=[0,1].map(t=>{const coreTx=t===0?19:WW-20;const core={type:'core',team:t,x:coreTx*T-3,y:BASE_GY*T-34,w:22,h:34,hp:0,maxhp:0,flash:0,anim:0};
-    core.maxhp=core.hp=Math.round(1600*(t===1?DIFFS[d].core:1)*(dly&&dly.mod.id==='glass'?.5:1));
-    const b={team:t,order:t===0?'attack':'defend',core,storage:{wood:20,stone:20,coal:0,copper:6,iron:0,silver:0,gold:0,diamond:0},upg:{core:0,speed:0,dmg:0,tower:0},
+    core.maxhp=core.hp=Math.round(1600*(t===1?DIFFS[d].ecore:DIFFS[d].pcore)*(dly&&dly.mod.id==='glass'?.5:1));
+    const b={team:t,order:t===0?'attack':'defend',holdX:null,core,storage:{wood:20,stone:20,coal:0,copper:6,iron:0,silver:0,gold:0,diamond:0},upg:{core:0,speed:0,dmg:0,tower:0},
       castleX:(t===0?4:WW-16)*T-8,tower:{x:t===0?(4*T-8)+155:(WW-16)*T-8+21,y:BASE_GY*T-128,cd:2}};
     ents.push(core);return b});
   player={type:'player',team:0,x:22*T,y:BASE_GY*T-24,w:10,h:22,vx:0,vy:0,hp:100,maxhp:100,dir:1,onGround:false,anim:0,flash:0,
-    inv:new Array(36).fill(null),sel:0,swing:0,swingDir:1,useCd:0,dead:false,respawn:0,iframes:0,stepOff:0,coyote:0,jumpBuf:0};
+    inv:new Array(36).fill(null),sel:0,swing:0,swingDir:1,useCd:0,dead:false,respawn:0,iframes:0,stepOff:0,coyote:0,jumpBuf:0,recall:0,recallCd:0};
   addItem('pick1',1);addItem('sword1',1);addItem('torch',12);addItem('plank',20);
   ents.push(player);
   REL=relicsFor(dly);applyRelics();
@@ -525,16 +547,17 @@ const b64u8=s=>{const b=atob(s),a=new Uint8Array(b.length);for(let i=0;i<b.lengt
 function hasSave(){try{return!!localStorage.getItem(SAVE_KEY)}catch(e){return false}}
 function saveGame(){if(state!=='play'||endT>0)return;try{
   const units=ents.filter(e=>e.type==='unit'&&!e.dead).map(e=>({k:e.kind,t:e.team,x:e.x,y:e.y,hp:e.hp,mh:e.maxhp,c:e.carry,n:e.carryN,s:e.state}));
-  const data={v:1,seed:SEED,diff,time,stats,fg:u8b64(fg),bg:u8b64(bg),surf:Array.from(surf),trees:trees.map(t=>[t.x,t.top,t.r]),
+  const data={v:1,dv:2,seed:SEED,diff,time,stats,fg:u8b64(fg),bg:u8b64(bg),surf:Array.from(surf),trees:trees.map(t=>[t.x,t.top,t.r]),
     player:{x:player.x,y:player.y,hp:player.hp,inv:player.inv,sel:player.sel},
-    bases:bases.map(b=>({st:b.storage,up:b.upg,o:b.order,hp:b.core.hp,mh:b.core.maxhp})),units,ai:{style:ai.style,wave:ai.wave,sent:ai.sent,champT:ai.champT},daily,surv,rel:REL};
+    bases:bases.map(b=>({st:b.storage,up:b.upg,o:b.order,hx:b.holdX,sg:b.core.surged?1:0,hp:b.core.hp,mh:b.core.maxhp})),units,ai:{style:ai.style,wave:ai.wave,sent:ai.sent,champT:ai.champT,stand:ai.stand?1:0,vet:ai.vet||0,waveNo:ai.waveNo||0},daily,surv,rel:REL};
   localStorage.setItem(SAVE_KEY,JSON.stringify(data))}catch(e){}}
 function loadGame(){let d;try{d=JSON.parse(localStorage.getItem(SAVE_KEY))}catch(e){return false}if(!d||d.v!==1)return false;
-  newGame(d.diff,d.daily||null,!!d.surv);PROF.games--;tut=-1;firstRun=false;REL=d.rel||{};msgs=[];SEED=d.seed;fg=b64u8(d.fg);bg=b64u8(d.bg);surf=Int16Array.from(d.surf);trees=d.trees.map(([x,top,r])=>({x,top,r,img:makeCanopy(r,SEED+x)}));
+  // dv absent : sauvegarde d'avant les 5 difficultés (l'ancien Brutal, indice 2, est devenu l'indice 3)
+  newGame(clamp(d.dv?d.diff:d.diff===2?3:d.diff,0,DIFFS.length-1),d.daily||null,!!d.surv);PROF.games--;tut=-1;firstRun=false;REL=d.rel||{};msgs=[];SEED=d.seed;fg=b64u8(d.fg);bg=b64u8(d.bg);surf=Int16Array.from(d.surf);trees=d.trees.map(([x,top,r])=>({x,top,r,img:makeCanopy(r,SEED+x)}));
   for(let y=0;y<WH;y++)for(let x=0;x<WW;x++)mmPix(x,y);
-  time=d.time;stats=Object.assign({obj:0,rk:{}},d.stats);Object.assign(player,{x:d.player.x,y:d.player.y,hp:d.player.hp,maxhp:100+relV('life'),inv:d.player.inv,sel:d.player.sel});
-  d.bases.forEach((s,i)=>{const b=bases[i];b.storage=s.st;b.upg=s.up;b.order=s.o;b.core.hp=s.hp;b.core.maxhp=s.mh});
-  ents=ents.filter(e=>e.type!=='unit');ai.style=d.ai.style;ai.wave=d.ai.wave;ai.sent=d.ai.sent;ai.champT=d.ai.champT;ai.champ=null;
+  time=d.time;stats=Object.assign({obj:0,rk:{},ogres:0,coreHit:0},d.stats);Object.assign(player,{x:d.player.x,y:d.player.y,hp:d.player.hp,maxhp:100+relV('life'),inv:d.player.inv,sel:d.player.sel});
+  d.bases.forEach((s,i)=>{const b=bases[i];b.storage=s.st;b.upg=s.up;b.order=s.o;b.holdX=s.hx??null;b.core.surged=!!s.sg;b.core.hp=s.hp;b.core.maxhp=s.mh});
+  ents=ents.filter(e=>e.type!=='unit');ai.style=d.ai.style;ai.wave=d.ai.wave;ai.sent=d.ai.sent;ai.champT=d.ai.champT;ai.stand=!!d.ai.stand;ai.vet=d.ai.vet||0;ai.waveNo=d.ai.waveNo||0;ai.champ=null;
   for(const u of d.units){const e=recruit(u.t,u.k,true);Object.assign(e,{x:u.x,y:u.y,hp:u.hp,maxhp:u.mh,carry:u.c||{},carryN:u.n||0,state:u.s||'seek'});if(u.k==='champion')ai.champ=e}
   cam.x=player.x-VW/2;cam.y=player.y-VH*camFY();computeLight();toast('Partie reprise.',2.5,COL.gold);return true}
 let saveT=20;
@@ -543,10 +566,12 @@ addEventListener('pagehide',saveGame);document.addEventListener('visibilitychang
 const PROF_KEY='ute-profile-v1';
 const PROF=(()=>{let d=null;try{d=JSON.parse(localStorage.getItem(PROF_KEY))}catch(e){}
   d=d||{};d.set=Object.assign({en:!/^fr/i.test(navigator.language||'fr'),sound:true,music:true,vib:true,shake:true,crt:true,lefty:false},d.set);
-  d.ach=d.ach||{};d.rec=d.rec||{};d.games=d.games||0;d.wins=d.wins||0;d.daily=d.daily||{};d.tot=Object.assign({mined:0,kills:0,recruited:0},d.tot);d.relics=d.relics||{};if(d.tutDone==null)d.tutDone=d.games>0;d.relEq=d.relEq||[];return d})();
+  d.ach=d.ach||{};d.rec=d.rec||{};d.games=d.games||0;d.wins=d.wins||0;d.daily=d.daily||{};d.tot=Object.assign({mined:0,kills:0,recruited:0},d.tot);d.relics=d.relics||{};if(d.tutDone==null)d.tutDone=d.games>0;d.relEq=d.relEq||[];
+  // dv 2 : records rangés par identifiant de difficulté (kp, kn, kh, kb, kc) au lieu de l'indice 0-2 d'avant
+  if(!d.dv){for(const[o,n]of[['0','kp'],['1','kn'],['2','kb']])if(d.rec[o]){d.rec[n]=d.rec[o];delete d.rec[o]}d.dv=2}return d})();
 function saveProf(){try{localStorage.setItem(PROF_KEY,JSON.stringify(PROF))}catch(e){}}
 // ---------- traduction : le texte est écrit en français, l'anglais est appliqué à l'affichage (txt/uiWidth/uiFit) ----------
-const EN={"Touche ◀ ▶ pour marcher": "Tap ◀ ▶ to walk", "Marche avec Q / D ou ← →": "Walk with A / D or ← →", "Touche ▲ pour sauter": "Tap ▲ to jump", "Saute avec Espace": "Jump with Space", "Gros bouton : mine le bloc visé": "Big button: mine the targeted block", "Clic droit sur un bloc pour le miner": "Right-click a block to mine it", "Bien joué ! Suis maintenant les objectifs en bas de l'écran.": "Well done! Now follow the objectives at the bottom of the screen.","Gant du mineur": "Miner's glove", "Mine {v} % plus vite": "Mine {v}% faster", "Lame ancienne": "Ancient blade", "Tes coups +{v} % de dégâts": "Your hits +{v}% damage", "Cœur de cristal": "Crystal heart", "Ton cœur +{v} PV": "Your core +{v} HP", "Bourse du roi": "King's purse", "Réserve de départ +{v} cuivre": "Starting stock +{v} copper", "Tambour de guerre": "War drum", "Tes unités +{v} % de vitesse": "Your units +{v}% speed", "Œil du veilleur": "Watcher's eye", "Tour de guet +{v} % de dégâts": "Watchtower +{v}% damage", "Sceau de vie": "Seal of life", "+{v} PV max pour toi": "+{v} max HP for you", "Bannière de la garde": "Guard banner", "Commence avec {v} guerrier": "Start with {v} warrior", "Relique renforcée : ": "Relic upgraded: ", "Nouvelle relique : ": "New relic: ", "niv.": "lv.", "équipe-la depuis le menu": "equip it from the menu", "Reliques": "Relics", "Équipées ": "Equipped ", "touche pour équiper": "tap to equip", "pas en défi du jour": "not in daily challenge", "Coffres, champion rouge, Siège": "Chests, red champion, Siege", "3e emplacement après 10 victoires (": "3rd slot after 10 wins (","VICTOIRE":"VICTORY","Copié !":"Copied!","J'ai repoussé ":"I repelled "," vagues en mode Siège":" waves in Siege mode","J'ai détruit le cœur rouge en ":"I destroyed the red core in ","Mon cœur est tombé après ":"My core fell after ","ennemis abattus":"enemies slain","Fais mieux sur le défi du jour !":"Beat me on the daily challenge!","Bats mon record !":"Beat my record!","Partager":"Share","Résultat copié, colle-le où tu veux !":"Result copied, paste it anywhere!","Partage impossible sur cet appareil.":"Sharing is not available on this device.","Quêtes du jour": "Daily quests", "récompense à prendre": "reward waiting", "blocs": "blocks", "Abats": "Defeat", "ennemis": "enemies", "Recrute": "Recruit", "Ouvre": "Open", "coffres": "chests", "coffre": "chest", "Trouve": "Find", "diamant": "diamond", "diamants": "diamonds", "Gagne": "Win", "partie": "game", "parties": "games", "Repousse": "Repel", "vagues en Siège": "waves in Siege mode", "Abats le champion rouge": "Defeat the red champion", "Quête accomplie": "Quest complete", "à la prochaine partie": "next game", "Les 3 quêtes du jour sont faites !": "All 3 daily quests done!", "Bonus": "Bonus", "Récompense du jour": "Daily reward", "série": "streak", "Butin de quêtes": "Quest loot", "Récompense du jour reçue": "Daily reward claimed", "Lance une partie pour la récompense du jour": "Start a game to claim the daily reward","Manette connectée":"Controller connected","Marcher": "Walk", "Espace": "Space", "Sauter": "Jump", "Ordre": "Order", "oui": "yes", "non": "no", "droitier": "right-handed", "gaucher": "left-handed", "Parties": "Games", "Victoires": "Wins", "Nuit": "Night", "Jour": "Day", "CASES": "TILES", "cases": "tiles", "Ton cœur s'est éteint.": "Your core has fallen.", "Blocs": "Blocks", "Recrues": "Recruits", "Coffres": "Chests", "Toi": "You", "TOI": "YOU", "Ennemi": "Enemy", "ENNEMI": "ENEMY", "VAGUE ROUGE": "RED WAVE", "Vague rouge": "Red wave", "dans": "in", "DANS": "IN", "unités": "units", "unité": "unit", " : ": ": ", "Q D / ← →": "A D / ← →","Herbe":"Grass","Terre":"Dirt","Pierre":"Stone","Charbon":"Coal","Cuivre":"Copper","Fer":"Iron","Argent":"Silver","Diamant":"Diamond","Roche profonde":"Deep rock","Socle":"Bedrock","Bois":"Wood","Feuilles":"Leaves","Planches":"Planks","Briques":"Bricks","Neige":"Snow","Rempart":"Rampart","Torche":"Torch","Plante":"Plant","Cristal":"Crystal","Lianes":"Vines","Champignon":"Mushroom","Fougère":"Fern","Eau":"Water","Coffre":"Chest","Cristal de vie":"Life crystal","Pioche en bois":"Wood pickaxe","Pioche en cuivre":"Copper pickaxe","Pioche en fer":"Iron pickaxe","Pioche en diamant":"Diamond pickaxe","Épée en bois":"Wood sword","Épée en cuivre":"Copper sword","Épée en fer":"Iron sword","Épée en diamant":"Diamond sword","Arc":"Bow","Potion de soin":"Health potion","Bombe":"Bomb","Mineur":"Miner","Rapporte du minerai":"Brings back ore","Guerrier":"Warrior","Mêlée solide":"Solid melee","Tire à distance":"Ranged shooter","Colosse qui brise tout":"Colossus that smashes all","Champion rouge":"Red champion","Cœur renforcé":"Reinforced core","+300 PV max au cœur":"+300 max core HP","Entraînement":"Training","+12% vitesse des unités":"+12% unit speed","Forge de guerre":"War forge","+25% dégâts des unités":"+25% unit damage","dégâts +":"damage +","Tour de guet":"Watchtower","Tour plus puissante":"Stronger tower","Paisible":"Peaceful","Défi du jour : ":"Daily challenge: ","Mode Siège : le cœur rouge est indestructible. Repousse autant de vagues que possible !":"Siege mode: the red core is invincible. Survive as many waves as you can!","Protège ton cœur bleu. Détruis le cœur rouge, à l'autre bout du monde.":"Protect your blue core. Destroy the red core at the far end of the world.","Mine du minerai, rapporte-le à ta base et recrute des troupes ":"Mine ore, bring it to your base and recruit troops ","Partie reprise.":"Game resumed.","Premier coup de pioche":"First swing","Mine ton premier bloc":"Mine your first block","Inébranlable":"Unshakable","Repousse 10 vagues en mode Siège":"Survive 10 waves in Siege mode","Taupe":"Mole","Mine 100 blocs dans une partie":"Mine 100 blocks in one game","Général":"General","Aie 10 unités en même temps":"Have 10 units at once","Colosse":"Colossus","Recrute un golem":"Recruit a golem","Éclat bleu":"Blue shard","Trouve un diamant":"Find a diamond","Pioche ultime":"Ultimate pickaxe","Forge la pioche en diamant":"Forge the diamond pickaxe","Pilleur de grottes":"Cave raider","Ouvre un coffre au trésor":"Open a treasure chest","Artificier":"Bomber","Fais exploser une bombe":"Blow up a bomb","Tueur de champion":"Champion slayer","Abats le champion rouge":"Defeat the red champion","Lune de sang":"Blood moon","Survis à une lune de sang":"Survive a blood moon","Victoire paisible":"Peaceful victory","Gagne en Paisible":"Win on Peaceful","Victoire":"Victory","Gagne en Normal":"Win on Normal","Gagne en Brutal":"Win on Brutal","Éclair":"Lightning","Gagne en moins de 20 minutes":"Win in under 20 minutes","Défi relevé":"Challenge done","Gagne un défi du jour":"Win a daily challenge","Assidu":"Dedicated","Joue le défi 3 jours de suite":"Play the challenge 3 days in a row","Filons généreux":"Rich veins","Deux fois plus de minerai":"Twice the ore","Nuits rouges":"Red nights","Chaque nuit est une lune de sang":"Every night is a blood moon","Rouge enragé":"Raging red","L'ennemi recrute 40 % plus vite":"Enemy recruits 40% faster","Trésor royal":"Royal treasure","Ta base démarre avec une réserve pleine":"Your base starts with full stock","Cœurs de verre":"Glass cores","Les deux cœurs ont moitié moins de PV":"Both cores have half HP","Mine 10 blocs avec ta pioche":"Mine 10 blocks with your pickaxe","Recrute un mineur à ta base":"Recruit a miner at your base","Rapporte du cuivre : 12 en réserve à ta base":"Bring back copper: 12 in stock at your base","Fabrique une pioche en cuivre à la forge":"Craft a copper pickaxe at the forge","Achète une amélioration de base":"Buy a base upgrade","Abats 5 ennemis rouges":"Defeat 5 red enemies","Détruis le cœur rouge, à l'autre bout du monde":"Destroy the red core at the far end of the world","Objectif accompli !":"Objective complete!"," Récompense : ":" Reward: ","Coffre au trésor !":"Treasure chest!","Tu es de retour à la base.":"You're back at base.","Dépôt à la base : ":"Base deposit: ","Il faut une meilleure pioche pour : ":"Better pickaxe needed for: ","Ton cœur est attaqué !":"Your core is under attack!","Tu es tombé… retour à la base dans 6 s.":"You fell... back to base in 6s.","Le champion rouge est tombé !":"The red champion has fallen!","Ton cœur est attaqué ! Tes défenseurs accourent.":"Your core is under attack! Defenders rush in.","Des pillards attaquent tes mineurs : 3 défenseurs partent les intercepter.":"Raiders attack your miners: 3 defenders go to intercept.","Le champion rouge bat en retraite pour se soigner !":"The red champion retreats to heal!","Un mineur rapporte : ":"A miner brings back: ","Le champion rouge reprend les armes.":"The red champion fights again.","L'armée rouge se rassemble : attaque dans moins de 30 s !":"The red army is gathering: attack in under 30s!","La vague rouge (":"The red wave ("," unités) dépasse ta défense : recrute des troupes ou améliore la tour (Base).":" units) overwhelms your defense: recruit troops or upgrade the tower (Base).","Contre-attaque ! Des unités rouges foncent vers ton cœur dégarni.":"Counter-attack! Red units rush your exposed core.","Des pillards rouges traquent tes mineurs !":"Red raiders are hunting your miners!","L'armée rouge hésite devant ta défense et se renforce.":"The red army hesitates at your defense and reinforces.","L'armée rouge marche sur ta base (":"The red army marches on your base ("," unités) !":" units)!"," repoussée ! La suivante sera plus forte.":" repelled! The next one is stronger.","L'ennemi bat en retraite.":"The enemy retreats.","Lune de sang ! Les monstres sont deux fois plus nombreux cette nuit.":"Blood moon! Twice as many monsters tonight.","Tu as survécu à la lune de sang !":"You survived the blood moon!","SUCCÈS : ":"ACHIEVEMENT: ","Succès : ":"Achievement: ","Retour dans ":"Back in "," unités":" units"," unité":" unit","ARMÉE ROUGE EN MARCHE · ":"RED ARMY MARCHING · "," en réserve":" in stock","Flèches à l'écran : marcher. ▲ : sauter, nager vers le haut.":"On-screen arrows: walk. ▲: jump, swim up.","Gros bouton : utiliser l'objet, vise tout seul. ▼ + bouton : creuser dessous.":"Big button: use item, auto-aims. ▼ + button: dig down.","Toucher le monde : utiliser l'objet à cet endroit précis.":"Tap the world: use item at that spot.","Barre du bas : choisir un objet. Base : recruter et améliorer.":"Bottom bar: pick an item. Base: recruit and upgrade.","Forge : fabriquer outils et armes. Ordre : Assaut, Défense ou Suivre.":"Forge: craft tools and weapons. Order: Assault, Defend or Follow.","Q D ou ← → : marcher. Z, Espace ou ↑ : sauter, nager.":"A D or ← →: walk. W, Space or ↑: jump, swim.","Clic gauche : utiliser l'objet. Clic droit : miner. Molette : objet.":"Left click: use item. Right click: mine. Wheel: item.","B : base · C : forge · E : sac · R : ordre · M : son · Échap : menu.":"B: base · C: forge · E: bag · R: order · M: sound · Esc: menu.","But : détruire le cœur rouge à l'autre bout du monde.":"Goal: destroy the red core at the far end of the world.","Ton minerai est déposé tout seul à ta base. Les mineurs en rapportent aussi.":"Your ore is deposited at your base automatically. Miners bring some too.","La nuit, slimes et zombies sortent. Le champion rouge pille la montagne.":"At night, slimes and zombies come out. The red champion raids the mountain.","Mineur : creuse et rapporte le minerai. Fuit les pillards vers la tour.":"Miner: digs and brings back ore. Flees raiders toward the tower.","Guerrier : mêlée solide. Archer : tire de loin, recule au contact.":"Warrior: solid melee. Archer: shoots from afar, backs off in melee.","Golem : colosse lent qui brise tout, idéal contre le cœur.":"Golem: slow colossus that smashes all, great against the core.","Tour de guet : tire sur les ennemis proches de ton cœur. Améliore-la à la base.":"Watchtower: shoots enemies near your core. Upgrade it at the base.","Défense : tes troupes tiennent une ligne devant le cœur, sous la tour. 3 d'entre elles chassent les pillards.":"Defend: your troops hold a line before the core, under the tower. 3 of them chase raiders.","Assaut : l'armée marche groupée vers le cœur rouge.":"Assault: the army marches together to the red core.","Suivre : tes troupes t'escortent partout.":"Follow: your troops escort you everywhere.","Blessées, les unités rentrent se soigner à la base.":"When hurt, units go heal at the base.","Unités et ordres":"Units and orders","Aide":"Help","Unités →":"Units →","Retour":"Back","Reprendre":"Resume","Réglages":"Settings","Aide et commandes":"Help and controls","Succès ":"Achievements ","Sauvegarder et quitter":"Save and quit","Siège · vague ":"Siege · wave ","Difficulté ":"Difficulty ","Partie sauvegardée toutes les 20 s":"Game saved every 20s","Assaut":"Assault","Défense":"Defend","Suivre":"Follow","Tes troupes partent à l'assaut du cœur rouge.":"Your troops charge the red core.","Tes troupes se regroupent devant ta base.":"Your troops gather before your base.","Tes troupes t'escortent.":"Your troops escort you.","Ta base":"Your base","Recruter":"Recruit"," recruté !":" recruited!","Améliorations":"Upgrades","Déposer pierre/bois":"Deposit stone/wood","Déposé : ":"Deposited: ","Rien à déposer.":"Nothing to deposit.","sac puis réserve de la base":"bag, then base stock","Créer":"Craft","Fabriqué : ":"Crafted: ","Sac":"Bag","clique pour déplacer":"click to move","Mine. Forge. Détruis leur cœur.":"Mine. Forge. Destroy their core.","Continuer la partie":"Continue game","Sauvegarde illisible.":"Save unreadable.","Mode Siège : vagues infinies":"Siege mode: endless waves"," · Série : ":" · Streak: ","Gros bouton : miner, frapper, lancer":"Big button: mine, strike, throw","Base · Forge · Sac : commandes du bas":"Base · Forge · Bag: bottom controls","Clic gauche Utiliser   Clic droit Miner":"Left click Use   Right click Mine","Son":"Sound","Musique":"Music","Vibrations":"Vibration","Secousses de l'écran":"Screen shake","Effet rétro (lignes)":"Retro effect (lines)","Commandes":"Controls","Astuce : améliore la tour et garde l'ordre Défense, les vagues viennent à toi.":"Tip: upgrade the tower and keep the Defend order, waves come to you.","Chaque vague repoussée renforce la suivante : investis vite dans les améliorations.":"Each repelled wave makes the next stronger: invest in upgrades fast.","Prêt pour plus dur ? Essaie la difficulté ":"Ready for harder? Try difficulty ","Victoire en ":"Victory in ","Astuce : rapporte du minerai à ta base et recrute des mineurs, puis des guerriers (bouton Base).":"Tip: bring ore to your base and recruit miners, then warriors (Base button).","Astuce : des mineurs remplissent la réserve tout seuls, recrute-les en premier.":"Tip: miners fill the stock on their own, recruit them first.","Astuce : recrute aussi des guerriers et des archers pour protéger ton cœur.":"Tip: also recruit warriors and archers to protect your core.","Astuce : garde l'ordre Défense tant que ton armée est petite, la tour couvre la ligne.":"Tip: keep the Defend order while your army is small, the tower covers the line.","Astuce : regroupe une dizaine de combattants avant de lancer l'Assaut.":"Tip: gather about ten fighters before launching the Assault.","DÉFAITE":"DEFEAT","Le cœur ennemi a volé en éclats.":"The enemy core shattered.","Vagues repoussées : ":"Waves repelled: ","Défi du jour · ":"Daily challenge · ","Siège · ":"Siege · "," · Durée ":" · Time ","Nouveau record ! (avant : ":"New record! (was: ","Premier record établi !":"First record set!","Record à battre : ":"Record to beat: "," · Ennemis abattus ":" · Enemies slain ","Rejouer":"Retry","Son coupé":"Sound off","Son activé":"Sound on","Langue / Language":"Langue / Language","English":"English","français":"français"};
+const EN={"Touche ◀ ▶ pour marcher": "Tap ◀ ▶ to walk", "Marche avec Q / D ou ← →": "Walk with A / D or ← →", "Touche ▲ pour sauter": "Tap ▲ to jump", "Saute avec Espace": "Jump with Space", "Gros bouton : mine le bloc visé": "Big button: mine the targeted block", "Clic droit sur un bloc pour le miner": "Right-click a block to mine it", "Bien joué ! Suis maintenant les objectifs en bas de l'écran.": "Well done! Now follow the objectives at the bottom of the screen.","Gant du mineur": "Miner's glove", "Mine {v} % plus vite": "Mine {v}% faster", "Lame ancienne": "Ancient blade", "Tes coups +{v} % de dégâts": "Your hits +{v}% damage", "Cœur de cristal": "Crystal heart", "Ton cœur +{v} PV": "Your core +{v} HP", "Bourse du roi": "King's purse", "Réserve de départ +{v} cuivre": "Starting stock +{v} copper", "Tambour de guerre": "War drum", "Tes unités +{v} % de vitesse": "Your units +{v}% speed", "Œil du veilleur": "Watcher's eye", "Tour de guet +{v} % de dégâts": "Watchtower +{v}% damage", "Sceau de vie": "Seal of life", "+{v} PV max pour toi": "+{v} max HP for you", "Bannière de la garde": "Guard banner", "Commence avec {v} guerrier": "Start with {v} warrior", "Relique renforcée : ": "Relic upgraded: ", "Nouvelle relique : ": "New relic: ", "niv.": "lv.", "équipe-la depuis le menu": "equip it from the menu", "Reliques": "Relics", "Équipées ": "Equipped ", "touche pour équiper": "tap to equip", "pas en défi du jour": "not in daily challenge", "Coffres, champion rouge, Siège": "Chests, red champion, Siege", "3e emplacement après 10 victoires (": "3rd slot after 10 wins (","VICTOIRE":"VICTORY","Copié !":"Copied!","J'ai repoussé ":"I repelled "," vagues en mode Siège":" waves in Siege mode","J'ai détruit le cœur rouge en ":"I destroyed the red core in ","Mon cœur est tombé après ":"My core fell after ","ennemis abattus":"enemies slain","Fais mieux sur le défi du jour !":"Beat me on the daily challenge!","Bats mon record !":"Beat my record!","Partager":"Share","Résultat copié, colle-le où tu veux !":"Result copied, paste it anywhere!","Partage impossible sur cet appareil.":"Sharing is not available on this device.","Quêtes du jour": "Daily quests", "récompense à prendre": "reward waiting", "blocs": "blocks", "Abats": "Defeat", "ennemis": "enemies", "Recrute": "Recruit", "Ouvre": "Open", "coffres": "chests", "coffre": "chest", "Trouve": "Find", "diamant": "diamond", "diamants": "diamonds", "Gagne": "Win", "partie": "game", "parties": "games", "Repousse": "Repel", "vagues en Siège": "waves in Siege mode", "Abats le champion rouge": "Defeat the red champion", "Quête accomplie": "Quest complete", "à la prochaine partie": "next game", "Les 3 quêtes du jour sont faites !": "All 3 daily quests done!", "Bonus": "Bonus", "Récompense du jour": "Daily reward", "série": "streak", "Butin de quêtes": "Quest loot", "Récompense du jour reçue": "Daily reward claimed", "Lance une partie pour la récompense du jour": "Start a game to claim the daily reward","Manette connectée":"Controller connected","Marcher": "Walk", "Espace": "Space", "Sauter": "Jump", "Ordre": "Order", "oui": "yes", "non": "no", "droitier": "right-handed", "gaucher": "left-handed", "Parties": "Games", "Victoires": "Wins", "Nuit": "Night", "Jour": "Day", "CASES": "TILES", "cases": "tiles", "Ton cœur s'est éteint.": "Your core has fallen.", "Blocs": "Blocks", "Recrues": "Recruits", "Coffres": "Chests", "Toi": "You", "TOI": "YOU", "Ennemi": "Enemy", "ENNEMI": "ENEMY", "VAGUE ROUGE": "RED WAVE", "Vague rouge": "Red wave", "dans": "in", "DANS": "IN", "unités": "units", "unité": "unit", " : ": ": ", "Q D / ← →": "A D / ← →","Herbe":"Grass","Terre":"Dirt","Pierre":"Stone","Charbon":"Coal","Cuivre":"Copper","Fer":"Iron","Argent":"Silver","Diamant":"Diamond","Roche profonde":"Deep rock","Socle":"Bedrock","Bois":"Wood","Feuilles":"Leaves","Planches":"Planks","Briques":"Bricks","Neige":"Snow","Rempart":"Rampart","Torche":"Torch","Plante":"Plant","Cristal":"Crystal","Lianes":"Vines","Champignon":"Mushroom","Fougère":"Fern","Eau":"Water","Coffre":"Chest","Cristal de vie":"Life crystal","Pioche en bois":"Wood pickaxe","Pioche en cuivre":"Copper pickaxe","Pioche en fer":"Iron pickaxe","Pioche en diamant":"Diamond pickaxe","Épée en bois":"Wood sword","Épée en cuivre":"Copper sword","Épée en fer":"Iron sword","Épée en diamant":"Diamond sword","Arc":"Bow","Potion de soin":"Health potion","Bombe":"Bomb","Mineur":"Miner","Rapporte du minerai":"Brings back ore","Guerrier":"Warrior","Mêlée solide":"Solid melee","Tire à distance":"Ranged shooter","Colosse qui brise tout":"Colossus that smashes all","Champion rouge":"Red champion","Cœur renforcé":"Reinforced core","+300 PV max au cœur":"+300 max core HP","Entraînement":"Training","+12% vitesse des unités":"+12% unit speed","Forge de guerre":"War forge","+25% dégâts des unités":"+25% unit damage","dégâts +":"damage +","Tour de guet":"Watchtower","Tour plus puissante":"Stronger tower","Paisible":"Peaceful","Défi du jour : ":"Daily challenge: ","Mode Siège : le cœur rouge est indestructible. Repousse autant de vagues que possible !":"Siege mode: the red core is invincible. Survive as many waves as you can!","Protège ton cœur bleu. Détruis le cœur rouge, à l'autre bout du monde.":"Protect your blue core. Destroy the red core at the far end of the world.","Mine du minerai, rapporte-le à ta base et recrute des troupes ":"Mine ore, bring it to your base and recruit troops ","Partie reprise.":"Game resumed.","Premier coup de pioche":"First swing","Mine ton premier bloc":"Mine your first block","Inébranlable":"Unshakable","Repousse 10 vagues en mode Siège":"Survive 10 waves in Siege mode","Taupe":"Mole","Mine 100 blocs dans une partie":"Mine 100 blocks in one game","Général":"General","Aie 10 unités en même temps":"Have 10 units at once","Colosse":"Colossus","Recrute un golem":"Recruit a golem","Éclat bleu":"Blue shard","Trouve un diamant":"Find a diamond","Pioche ultime":"Ultimate pickaxe","Forge la pioche en diamant":"Forge the diamond pickaxe","Pilleur de grottes":"Cave raider","Ouvre un coffre au trésor":"Open a treasure chest","Artificier":"Bomber","Fais exploser une bombe":"Blow up a bomb","Tueur de champion":"Champion slayer","Abats le champion rouge":"Defeat the red champion","Lune de sang":"Blood moon","Survis à une lune de sang":"Survive a blood moon","Victoire paisible":"Peaceful victory","Gagne en Paisible":"Win on Peaceful","Victoire":"Victory","Gagne en Normal":"Win on Normal","Gagne en Brutal":"Win on Brutal","Éclair":"Lightning","Gagne en moins de 20 minutes":"Win in under 20 minutes","Défi relevé":"Challenge done","Gagne un défi du jour":"Win a daily challenge","Assidu":"Dedicated","Joue le défi 3 jours de suite":"Play the challenge 3 days in a row","Filons généreux":"Rich veins","Deux fois plus de minerai":"Twice the ore","Nuits rouges":"Red nights","Chaque nuit est une lune de sang":"Every night is a blood moon","Rouge enragé":"Raging red","L'ennemi recrute 40 % plus vite":"Enemy recruits 40% faster","Trésor royal":"Royal treasure","Ta base démarre avec une réserve pleine":"Your base starts with full stock","Cœurs de verre":"Glass cores","Les deux cœurs ont moitié moins de PV":"Both cores have half HP","Mine 10 blocs avec ta pioche":"Mine 10 blocks with your pickaxe","Recrute un mineur à ta base":"Recruit a miner at your base","Rapporte du cuivre : 12 en réserve à ta base":"Bring back copper: 12 in stock at your base","Fabrique une pioche en cuivre à la forge":"Craft a copper pickaxe at the forge","Achète une amélioration de base":"Buy a base upgrade","Abats 5 ennemis rouges":"Defeat 5 red enemies","Détruis le cœur rouge, à l'autre bout du monde":"Destroy the red core at the far end of the world","Objectif accompli !":"Objective complete!"," Récompense : ":" Reward: ","Coffre au trésor !":"Treasure chest!","Tu es de retour à la base.":"You're back at base.","Dépôt à la base : ":"Base deposit: ","Il faut une meilleure pioche pour : ":"Better pickaxe needed for: ","Ton cœur est attaqué !":"Your core is under attack!","Le champion rouge est tombé !":"The red champion has fallen!","Ton cœur est attaqué ! Tes défenseurs accourent.":"Your core is under attack! Defenders rush in.","Des pillards attaquent tes mineurs : 3 défenseurs partent les intercepter.":"Raiders attack your miners: 3 defenders go to intercept.","Le champion rouge bat en retraite pour se soigner !":"The red champion retreats to heal!","Un mineur rapporte : ":"A miner brings back: ","Le champion rouge reprend les armes.":"The red champion fights again.","L'armée rouge se rassemble : attaque dans moins de 30 s !":"The red army is gathering: attack in under 30s!","La vague rouge (":"The red wave ("," unités) dépasse ta défense : recrute des troupes ou améliore la tour (Base).":" units) overwhelms your defense: recruit troops or upgrade the tower (Base).","Contre-attaque ! Des unités rouges foncent vers ton cœur dégarni.":"Counter-attack! Red units rush your exposed core.","Des pillards rouges traquent tes mineurs !":"Red raiders are hunting your miners!","L'armée rouge hésite devant ta défense et se renforce.":"The red army hesitates at your defense and reinforces.","L'armée rouge marche sur ta base (":"The red army marches on your base ("," unités) !":" units)!"," repoussée ! La suivante sera plus forte.":" repelled! The next one is stronger.","L'ennemi bat en retraite.":"The enemy retreats.","Lune de sang ! Les monstres sont deux fois plus nombreux cette nuit.":"Blood moon! Twice as many monsters tonight.","Tu as survécu à la lune de sang !":"You survived the blood moon!","SUCCÈS : ":"ACHIEVEMENT: ","Succès : ":"Achievement: ","Retour dans ":"Back in "," unités":" units"," unité":" unit","ARMÉE ROUGE EN MARCHE · ":"RED ARMY MARCHING · "," en réserve":" in stock","Flèches à l'écran : marcher. ▲ : sauter, nager vers le haut.":"On-screen arrows: walk. ▲: jump, swim up.","Gros bouton : utiliser l'objet, vise tout seul. ▼ + bouton : creuser dessous.":"Big button: use item, auto-aims. ▼ + button: dig down.","Toucher le monde : utiliser l'objet à cet endroit précis.":"Tap the world: use item at that spot.","Q D ou ← → : marcher. Z, Espace ou ↑ : sauter, nager.":"A D or ← →: walk. W, Space or ↑: jump, swim.","Clic gauche : utiliser l'objet. Clic droit : miner. Molette : objet.":"Left click: use item. Right click: mine. Wheel: item.","B : base · C : forge · E : sac · R : ordre · M : son · Échap : menu.":"B: base · C: forge · E: bag · R: order · M: sound · Esc: menu.","But : détruire le cœur rouge à l'autre bout du monde.":"Goal: destroy the red core at the far end of the world.","Ton minerai est déposé tout seul à ta base. Les mineurs en rapportent aussi.":"Your ore is deposited at your base automatically. Miners bring some too.","La nuit, slimes et zombies sortent. Le champion rouge pille la montagne.":"At night, slimes and zombies come out. The red champion raids the mountain.","Mineur : creuse et rapporte le minerai. Fuit les pillards vers la tour.":"Miner: digs and brings back ore. Flees raiders toward the tower.","Guerrier : mêlée solide. Archer : tire de loin, recule au contact.":"Warrior: solid melee. Archer: shoots from afar, backs off in melee.","Golem : colosse lent qui brise tout, idéal contre le cœur.":"Golem: slow colossus that smashes all, great against the core.","Tour de guet : tire sur les ennemis proches de ton cœur. Améliore-la à la base.":"Watchtower: shoots enemies near your core. Upgrade it at the base.","Défense : tes troupes tiennent une ligne devant le cœur, sous la tour. 3 d'entre elles chassent les pillards.":"Defend: your troops hold a line before the core, under the tower. 3 of them chase raiders.","Suivre : tes troupes t'escortent partout.":"Follow: your troops escort you everywhere.","Blessées, les unités rentrent se soigner à la base.":"When hurt, units go heal at the base.","Unités et ordres":"Units and orders","Aide":"Help","Unités →":"Units →","Retour":"Back","Reprendre":"Resume","Réglages":"Settings","Aide et commandes":"Help and controls","Succès ":"Achievements ","Sauvegarder et quitter":"Save and quit","Siège · vague ":"Siege · wave ","Difficulté ":"Difficulty ","Partie sauvegardée toutes les 20 s":"Game saved every 20s","Assaut":"Assault","Défense":"Defend","Suivre":"Follow","Tes troupes partent à l'assaut du cœur rouge.":"Your troops charge the red core.","Tes troupes se regroupent devant ta base.":"Your troops gather before your base.","Tes troupes t'escortent.":"Your troops escort you.","Ta base":"Your base","Recruter":"Recruit"," recruté !":" recruited!","Améliorations":"Upgrades","Déposer pierre/bois":"Deposit stone/wood","Déposé : ":"Deposited: ","Rien à déposer.":"Nothing to deposit.","sac puis réserve de la base":"bag, then base stock","Créer":"Craft","Fabriqué : ":"Crafted: ","Sac":"Bag","clique pour déplacer":"click to move","Mine. Forge. Détruis leur cœur.":"Mine. Forge. Destroy their core.","Continuer la partie":"Continue game","Sauvegarde illisible.":"Save unreadable.","Mode Siège : vagues infinies":"Siege mode: endless waves"," · Série : ":" · Streak: ","Gros bouton : miner, frapper, lancer":"Big button: mine, strike, throw","Base · Forge · Sac : commandes du bas":"Base · Forge · Bag: bottom controls","Clic gauche Utiliser   Clic droit Miner":"Left click Use   Right click Mine","Son":"Sound","Musique":"Music","Vibrations":"Vibration","Secousses de l'écran":"Screen shake","Effet rétro (lignes)":"Retro effect (lines)","Commandes":"Controls","Astuce : améliore la tour et garde l'ordre Défense, les vagues viennent à toi.":"Tip: upgrade the tower and keep the Defend order, waves come to you.","Chaque vague repoussée renforce la suivante : investis vite dans les améliorations.":"Each repelled wave makes the next stronger: invest in upgrades fast.","Prêt pour plus dur ? Essaie la difficulté ":"Ready for harder? Try difficulty ","Victoire en ":"Victory in ","Astuce : rapporte du minerai à ta base et recrute des mineurs, puis des guerriers (bouton Base).":"Tip: bring ore to your base and recruit miners, then warriors (Base button).","Astuce : des mineurs remplissent la réserve tout seuls, recrute-les en premier.":"Tip: miners fill the stock on their own, recruit them first.","Astuce : recrute aussi des guerriers et des archers pour protéger ton cœur.":"Tip: also recruit warriors and archers to protect your core.","Astuce : garde l'ordre Défense tant que ton armée est petite, la tour couvre la ligne.":"Tip: keep the Defend order while your army is small, the tower covers the line.","Astuce : regroupe une dizaine de combattants avant de lancer l'Assaut.":"Tip: gather about ten fighters before launching the Assault.","DÉFAITE":"DEFEAT","Le cœur ennemi a volé en éclats.":"The enemy core shattered.","Vagues repoussées : ":"Waves repelled: ","Défi du jour · ":"Daily challenge · ","Siège · ":"Siege · "," · Durée ":" · Time ","Nouveau record ! (avant : ":"New record! (was: ","Premier record établi !":"First record set!","Record à battre : ":"Record to beat: "," · Ennemis abattus ":" · Enemies slain ","Rejouer":"Retry","Son coupé":"Sound off","Son activé":"Sound on","Langue / Language":"Langue / Language","Guérisseur":"Healer","Soigne les alliés proches":"Heals nearby allies","Difficile":"Hard","Cauchemar":"Nightmare","Ennemi lent et prudent. Idéal pour découvrir.":"Slow, cautious enemy. Great to learn.","Le rouge contre tes troupes et pille tes mineurs.":"Red counters your troops and raids your miners.","Vagues rapprochées, le champion mène l'assaut.":"Frequent waves, the champion leads the assault.","Commandos sur ton cœur, monstres en nombre.":"Commandos on your core, monsters in numbers.","L'ennemi se renforce à chaque vague. Sans pitié.":"The enemy grows stronger each wave. No mercy.","Gagne en Difficile ou en Brutal pour l'ouvrir":"Win on Hard or Brutal to unlock","Nouvelle partie":"New game","Stratège":"Strategist","Gagne en Difficile":"Win on Hard","Fin du cauchemar":"End of the nightmare","Gagne en Cauchemar":"Win on Nightmare","Tueur d'ogre":"Ogre slayer","Abats un ogre de sang":"Defeat a blood ogre","Forteresse":"Fortress","Gagne en perdant moins de 10 % de ton cœur":"Win while losing less than 10% of your core","Ton cœur libère une onde de choc ! Profites-en pour le défendre.":"Your core unleashes a shockwave! Use it to defend.","Tu es tombé… retour à la base dans ":"You fell... back to base in ","L'ogre de sang est tombé ! Ramasse son trésor.":"The blood ogre has fallen! Grab its treasure.","L'ogre de sang est tombé sous les coups rouges.":"The blood ogre fell to the red army.","Un ogre de sang marche sur ta base ! Abats-le avant l'aube pour son trésor.":"A blood ogre marches on your base! Slay it before dawn for its treasure.","L'ogre de sang s'évapore à l'aube.":"The blood ogre vanishes at dawn.","Ogre de sang":"Blood ogre","Le cœur rouge vacille : sa garde d'élite sort du château !":"The red core falters: its elite guard storms out!","Le champion rouge mène l'assaut : ses voisins frappent plus fort !":"The red champion leads the assault: nearby troops hit harder!","L'armée rouge se replie pour se regrouper.":"The red army falls back to regroup.","Rappel annulé.":"Recall cancelled.","Rappel prêt dans ":"Recall ready in ","Tu es déjà à la base.":"You are already at base.","Rappel à la base dans 3 s : ne bouge pas.":"Recalling to base in 3s: hold still.","Rappel dans ":"Recall in ","Rappel":"Recall","Tenir":"Hold","Fanion planté : tes troupes tiennent cette position.":"Banner planted: your troops hold this position.","F : boire une potion · H : rappel à la base (3 s sans bouger).":"F: drink a potion · H: recall to base (3s standing still).","Barre du bas : choisir un objet. Base : recruter, améliorer, rappel à la base.":"Bottom bar: pick an item. Base: recruit, upgrade, recall to base.","Forge : fabriquer outils et armes. Ordre : Assaut, Défense, Tenir ou Suivre.":"Forge: craft tools and weapons. Order: Assault, Defend, Hold or Follow.","Blessé : le bouton Potion apparaît sous tes cœurs.":"When hurt: the Potion button appears under your hearts.","Lune de sang : un ogre marche sur ta base. Abats-le avant l'aube pour son trésor.":"Blood moon: an ogre marches on your base. Slay it before dawn for its treasure.","Guérisseur : soigne les alliés proches et reste derrière la ligne.":"Healer: heals nearby allies and stays behind the line.","Assaut : l'armée marche groupée vers le cœur rouge, la mêlée devant.":"Assault: the army marches together to the red core, melee in front.","Tenir : plante un fanion où tu te tiens, tes troupes gardent cette position.":"Hold: plant a banner where you stand, your troops guard that spot.","B Base  C Forge  E Sac  R Ordre  F Potion  H Rappel":"B Base  C Forge  E Bag  R Order  F Potion  H Recall","(touche B).":"(B key).","(bouton Base).":"(Base button).","vitesse +":"speed +","tir +":"fire +","Recrute 3 guerriers":"Recruit 3 warriors","niveau":"level","guerriers":"warriors","Astuce : la difficulté Paisible laisse bien plus de temps pour bâtir ton armée.":"Tip: Peaceful difficulty gives you far more time to build your army.","L'ENNEMI SE DÉFEND":"THE ENEMY IS DEFENDING","English":"English","français":"français"};
 let EN_RE=null;const TR=new Map(),TRM=new Set(); // TRM : textes restés sans traduction (tests)
 // phrase exacte, sinon remplacement des morceaux connus (textes assemblés avec des nombres)
 function tr(s){if(!PROF.set.en||s==null)return s;s=String(s);let r=TR.get(s);if(r!==undefined)return r;
@@ -569,7 +594,11 @@ const ACH=[
   {id:'bloodmoon',n:'Lune de sang',d:'Survis à une lune de sang'},
   {id:'win0',n:'Victoire paisible',d:'Gagne en Paisible'},
   {id:'win1',n:'Victoire',d:'Gagne en Normal'},
+  {id:'winh',n:'Stratège',d:'Gagne en Difficile'},
   {id:'win2',n:'Brutal !',d:'Gagne en Brutal'},
+  {id:'winc',n:'Fin du cauchemar',d:'Gagne en Cauchemar'},
+  {id:'ogre',n:'Tueur d\'ogre',d:'Abats un ogre de sang'},
+  {id:'fort',n:'Forteresse',d:'Gagne en perdant moins de 10 % de ton cœur'},
   {id:'speed',n:'Éclair',d:'Gagne en moins de 20 minutes'},
   {id:'daily',n:'Défi relevé',d:'Gagne un défi du jour'},
   {id:'streak3',n:'Assidu',d:'Joue le défi 3 jours de suite'},
@@ -636,7 +665,7 @@ function dailyInfo(){const k=dayKey();let h=k*2654435761>>>0;h^=h>>>15;return{ke
 let daily=null; // défi en cours (null en partie libre)
 let surv=false; // mode Siège : vagues infinies, le cœur rouge ne tombe pas
 // Siège : chaque vague repoussée renforce la suivante (revenu, effectif max, délai réduit)
-const survCap=()=>22+diff*8+(surv?Math.min(24,stats.waves*3):0),firstWave=()=>surv?Math.max(60,150-stats.waves*10):[300,210,120][diff]+(firstRun?120:0);
+const survCap=()=>DF().cap+(surv?Math.min(24,stats.waves*3):0),firstWave=()=>surv?Math.max(60,150-stats.waves*10):DF().first+(firstRun?120:0);
 // ---------- prise en main de la toute première partie : marcher, sauter, miner (avant les objectifs) ----------
 // firstRun : vraie pendant la première partie libre du profil ; repousse la première vague de 2 min et met en avant le bouton Base
 let tut=-1,firstRun=false;
@@ -782,6 +811,11 @@ function updatePlayer(dt){
   const p=player;
   if(p.dead){p.respawn-=dt;if(p.respawn<=0){p.dead=false;p.hp=p.maxhp;p.x=bases[0].core.x+30;p.y=BASE_GY*T-24;p.vx=p.vy=0;toast('Tu es de retour à la base.')}return}
   const L=keys.ArrowLeft||keys.KeyA||touch.l,Rr=keys.ArrowRight||keys.KeyD||touch.r,J=keys.Space||keys.KeyW||keys.ArrowUp||touch.j;
+  // rappel à la base : 3 s d'incantation immobile (bouger ou être touché l'annule), puis 45 s de recharge
+  if(p.recallCd>0)p.recallCd-=dt;
+  if(p.recall>0){if(L||Rr||J){p.recall=0;toast('Rappel annulé.',1.5,'#ffb0a0')}else{p.recall-=dt;if(rnd()<dt*40)parts.push({x:p.x+R(-4,p.w+4),y:p.y+p.h,vx:0,vy:R(-70,-30),g:-30,life:.6,max:.6,col:'#9fd0ff',size:1,glow:1});
+      if(p.recall<=0){burst(p.x+p.w/2,p.y+p.h/2,'#9fd0ff',20,90,100,.8);p.x=bases[0].core.x+30;p.y=BASE_GY*T-24;p.vx=p.vy=0;p.recallCd=45;cam.x=p.x-VW/2;cam.y=p.y-VH*camFY();
+        pops.push({ring:1,x:p.x+p.w/2,y:p.y+p.h/2,t:.5,max:.5,col:'#9fd0ff',r:30});burst(p.x+p.w/2,p.y+p.h/2,'#9fd0ff',20,90,100,.8);sfx.ach();buzz(40);toast('Tu es de retour à la base.',2.5,'#9fd0ff')}}}
   const acc=p.onGround?1400:900,max=92;
   if(L&&!Rr){p.vx=Math.max(-max,p.vx-acc*dt);p.dir=-1}else if(Rr&&!L){p.vx=Math.min(max,p.vx+acc*dt);p.dir=1}else{p.vx*=p.onGround?Math.pow(.0005,dt):Math.pow(.2,dt);if(Math.abs(p.vx)<4)p.vx=0}
   if(p.inWater&&J){p.vy=Math.max(p.vy-900*dt,-125)}
@@ -817,7 +851,7 @@ function updatePlayer(dt){
     if(melee){const it=melee;if(p.swing<=0){p.swing=.32;p.swingDir=(foeX??wx)<pcx?-1:1;p.dir=p.swingDir;sfx.sword();
         for(const e of ents){if(!e.hp||e===p||!hostile(p,e)||e.type==='item')continue;const ex=e.x+e.w/2,ey=e.y+e.h/2;if(Math.abs(ey-pcy)<26&&(ex-pcx)*p.swingDir>-8&&Math.abs(ex-pcx)<30)hurt(e,it.dmg*(1+(p.critBuff||0))*(1+relV('blade')/100),p)}}}
     else if(it&&it.tool==='bow'){if(p.useCd<=0){p.useCd=.45;const a=Math.atan2(wy-pcy,wx-pcx);arrows.push({x:pcx,y:pcy,vx:Math.cos(a)*340,vy:Math.sin(a)*340,team:0,dmg:it.dmg*(1+relV('blade')/100),life:3,src:p});sfx.bow();p.dir=wx<pcx?-1:1}}
-    else if(it&&it.use==='heal'){if(p.useCd<=0&&p.hp<p.maxhp){p.useCd=.6;p.hp=Math.min(p.maxhp,p.hp+50);takeItem('potion',1);floatText(pcx,p.y-6,'+50','#7dff9a');sfx.buy();burst(pcx,pcy,'#ff7d9a',12,50,-50,.8)}}
+    else if(it&&it.use==='heal')drinkPotion();
     else if(it&&it.use==='bomb'){if(p.useCd<=0){p.useCd=.55;throwBomb(pcx,pcy,wx,wy);takeItem('bomb',1);p.dir=wx<pcx?-1:1;p.swing=.2}}
     else if(it&&it.place!==undefined)tryPlace(tx,ty,it.place,sel.id);
     else mineWith=bestPick();
@@ -831,6 +865,11 @@ function updatePlayer(dt){
         if(mining.p>=1){breakTile(tx,ty,'player');mining=null}}}
     else mining=null}else mining=null;
 }
+// potion : depuis la barre d'objets, la touche F ou le bouton qui apparaît sous les cœurs quand on est blessé
+function drinkPotion(){const p=player;if(p.dead||p.useCd>0||p.hp>=p.maxhp||!countItem('potion'))return;p.useCd=.6;p.hp=Math.min(p.maxhp,p.hp+50);takeItem('potion',1);
+  const x=p.x+p.w/2;floatText(x,p.y-6,'+50','#7dff9a');sfx.buy();burst(x,p.y+6,'#ff7d9a',12,50,-50,.8)}
+function startRecall(){const p=player;if(p.dead||p.recall>0)return;if(p.recallCd>0){toast('Rappel prêt dans '+Math.ceil(p.recallCd)+' s.',2,'#ffb0a0');sfx.deny();return}
+  if(Math.abs(p.x-bases[0].core.x)<12*T){toast('Tu es déjà à la base.',2,'#9fd0ff');return}p.recall=3;panel=null;cursorItem=null;toast('Rappel à la base dans 3 s : ne bouge pas.',3,'#9fd0ff');sfx.place()}
 function tryPlace(tx,ty,tid,itemId){
   const p=player;if(p.useCd>0)return;const cur=getT(tx,ty);if(cur!==AIR&&cur!==PLANT&&cur!==WATER)return;
   if(Math.hypot(tx*T+8-(p.x+p.w/2),ty*T+8-(p.y+6))>T*5.5)return;
@@ -860,16 +899,23 @@ function explode(x,y){const tx0=Math.floor(x/T),ty0=Math.floor(y/T),R2=2.6;
 //  COMBAT
 // =====================================================================
 function hurt(e,dmg,src){
-  if(e.hp<=0||e.dead)return;if(surv&&e.type==='core'&&e.team===1){e.flash=.08;return}if(e.type==='player'){if(e.iframes>0||e.dead)return;e.iframes=.35;e.lastHurt=0;sfx.hurt();shake=Math.max(shake,4);hurtFx=1;buzz(40)}
+  if(e.hp<=0||e.dead)return;if(surv&&e.type==='core'&&e.team===1){e.flash=.08;return}if(e.type==='player'){if(e.iframes>0||e.dead)return;if(src)dmg*=DF().hurt;e.recall=0;e.iframes=.35;e.lastHurt=0;sfx.hurt();shake=Math.max(shake,4);hurtFx=1;buzz(40)}
   // le cœur résiste aux troupes (siège ~20 s au lieu de 8) : le temps de revenir le défendre
   if(e.type==='core'&&src&&src.type!=='player')dmg*=.45;e.hitT=time;
-  dmg=Math.round(dmg);e.hp-=dmg;e.flash=.12;e.hitVisualDir=src?(Math.sign(e.x-src.x)||1):0;floatText(e.x+e.w/2,e.y-2,'-'+dmg,e.team===0?'#ff8a7a':'#ffe08a',dmg>=30);if(src===player&&e.type!=='core')hitStop=Math.max(hitStop,dmg>=30?.07:.035);
+  dmg=Math.round(dmg);e.hp-=dmg;e.flash=.12;if(e.type==='core'&&e.team===0)stats.coreHit=(stats.coreHit||0)+dmg;e.hitVisualDir=src?(Math.sign(e.x-src.x)||1):0;floatText(e.x+e.w/2,e.y-2,'-'+dmg,e.team===0?'#ff8a7a':'#ffe08a',dmg>=30);if(src===player&&e.type!=='core')hitStop=Math.max(hitStop,dmg>=30?.07:.035);
   if(src&&e.type!=='core'){const dir=Math.sign((e.x+e.w/2)-(src.x+(src.w||0)/2))||1;const kb=(src.type==='player'?120:src.kind==='golem'?150:30)*(e.kind==='golem'?.3:1);e.vx+=dir*kb;if(kb>60)e.vy=Math.min(e.vy,-110)}
   burst(e.x+e.w/2,e.y+e.h/2,e.type==='core'?(e.team?'#ff8a7a':'#8ac4ff'):'#e8364b',4,50,300,.4);
-  if(e.type==='core'){shake=Math.max(shake,2);if(e.team===0&&(!e.alertT||e.alertT<time)){e.alertT=time+12;toast('Ton cœur est attaqué !',3,'#ff8a7a');buzz(120)}}
+  if(e.type==='core'){shake=Math.max(shake,2);if(e.team===0&&(!e.alertT||e.alertT<time)){e.alertT=time+12;toast('Ton cœur est attaqué !',3,'#ff8a7a');buzz(120)}
+    if(e.team===0&&!e.surged&&e.hp>0&&e.hp<e.maxhp*.25&&DF().surge>0)coreSurge(e)}
   if(e.hp<=0)kill(e,src)}
+// sursaut du cœur bleu (une fois par partie, jusqu'en Difficile) : une onde de choc blesse et repousse les assaillants, le temps de réagir
+function coreSurge(c){c.surged=true;const cx=c.x+11,cy=c.y+17,dm=DF().surge;
+  for(const o of ents){if(o.dead||!o.hp||o.team===0||o.type==='item'||o.type==='core')continue;const dx=o.x+o.w/2-cx;if(Math.abs(dx)>170||Math.abs(o.y+o.h/2-cy)>90)continue;
+    hurt(o,dm,null);if(!o.dead){o.vx=(Math.sign(dx)||1)*240;o.vy=-190;o.atk=Math.max(o.atk||0,1.2)}}
+  pops.push({ring:1,x:cx,y:cy,t:.7,max:.7,col:'#9fd0ff',r:170});pops.push({flash:1,x:cx,y:cy,t:.2,max:.2});burst(cx,cy,'#9fd0ff',40,200,150,1.2,2);
+  shake=Math.max(shake,PROF.set.shake?8:0);sfx.boom();buzz(200);toast('Ton cœur libère une onde de choc ! Profites-en pour le défendre.',5,COL.gold)}
 function kill(e,src){
-  if(e.type==='player'){e.dead=true;e.respawn=6;e.hp=0;toast('Tu es tombé… retour à la base dans 6 s.',4,'#ff8a7a');burst(e.x+5,e.y+10,'#e8364b',20,90,300,1);return}
+  if(e.type==='player'){e.dead=true;e.respawn=DF().resp;e.recall=0;e.hp=0;toast('Tu es tombé… retour à la base dans '+DF().resp+' s.',4,'#ff8a7a');burst(e.x+5,e.y+10,'#e8364b',20,90,300,1);return}
   if(e.type==='core'){e.dead=true;sfx.boom();shake=14;for(let i=0;i<5;i++)burst(e.x+11,e.y+15,i%2?'#fff':(e.team?'#e5534b':'#4f9df5'),30,180,200,1.6,2);
     endT=1.8;endState=e.team===1?'win':'lose';hitStop=.25;buzz(300);try{localStorage.removeItem(SAVE_KEY)}catch(_){}endGame(endState==='win');return}
   e.dead=true;burst(e.x+e.w/2,e.y+e.h/2,e.type==='monster'?'#5ad16a':'#c9c0d8',14,80,300,.8);
@@ -877,6 +923,9 @@ function kill(e,src){
     if(img)corpses.push({img,x:e.x+e.w/2,y:e.y+e.h,t:0,team:e.team})}
   if(src===player&&e.team===1){stats.kills++;qAdd('kill')}
   if(e.type==='monster'&&src&&src.type==='player'){if(rnd()<.5)dropItem(e.x+e.w/2,e.y,'crystal',1);if(rnd()<.35)dropItem(e.x+e.w/2,e.y,'silver',RI(1,2))}
+  if(e.kind==='ogre'){const ours=src===player||!!src&&src.team===0,x=e.x+e.w/2;for(let i=0;i<3;i++)burst(x,e.y+e.h/2,['#ff5a5a','#b03a52','#ffe066'][i],22,130,250,1.1,2);pops.push({ring:1,x,y:e.y+e.h/2,t:.6,max:.6,col:'#ff5a5a',r:60});
+    hitStop=.15;sfx.boom();shake=Math.max(shake,PROF.set.shake?8:0);toast(ours?'L\'ogre de sang est tombé ! Ramasse son trésor.':'L\'ogre de sang est tombé sous les coups rouges.',4,COL.gold);
+    if(ours){unlock('ogre');dropItem(x,e.y+10,'diamond',RI(2,3));dropItem(x,e.y+10,'gold',RI(4,6));dropItem(x,e.y+10,'crystal',2);findRelic(x,e.y+10)}}
   if(e.kind==='champion'){qAdd('champ');if(src===player||src&&src.team===0)findRelic(e.x+e.w/2,e.y);toast('Le champion rouge est tombé !',3,COL.gold);if(src===player||src&&src.team===0)unlock('champion');hitStop=.12;dropItem(e.x+e.w/2,e.y,'gold',RI(3,6));dropItem(e.x+e.w/2,e.y,'iron',RI(4,8))}
   if(e.type==='unit'&&e.team===1&&src&&src.type==='player'&&rnd()<.5)dropItem(e.x+e.w/2,e.y,['copper','iron','coal'][RI(0,2)],RI(1,3))}
 
@@ -885,14 +934,19 @@ function kill(e,src){
 // =====================================================================
 function recruit(team,kind,free){const b=bases[team],u=UNITS[kind];if(!free&&!canPay(b.storage,u.cost))return null;if(!free)pay(b.storage,u.cost);
   const sx=b.core.x+(team===0?28:-12)+R(-6,6);
-  const e={type:'unit',kind,team,x:sx,y:BASE_GY*T-(u.big?26:22),w:u.big?16:8,h:u.big?24:20,vx:0,vy:0,hp:u.hp,maxhp:u.hp,dir:team===0?1:-1,onGround:false,atk:0,flash:0,anim:0,digT:0,stepOff:0,
+  const hp=Math.round(u.hp*(1+vet(team)));
+  const e={type:'unit',kind,team,x:sx,y:BASE_GY*T-(u.big?26:22),w:u.big?16:8,h:u.big?24:20,vx:0,vy:0,hp,maxhp:hp,dir:team===0?1:-1,onGround:false,atk:0,flash:0,anim:0,digT:0,stepOff:0,
     carry:{},carryN:0,state:'seek',tgt:null,offs:R(-1,1),progX:sx,progY:0,progT:0,stuck:0,swing:0,ignore:null,ignoreT:0,wantMove:false};
   e.spawnT=.6;if(onScreen(e)){pops.push({ring:1,x:sx+e.w/2,y:e.y+e.h/2,t:.45,max:.45,col:team?'#ff8a7a':'#9fd0ff',r:22});burst(sx+e.w/2,e.y+e.h,team?'#ff9a8a':'#9fd0ff',10,30,-60,.9)}
   ents.push(e);if(team===0&&!free){stats.recruited++;qAdd('recruit');if(kind==='golem')unlock('golem');if(ents.filter(o=>o.type==='unit'&&o.team===0&&!o.dead).length>=10)unlock('army10');stats.rk=stats.rk||{};stats.rk[kind]=(stats.rk[kind]||0)+1;sfx.buy()}return e}
 const uspd=e=>UNITS[e.kind].spd*(1+.12*bases[e.team].upg.speed+(e.team===0?relV('drum')/100:0))*(e.boost||1);
-const udmg=e=>UNITS[e.kind].dmg*(1+.25*bases[e.team].upg.dmg);
+const udmg=e=>UNITS[e.kind].dmg*(1+.25*bases[e.team].upg.dmg)*(1+vet(e.team))*(e.aura>time?1.2:1);
 const rallyX=t=>bases[t].core.x+11+(t===0?1:-1)*8*T;
-const POW={miner:.3,warrior:1,archer:.9,golem:3.2,champion:2.5};
+const POW={miner:.3,warrior:1,archer:.9,healer:.8,golem:3.2,champion:2.5};
+// combattant de ligne : ni mineur ni champion ; les soigneurs suivent l'armée mais ne partent ni en raid ni en commando
+const isFighter=e=>e.kind!=='miner'&&e.kind!=='champion',canStrike=e=>isFighter(e)&&!UNITS[e.kind].heal;
+// vétérans (Cauchemar) : chaque vague rouge lancée renforce les recrues suivantes
+const vet=t=>t===1&&ai?ai.vet||0:0;
 // cibles potentielles triées par x, reconstruites à chaque image : les recherches ne parcourent que la tranche utile (perfs à 400 unités)
 let tgtList=[];
 function buildTargets(){tgtList=ents.filter(o=>!o.dead&&o.hp&&o.type!=='item');tgtList.sort((a,b)=>a.x-b.x);
@@ -904,7 +958,7 @@ function buildTargets(){tgtList=ents.filter(o=>!o.dead&&o.hp&&o.type!=='item');t
     // pillards qui chassent nos mineurs (à moins de 90 blocs du cœur) : les 3 défenseurs les plus proches partent les intercepter
     const rd=ents.filter(o=>!o.dead&&o.raid&&o.team!==t&&Math.abs(o.x-cx)<90*T).sort((a,c)=>Math.abs(a.x-cx)-Math.abs(c.x-cx))[0];
     if(rd&&(!raider[t]||raider[t].dead)){if(t===0)toast('Des pillards attaquent tes mineurs : 3 défenseurs partent les intercepter.',3,'#ff9a8a');
-      ents.filter(o=>!o.dead&&o.type==='unit'&&o.team===t&&o.kind!=='miner'&&o.kind!=='champion'&&!o.retreat&&!o.raid&&!o.strike).sort((a,c)=>Math.abs(a.x-rd.x)-Math.abs(c.x-rd.x)).slice(0,3).forEach(o=>o.hunt=rd)}
+      ents.filter(o=>!o.dead&&o.type==='unit'&&o.team===t&&canStrike(o)&&!o.retreat&&!o.raid&&!o.strike).sort((a,c)=>Math.abs(a.x-rd.x)-Math.abs(c.x-rd.x)).slice(0,3).forEach(o=>o.hunt=rd)}
     raider[t]=rd||null}}
 let intruder=[null,null],intruderT=0,raider=[null,null];
 function* tgtNear(x,r){let lo=0,hi=tgtList.length;const a=x-r-32;while(lo<hi){const m=(lo+hi)>>1;if(tgtList[m].x<a)lo=m+1;else hi=m}
@@ -915,13 +969,15 @@ function nearestHostile(e,range){let best=null,bd=range;for(const o of tgtNear(e
 // cible gardée ~0,2 s (balayage des voisins coûteux au-delà de 300 unités) ; on rebalaye si elle meurt ou si le rayon change
 function pickTarget(e,u,aggro){const c=e.ptc;if(c&&c.a===aggro&&time<c.t&&(!c.o||!c.o.dead&&c.o.hp>0))return c.o;
   const o=scanTarget(e,u,aggro);e.ptc={a:aggro,t:time+.15+rnd()*.1,o};return o}
-function scanTarget(e,u,aggro){let best=null,bd=1e9;
+function scanTarget(e,u,aggro){let best=null,bd=1e9;const smart=e.team===0||DF().iq>=2;
   for(const o of tgtNear(e.x,aggro)){if(o.dead||!o.hp||!hostile(e,o))continue;if(o===e.ignore&&time<e.ignoreT)continue;
     if(time<(e.blindT||0)&&o.type!=='core'&&Math.hypot(o.x-e.x,o.y-e.y)>40)continue;
     const dx=o.x+o.w/2-(e.x+e.w/2),dy=o.y+o.h/2-(e.y+e.h/2);if(Math.abs(dx)>aggro)continue;
     // le cœur se tire presque à niveau : depuis une grotte en dessous, la flèche finit dans le sol du château
     if(o.type==='core'?vgap(e,o)>(u.ranged?40:52):Math.abs(dy)>(u.ranged?130:52))continue;
     let d=Math.abs(dx)+Math.abs(dy)*1.5;if(o.type==='core')d-=(Math.abs(dx)<110?400:60);if(o.type==='monster')d+=40;
+    // tir concentré : on achève les blessés, on vise d'abord les soigneurs, les tireurs se répondent
+    if(smart&&o.type!=='core'){d-=(1-o.hp/o.maxhp)*26;if(o.type==='unit'){const k=UNITS[o.kind];if(k.heal)d-=28;else if(u.ranged&&k.ranged)d-=12}}
     if(d<bd){bd=d;best=o}}return best}
 function digStep(e,tx,ty,dt,collect){const id=getT(tx,ty),d=TD[id];if(!d.solid&&id!==LOG)return 1;if(d.hard===Infinity)return -1;
   e.digVisualUntil=time+.08;e.digVisualPhase=(e.digVisualPhase||0)+dt*5;
@@ -981,10 +1037,19 @@ function engage(e,u,tgt,dt){const dx=tgt.x+tgt.w/2-(e.x+e.w/2),gap=Math.abs(dx)-
     if(vy<-T*.8)return climbUp(e,dt,tgt.x+tgt.w/2)}
   navigate(e,tgt.x+tgt.w/2,dt,e.stuck>=2?(tgt.y<e.y-20?'climb':'flat'):'auto');
   if(e.stuck>=3){e.ignore=tgt;e.ignoreT=time+10;e.stuck=1}}
-let armyMid=[null,null];
-function computeArmies(){for(const t of[0,1]){const xs=ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&e.kind!=='miner'&&e.kind!=='champion'&&!e.retreat&&!e.raid&&!e.strike&&e.stuck<1).map(e=>e.x).sort((a,b)=>a-b);if(xs.length<3){armyMid[t]=null;continue}const med=xs[Math.floor(xs.length/2)],fwd=t===0?1:-1;
+// armyMid : arrière-garde de l'armée en marche (on l'attend) ; armyFront : première ligne de mêlée (tireurs et soigneurs restent derrière)
+let armyMid=[null,null],armyFront=[null,null],armyRef=[null,null]; // armyRef : la première ligne, ou à défaut le centre de la troupe (repère des soigneurs)
+function computeArmies(){for(const t of[0,1]){const fwd=t===0?1:-1,main=ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&canStrike(e)&&!e.retreat&&!e.raid&&!e.strike&&e.stuck<1),xs=main.map(e=>e.x).sort((a,b)=>a-b);
+    const med=xs.length?xs[Math.floor(xs.length/2)]:0;let front=null;for(const e of main)if(!UNITS[e.kind].ranged&&Math.abs(e.x-med)<40*T&&(front==null||(e.x-front)*fwd>0))front=e.x;armyFront[t]=front;armyRef[t]=front!=null?front:xs.length?med:null;
+    if(xs.length<3){armyMid[t]=null;continue}
     // arrière-garde : l'unité la plus en retard, sans compter celles restées très loin derrière (renforts tout juste recrutés)
     let rear=med;for(const x of xs)if((med-x)*fwd>0&&(med-x)*fwd<40*T&&(x-rear)*fwd<0)rear=x;armyMid[t]=rear}}
+// soin : le guérisseur rend des PV à l'allié le plus mal en point à portée (unités, champion, héros), jamais à lui-même ni au cœur
+function healStep(e,u){if(e.atk>0)return;let best=null,bs=.96;
+  for(const o of tgtNear(e.x,u.range)){if(o.dead||o.team!==e.team||o===e||o.type==='core')continue;const f=o.hp/o.maxhp;if(f>=bs||Math.abs(o.y+o.h-(e.y+e.h))>70||Math.abs(o.x-e.x)>u.range)continue;bs=f;best=o}
+  if(!best)return;e.atk=u.cd;e.swing=.25;e.dir=Math.sign(best.x-e.x)||e.dir;best.hp=Math.min(best.maxhp,best.hp+u.heal*(1+vet(e.team)));
+  if(onScreen(best)){for(let i=0;i<5;i++)parts.push({x:best.x+R(0,best.w),y:best.y+R(4,best.h),vx:R(-6,6),vy:R(-34,-14),g:-20,life:.7,max:.7,col:'#7dffb0',size:1,glow:1});
+    if(best===player)floatText(best.x+5,best.y-4,'+'+u.heal,'#7dff9a')}}
 function retreatSpot(e,home){const hx=home.x+11+(e.team===0?24:-24),cx=e.x+e.w/2,d=hx-cx;
   return Math.abs(d)<=18*T?hx:clamp(cx+Math.sign(d)*18*T,T,(WW-1)*T)}
 function updateUnit(e,dt){
@@ -996,7 +1061,9 @@ function updateUnit(e,dt){
   // unité perdue dans les grottes depuis trop longtemps : elle déserte (libère le combat et les perfs)
   if(e.stuck>=3)e.lostT=(e.lostT||0)+dt;else e.lostT=Math.max(0,(e.lostT||0)-dt*2);
   if(e.lostT>45&&e.kind!=='champion'&&(e.y+e.h)/T>surf[clamp(Math.floor((e.x+e.w/2)/T),0,WW-1)]+4){e.dead=true;burst(e.x+e.w/2,e.y+e.h/2,'#c9c0d8',8,50,200,.6);return}
-  if(e.kind==='miner'||e.kind==='champion')return updateGatherer(e,u,dt);
+  // le champion mine et rôde, sauf quand il mène une vague (war) : il marche alors avec l'armée et galvanise ses voisins (+20 % de dégâts)
+  if(e.kind==='miner'||e.kind==='champion'&&!e.war)return updateGatherer(e,u,dt);
+  if(e.war&&time>(e.auraT||0)){e.auraT=time+.3;for(const o of tgtNear(e.x,80))if(o.type==='unit'&&o.team===e.team&&o!==e)o.aura=time+.8}
   const b=bases[e.team],home=b.core;
   // soin près de son cœur hors combat (4 s sans coup), sinon les défenseurs deviennent invulnérables pendant un siège
   if(Math.abs(e.x-home.x)<130){if(time-(e.hitT||0)>4)e.hp=Math.min(e.maxhp,e.hp+dt*4)}
@@ -1011,6 +1078,8 @@ function updateUnit(e,dt){
     const hx=e.retX;if(Math.abs(hx-(e.x+e.w/2))>8)navigate(e,hx,dt,'auto');else{e.vx=0;moveEnt(e,dt)}return}}
   // l'archer recule si un combattant au corps à corps est trop près
   if(u.ranged){const th=nearestHostile(e,34);if(th&&th.kind!=='archer'&&th.type!=='core'&&e.atk>.3){e.dir=Math.sign(th.x-e.x)||e.dir;e.vx=-e.dir*uspd(e)*.9;moveEnt(e,dt);e.dir=Math.sign(th.x-e.x)||e.dir;return}}
+  // guérisseur : soigne le plus blessé à portée et s'écarte de la mêlée
+  if(u.heal){healStep(e,u);const th=nearestHostile(e,36);if(th&&th.type!=='core'){e.dir=Math.sign(th.x-e.x)||e.dir;e.vx=-e.dir*uspd(e)*.9;moveEnt(e,dt);e.dir=-e.dir;return}}
   // raid : chasser les mineurs adverses
   if(e.raid){const prey=ents.filter(o=>o.type==='unit'&&o.team!==e.team&&o.kind==='miner'&&!o.dead).sort((a,c)=>Math.abs(a.x-e.x)-Math.abs(c.x-e.x))[0];
     if(prey){const dx=prey.x-e.x,dy=prey.y-e.y;if(Math.abs(dx)<u.range+8&&Math.abs(dy)<30){meleeOrShoot(e,u,prey);moveEnt(e,dt);return}
@@ -1020,15 +1089,19 @@ function updateUnit(e,dt){
     e.raid=false}
   if(e.strike){const ec=bases[1-e.team].core;const near=pickTarget(e,u,u.ranged?90:34);const tg=Math.abs(ec.x-e.x)<110?ec:near;if(tg)return engage(e,u,tg,dt);
     const dtx2=clamp(Math.floor((ec.x+11)/T),0,WW-1);if(Math.abs(ec.x+11-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx2]+1.5)return climbUp(e,dt,ec.x+11);navigate(e,ec.x+11,dt,e.stuck>=2?'climb':'auto');return}
-  const follow=b.order==='follow'&&e.team===0&&!player.dead;
-  const tgt=pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
+  const follow=b.order==='follow'&&e.team===0&&!player.dead,hold=b.order==='hold'&&b.holdX!=null,fw=e.team===0?1:-1;
+  const tgt=u.heal?null:pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
   if(tgt)return engage(e,u,tgt,dt);
   // escorte distancée : elle sprinte pour rattraper le joueur (il court 2× plus vite qu'une unité)
   e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-6)/10,1,2.2):1;
   // en défense, on court intercepter tout intrus qui approche du cœur
   if(e.hunt){if(e.hunt.dead||!e.hunt.raid||b.order!=='defend'||Math.abs(e.x-home.x)>95*T)e.hunt=null;else return engage(e,u,e.hunt,dt)}
-  const intr=intruder[e.team];if(b.order==='defend'&&intr&&!intr.dead&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
-  const dest=follow?player.x+player.w/2-player.dir*20+e.offs*36:b.order==='defend'?rallyX(e.team)+e.offs*30:bases[1-e.team].core.x+11+e.offs*6;
+  const intr=intruder[e.team];if(b.order==='defend'&&!u.heal&&intr&&!intr.dead&&!(intr===e.ignore&&time<e.ignoreT))return engage(e,u,intr,dt);
+  // formation : tireurs et soigneurs un rang derrière, golems en avant ; ordre Tenir = ligne autour du fanion
+  const rank=(u.ranged||u.heal?-1:u.big?.7:0)*fw;
+  let dest=follow?player.x+player.w/2-player.dir*20+e.offs*36:hold?b.holdX+e.offs*22+rank*26:b.order==='defend'?rallyX(e.team)+e.offs*24+rank*24:bases[1-e.team].core.x+11+e.offs*6;
+  // guérisseur en assaut : deux pas derrière la première ligne ; plus de ligne, il rentre
+  if(u.heal&&b.order==='attack'&&!follow)dest=armyRef[e.team]!=null?armyRef[e.team]-fw*26:rallyX(e.team);
   if(follow){if(Math.abs(dest-(e.x+e.w/2))<10){e.vx=0;moveEnt(e,dt);return}if(player.y<e.y-3*T&&Math.abs(dest-(e.x+e.w/2))<T*2)return climbUp(e,dt,dest)}
   const dtx=clamp(Math.floor(dest/T),0,WW-1);
   if(Math.abs(dest-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx]+1.5)return climbUp(e,dt,dest);
@@ -1038,7 +1111,9 @@ function updateUnit(e,dt){
     if((e.y+e.h)/T>surf[col]+6&&Math.abs(bases[1-e.team].core.x-e.x)>30*T)return climbUp(e,dt,e.x+e.w/2+fwd*T*1.5)}
   if(b.order==='attack'&&!follow&&armyMid[e.team]!=null){const fwd=e.team===0?1:-1,ahead=(e.x-armyMid[e.team])*fwd,toCore=Math.abs(bases[1-e.team].core.x-e.x);
     // on attend l'arrière-garde 12 s au plus, puis on repart sans se ré-arrêter avant 25 s (sinon l'armée piétine indéfiniment)
-    if(ahead>7*T&&toCore>28*T&&time>(e.waitCool||0)){e.waitT=(e.waitT||0)+dt;if(e.waitT<12){e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}e.waitCool=time+25}
+    // les tireurs ne dépassent pas la première ligne de mêlée
+    const lead=u.ranged&&armyFront[e.team]!=null&&(e.x-armyFront[e.team])*fwd>-14;
+    if((ahead>7*T||lead)&&toCore>28*T&&time>(e.waitCool||0)){e.waitT=(e.waitT||0)+dt;if(e.waitT<12){e.vx=0;e.dir=fwd;moveEnt(e,dt);e.wantMove=false;return}e.waitCool=time+25}
     e.waitT=0}
   if(navigate(e,dest,dt,e.stuck>=2?'climb':'auto')){e.wantMove=false;
     // arrivée au pied du cœur adverse mais en contrebas (fosse creusée dessous) : on remonte en pilier
@@ -1111,9 +1186,33 @@ function updateGatherer(e,u,dt){
 // =====================================================================
 function daylight(){const ph=(time%dayLen)/dayLen;return clamp(.5+.85*Math.sin(ph*Math.PI*2-.3),0,1)}
 function spawnMonsters(dt){const night=daylight()<.25,bm=isBlood()?2:1;const n=ents.filter(e=>e.type==='monster').length;
-  if(night&&n<(5+diff*3)*bm&&rnd()<dt*.5*bm*bm){const x=RI(70,WW-70);if(Math.abs(x*T-player.x)<VW*.6)return;const s=surf[x];if(s<2)return;
+  if(night&&n<DF().mon*bm&&rnd()<dt*.5*bm*bm){const x=RI(70,WW-70);if(Math.abs(x*T-player.x)<VW*.6)return;const s=surf[x];if(s<2)return;
     const zom=rnd()<.4;ents.push({type:'monster',kind:zom?'zombie':'slime',team:2,x:x*T,y:(s-2)*T,w:zom?8:12,h:zom?20:10,vx:0,vy:0,hp:zom?55:35,maxhp:zom?55:35,dir:1,onGround:false,atk:0,flash:0,anim:0,hop:R(0,1),blue:rnd()<.3,stepOff:0})}}
+// ---------- ogre de sang : boss de la lune de sang ----------
+// Il naît au pied de la montagne (une bonne minute de marche), avance vers ton cœur en brisant ce qui le bloque et frappe en zone. Abattu par les bleus : diamants, or et une relique.
+// S'il tient jusqu'à l'aube, il s'évapore sans rien laisser.
+function spawnOgre(){if(ents.some(e=>e.kind==='ogre'&&!e.dead))return;const x=clamp(Math.floor(WW*R(.27,.36)),40,WW-60),n=stats.ogres=(stats.ogres||0)+1,hp=Math.round((520+diff*150)*(1+.35*(n-1)));
+  ents.push({type:'monster',kind:'ogre',boss:true,team:2,x:x*T,y:surf[x]*T-39,w:16,h:38,vx:0,vy:0,hp,maxhp:hp,dir:-1,onGround:false,atk:0,flash:0,anim:0,stepOff:0,digT:0});
+  toast('Un ogre de sang marche sur ta base ! Abats-le avant l\'aube pour son trésor.',6,'#ff5a5a')}
+function updateOgre(e,dt){
+  if(daylight()>.5){e.dead=true;burst(e.x+e.w/2,e.y+e.h/2,'#ffb43a',26,70,-80,1.2,2);toast('L\'ogre de sang s\'évapore à l\'aube.',3,'#9fd0ff');return}
+  // cible à sa hauteur seulement : il ne s'arrête pas au-dessus d'un mineur enfoui
+  const cx=e.x+e.w/2;let tgt=null,bd=110;for(const o of tgtNear(e.x,110)){if(o.dead||!o.hp||o.team===2)continue;if(Math.abs(o.y+o.h-(e.y+e.h))>30)continue;const d=Math.abs(o.x+o.w/2-cx);if(d<bd){bd=d;tgt=o}}
+  const goal=tgt?tgt.x+tgt.w/2:bases[0].core.x+11,gap=tgt?bd-tgt.w/2-e.w/2:1e9;e.dir=Math.sign(goal-cx)||e.dir;
+  if(gap<8){e.vx=0;
+    // coup de massue : tout ce qui se tient devant lui encaisse
+    if(e.atk<=0){e.atk=1.5;const dm=26+diff*4;for(const o of tgtNear(e.x,60)){if(o.dead||!o.hp||o.team===2)continue;const ox=o.x+o.w/2-cx;if(ox*e.dir>-6&&Math.abs(ox)<o.w/2+e.w/2+16&&Math.abs(o.y+o.h-(e.y+e.h))<34)hurt(o,o.type==='core'?dm*.5:dm,e)}
+      if(onScreen(e)){shake=Math.max(shake,PROF.set.shake?4:0);burst(cx+e.dir*14,e.y+e.h,'#c9b8a0',10,70,200,.5)}}}
+  else e.vx=e.dir*(e.atk>.9?0:30);
+  moveEnt(e,dt);e.anim+=Math.abs(e.vx)*dt*.1;
+  // mur de 2 blocs ou plus : il le fracasse (sous terre, il remonte en escalier) ; indestructible : il saute
+  if(e.blocked&&e.onGround){e.digT+=dt;if(e.digT>.45){e.digT=0;const ax=Math.floor((e.dir>0?e.x+e.w+1:e.x-1)/T),y0=Math.floor(e.y/T),y1=Math.floor((e.y+e.h-.01)/T),o0=Math.floor(e.x/T),o1=Math.floor((e.x+e.w-.01)/T);
+      const up=y1>surf[clamp(ax,0,WW-1)]+2,list=[];if(up){for(let y=y0-1;y<y1;y++)list.push([ax,y]);for(let x=o0;x<=o1;x++)list.push([x,y0-1])}else for(let y=y0;y<=y1;y++)list.push([ax,y]);
+      let hit=false;for(const[x,y]of list){const id=getT(x,y);if(id!==AIR&&id!==WATER&&(TD[id].solid||id===LOG)&&TD[id].hard!==Infinity){breakTile(x,y,null);hit=true}}
+      if(up||!hit)e.vy=-JUMP*.9;if(hit&&onScreen(e)){shake=Math.max(shake,PROF.set.shake?2:0);sfx.brk()}}}
+  if(e.y>WH*T)e.dead=true}
 function updateMonster(e,dt){if(e.flash>0)e.flash-=dt;if(e.atk>0)e.atk-=dt;e.anim+=dt;
+  if(e.kind==='ogre')return updateOgre(e,dt);
   if(daylight()>.55&&rnd()<dt*.25){e.dead=true;burst(e.x+e.w/2,e.y+e.h/2,'#ffb43a',10,40,-80,.8);return}
   const tgt=nearestHostile(e,170);
   if(e.kind==='slime'){e.hop-=dt;if(e.onGround){e.vx*=Math.pow(.01,dt);if(e.hop<=0){e.hop=R(.8,1.8);const d=tgt?Math.sign(tgt.x-e.x):(rnd()<.5?-1:1);e.dir=d;e.vy=-R(180,260);e.vx=d*R(50,90)}}moveEnt(e,dt,false)}
@@ -1125,61 +1224,96 @@ function updateMonster(e,dt){if(e.flash>0)e.flash-=dt;if(e.atk>0)e.atk-=dt;e.ani
 //  IA ADVERSE : commandant stratégique + champion qui mine et combat
 // =====================================================================
 function newAI(){const styles=['eco','rush','equilibre'];const style=styles[RI(0,2)];
-  return{t:3,style,wave:(style==='rush'?4:6)+diff,sent:0,champ:null,champT:8,lastWave:0}}
+  return{t:3,style,wave:Math.max(3,DF().wave-(style==='rush'?2:0)),sent:0,champ:null,champT:8,lastWave:0,vet:0,acc:0}}
 function teamPow(team,nearX,radius){let p=0;for(const e of ents){if(e.dead||e.team!==team)continue;if(nearX!==undefined&&Math.abs(e.x-nearX)>radius)continue;
   if(e.type==='unit')p+=POW[e.kind]*e.hp/e.maxhp;else if(e.type==='player'&&!e.dead)p+=2.5}return p}
 function updateAI(dt){
-  const b=bases[1],st=b.storage,inc=DIFFS[diff].inc;
-  if(!ai.champ||ai.champ.dead){ai.champT-=dt;if(ai.champT<=0){ai.champ=recruit(1,'champion',true);ai.champ.hp=ai.champ.maxhp=Math.round(320*(.8+diff*.25));ai.champT=50;if(time>20)toast('Le champion rouge reprend les armes.',3,'#ff9a8a')}}
-  ai.t-=dt;if(ai.t>0)return;ai.t=2;
+  const b=bases[1],st=b.storage,D=DF(),inc=D.inc,iq=D.iq;
+  if(!ai.champ||ai.champ.dead){ai.champT-=dt;if(ai.champT<=0){ai.champ=recruit(1,'champion',true);ai.champ.hp=ai.champ.maxhp=Math.round(D.champ*(1+vet(1)));ai.champT=50;if(time>20)toast('Le champion rouge reprend les armes.',3,'#ff9a8a')}}
+  // dernier carré : la première fois que le cœur rouge passe sous 40 %, sa garde d'élite sort du château (la fin de partie n'est jamais une formalité)
+  if(!surv&&!ai.stand&&b.core.hp>0&&b.core.hp<b.core.maxhp*.4){ai.stand=true;for(let i=0;i<1+diff;i++)recruit(1,i%3===2?'archer':'warrior',true);if(iq>=3)recruit(1,'golem',true);
+    toast('Le cœur rouge vacille : sa garde d\'élite sort du château !',5,'#ff6a5a');sfx.horn();buzz(120)}
+  // le commandant réfléchit plus vite quand la difficulté monte ; le revenu est ramené à la seconde pour ne pas en dépendre
+  ai.t-=dt;if(ai.t>0)return;ai.t=D.think;
   // petit revenu passif (le gros vient des mineurs et du champion)
-  const m=inc*(.6+time/900)*(daily&&daily.mod.id==='fury'?1.4:1)*(surv?1+stats.waves*.2:1);st.wood+=Math.round(1.2*m);st.stone+=Math.round(1.2*m);if(rnd()<.3*m)st.copper++;if(rnd()<.25*m)st.coal++;if(rnd()<.18*m)st.iron++;if(rnd()<.08*m)st.silver++;if(rnd()<.05*m)st.gold++;
+  const m=inc*(.6+time/900)*(daily&&daily.mod.id==='fury'?1.4:1)*(surv?1+stats.waves*.2:1)*D.think/2;
+  ai.acc=(ai.acc||0)+1.4*m;{const n=Math.floor(ai.acc);ai.acc-=n;st.wood+=n;st.stone+=n}if(rnd()<.3*m)st.copper++;if(rnd()<.25*m)st.coal++;if(rnd()<.18*m)st.iron++;if(rnd()<.08*m)st.silver++;if(rnd()<.05*m)st.gold++;
   const mine=ents.filter(e=>e.type==='unit'&&e.team===1&&!e.dead),cnt=k=>mine.filter(e=>e.kind===k).length;
-  const fighters=mine.filter(e=>e.kind!=='miner'&&e.kind!=='champion');
-  const coreX=b.core.x,threatPow=teamPow(0,coreX,70*T),myPow=teamPow(1,coreX,70*T);
-  const foe=ents.filter(e=>e.type==='unit'&&e.team===0),fk=k=>foe.filter(e=>e.kind===k).length;
+  const fighters=mine.filter(isFighter);
+  const coreX=b.core.x,pc=bases[0].core.x,threatPow=teamPow(0,coreX,70*T),myPow=teamPow(1,coreX,70*T);
+  const foe=ents.filter(e=>e.type==='unit'&&e.team===0&&!e.dead),fk=k=>foe.filter(e=>e.kind===k).length;
+  const holdMax=iq?90:140; // Paisible : le rouge hésite plus longtemps devant une défense solide
+  // fin de vague : le champion retourne à la mine, les commandos rentrent dans le rang
+  const endWave=()=>{if(ai.champ){ai.champ.war=false;ai.champ.retreat=false}for(const e of fighters)if(e.cmd)e.cmd=e.strike=false};
   // renseignement pour le HUD : où en est la prochaine vague rouge
-  {const minT=firstWave(),pc=bases[0].core.x,n=fighters.length,I=ai.intel||(ai.intel={rate:.05,prev:n});
-   I.rate=I.rate*.85+Math.max(0,(n-I.prev)/2)*.15;I.prev=n;I.have=Math.min(n,ai.wave);I.need=ai.wave;
+  {const minT=firstWave(),n=fighters.length,I=ai.intel||(ai.intel={rate:.05,prev:n});
+   I.rate=I.rate*.85+Math.max(0,(n-I.prev)/D.think)*.15;I.prev=n;I.have=Math.min(n,ai.wave);I.need=ai.wave;
    if(b.order==='attack'){const atk=fighters.filter(e=>!e.raid&&!e.retreat);I.phase='march';I.eta=0;I.alive=atk.length;I.sent=ai.sent;
      I.front=atk.length?Math.round(Math.min(...atk.map(e=>Math.abs(e.x-pc)))/T):0}
    else{I.phase=threatPow>0.5&&threatPow>myPow*.7?'defend':'gather';
-     I.eta=Math.round(Math.max(minT-time,(ai.wave-n)/Math.max(I.rate,.02),0));if(ai.wait)I.eta=Math.max(1,Math.round(90-(time-ai.holdT)));
+     I.eta=Math.round(Math.max(minT-time,surv?0:(ai.restT||0)-time,(ai.wave-n)/Math.max(I.rate,.02),0));if(ai.wait)I.eta=Math.max(1,Math.round(holdMax-(time-ai.holdT)));
      if(I.eta<=25&&!I.warned&&I.phase==='gather'){I.warned=true;toast('L\'armée rouge se rassemble : attaque dans moins de 30 s !',4,'#ffb08a')}
      // la vague prévue écrase-t-elle ta défense ? on le dit à temps (une fois par vague) avec quoi faire
      const guard=teamPow(0,pc,45*T)+1.5+bases[0].upg.tower*.8,red=fighters.reduce((a,e)=>a+POW[e.kind],0)*Math.max(1,ai.wave/Math.max(1,n));I.danger=red>guard*1.3;
      if(I.danger&&I.eta<=75&&!I.dangerSaid&&I.phase==='gather'){I.dangerSaid=true;toast('La vague rouge ('+ai.wave+' unités) dépasse ta défense : recrute des troupes ou améliore la tour (Base).',5,'#ff9a8a')}}
    if(b.order==='attack'){I.warned=false;I.dangerSaid=false}}
-  const counter=()=>{if(fk('golem')>=2)return'warrior';if(fk('warrior')>fk('archer')*1.5+1)return'archer';if(rnd()<(ai.style==='rush'?.08:.18)&&st.gold>=2)return'golem';return rnd()<.6?'warrior':'archer'};
-  const wantMiners=(ai.style==='eco'?4:ai.style==='rush'?2:3)+(diff>1?1:0);
+  // composition de l'armée : au hasard en Paisible, en réponse à ce que tu alignes dès Normal, avec soigneurs et colosses dès Difficile
+  const melee=fighters.filter(e=>!UNITS[e.kind].ranged&&!UNITS[e.kind].heal).length;
+  const counter=()=>{if(iq<1)return rnd()<.65?'warrior':'archer';
+    if(iq>=2){if(fighters.length>=5&&cnt('healer')<Math.floor(fighters.length/6)&&canPay(st,UNITS.healer.cost))return'healer';
+      // tour bleue améliorée ou grosse armée : il faut des colosses pour encaisser
+      if(cnt('golem')<Math.floor(fighters.length/8)+(bases[0].upg.tower>=2?1:0)&&canPay(st,UNITS.golem.cost))return'golem'}
+    if(fk('golem')>=2)return'warrior';if(fk('warrior')>fk('archer')*1.5+1)return'archer';
+    // beaucoup d'archers bleus : la mêlée ferme la distance
+    if(fk('archer')>fk('warrior')+2&&melee<fighters.length*.7)return'warrior';
+    if(rnd()<(ai.style==='rush'?.08:.18)&&st.gold>=2)return'golem';return rnd()<.6?'warrior':'archer'};
+  const wantMiners=(ai.style==='eco'?4:ai.style==='rush'?2:3)+D.miners;
   // 1. défense : on rappelle tout le monde si la base est menacée
   // défense d'urgence : même plafond que le recrutement normal et 4 s entre deux recrues (sinon +30 unités par minute pendant un siège)
-  if(threatPow>0.5&&threatPow>myPow*.7){if(b.order!=='defend'){b.order='defend';ai.sent=0}
+  if(threatPow>0.5&&threatPow>myPow*.7){if(b.order!=='defend'){b.order='defend';ai.sent=0;endWave()}
     if(fighters.length<survCap()&&time>=(ai.defT||0)&&(recruit(1,counter())||recruit(1,'warrior')))ai.defT=time+4;return}
   // 2. économie
   if(cnt('miner')<wantMiners&&recruit(1,'miner'))return;
-  // 3. améliorations quand la réserve déborde
-  for(const u of UPG){const l=b.upg[u.id];if(l<3&&rnd()<.2){const c=upgCost(u,l);if(canPay(st,c)&&(st.stone>c.stone*2||ai.style==='eco')){pay(st,c);b.upg[u.id]++;applyUpg(1,u.id);return}}}
+  // 3. améliorations : quand la réserve déborde ; dès Difficile, choisies selon la situation (assaut : dégâts et vitesse, cœur entamé : cœur et tour)
+  if(iq>=2){if(rnd()<.3){const pri=b.order==='attack'?['dmg','speed','core','tower']:b.core.hp<b.core.maxhp*.7?['core','tower','dmg','speed']:['dmg','tower','core','speed'];
+      for(const id of pri){const u=UPG.find(u=>u.id===id),l=b.upg[id];if(l>=3)continue;const c=upgCost(u,l);if(canPay(st,c)&&st.stone>=(c.stone||0)+12){pay(st,c);b.upg[id]++;applyUpg(1,id);return}}}}
+  else for(const u of UPG){const l=b.upg[u.id];if(l<3&&rnd()<.2){const c=upgCost(u,l);if(canPay(st,c)&&(st.stone>c.stone*2||ai.style==='eco')){pay(st,c);b.upg[u.id]++;applyUpg(1,u.id);return}}}
   // 4. contre-attaque : l'armée du joueur est loin de sa base, son cœur est dégarni
-  {const pc=bases[0].core.x,home=teamPow(0,pc,45*T),away=ents.filter(e=>e.type==='unit'&&e.team===0&&!e.dead&&e.kind!=='miner'&&Math.abs(e.x-pc)>90*T).length;
-   const reserve=fighters.filter(e=>!e.raid&&!e.strike&&!e.retreat);
-   if(away>=3&&home<1.2&&reserve.length>=3&&time-(ai.lastStrike||0)>150){const n=Math.min(reserve.length-1,2+diff);reserve.slice(0,n).forEach(e=>e.strike=true);ai.lastStrike=time;
+  if(iq>=1){const home=teamPow(0,pc,45*T),away=foe.filter(e=>e.kind!=='miner'&&Math.abs(e.x-pc)>90*T).length;
+   const reserve=fighters.filter(e=>canStrike(e)&&!e.raid&&!e.strike&&!e.retreat);
+   if(away>=3&&home<1.2&&reserve.length>=3&&time-(ai.lastStrike||0)>150){const n=Math.min(reserve.length-1,D.strike);reserve.slice(0,n).forEach(e=>e.strike=true);ai.lastStrike=time;
      toast('Contre-attaque ! Des unités rouges foncent vers ton cœur dégarni.',4,'#ff6a5a');shake=Math.max(shake,3)}}
-  // 5. raid : 2 unités vont harceler les mineurs du joueur
-  const foeMiners=foe.filter(e=>e.kind==='miner'&&!e.dead).length;
-  if(b.order==='defend'&&foeMiners>=2&&time-(ai.lastRaid||0)>90&&fighters.length>=3){const idle=fighters.filter(e=>!e.raid&&!e.retreat).slice(0,2);idle.forEach(e=>e.raid=true);ai.lastRaid=time;if(idle.length)toast('Des pillards rouges traquent tes mineurs !',3,'#ff9a8a')}
+  // 5. raid : 2 unités (3 en Brutal) vont harceler les mineurs du joueur
+  const foeMiners=fk('miner');
+  if(iq>=1&&b.order==='defend'&&foeMiners>=2&&time-(ai.lastRaid||0)>(iq>=3?65:90)&&fighters.length>=3){const idle=fighters.filter(e=>canStrike(e)&&!UNITS[e.kind].big&&!e.raid&&!e.retreat).slice(0,iq>=3?3:2);idle.forEach(e=>e.raid=true);ai.lastRaid=time;if(idle.length)toast('Des pillards rouges traquent tes mineurs !',3,'#ff9a8a')}
   // 6. armée : on rassemble au point de ralliement puis on attaque en groupe (effectif plafonné : lisibilité et perfs)
   if(fighters.length<survCap())recruit(1,counter());
+  // opportunisme (Difficile+) : héros à terre ou parti loin de chez lui, la vague part tout de suite, même incomplète
+  const opp=iq>=2&&!surv&&fighters.length>=5&&(player.dead||Math.abs(player.x-pc)>120*T);
   // avant de lancer la vague, on jauge la défense adverse (unités au cœur, joueur, tour) : trop forte, on grossit encore
   // l'armée, au plus 90 s ou jusqu'au plafond d'effectif, puis on attaque quand même pour ne jamais rester passif
-  const ready=b.order==='defend'&&fighters.length>=ai.wave&&(surv?time-(ai.lastWave||0)>firstWave():time>firstWave());
-  if(ready){const pc=bases[0].core.x,guard=teamPow(0,pc,45*T)+1.5+bases[0].upg.tower*.8,mine2=fighters.reduce((a,e)=>a+POW[e.kind]*e.hp/e.maxhp,0);
+  const ready=b.order==='defend'&&fighters.length>=ai.wave*(opp?.7:1)&&(surv?time-(ai.lastWave||0)>firstWave():time>firstWave()&&time>=(ai.restT||0));
+  if(ready){const guard=teamPow(0,pc,45*T)+1.5+bases[0].upg.tower*.8,mine2=fighters.reduce((a,e)=>a+POW[e.kind]*e.hp/e.maxhp,0);
     ai.holdT=ai.holdT||time;const capped=fighters.length>=survCap();
-    if(mine2<guard*1.25&&!capped&&time-ai.holdT<90){if(!ai.holdMsg){ai.holdMsg=true;toast('L\'armée rouge hésite devant ta défense et se renforce.',3,'#9fd0ff')}ai.wait=true}
+    if(!opp&&mine2<guard*1.25&&!capped&&time-ai.holdT<holdMax){if(!ai.holdMsg){ai.holdMsg=true;toast('L\'armée rouge hésite devant ta défense et se renforce.',3,'#9fd0ff')}ai.wait=true}
     else ai.wait=false}
   else{ai.holdT=0;ai.holdMsg=false;ai.wait=false}
-  if(ready&&!ai.wait){b.order='attack';ai.waveNo=(ai.waveNo||0)+1;for(const e of fighters)e.waveNo=ai.waveNo;ai.holdT=0;ai.holdMsg=false;ai.sent=fighters.length;ai.lastWave=time;ai.wave=Math.min(surv?44:28,ai.wave+2+diff);toast('L\'armée rouge marche sur ta base ('+fighters.length+' unités) !',4,'#ff9a8a')}
-  else if(b.order==='attack'&&(surv?(time-ai.lastWave>200?0:fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat).length):fighters.filter(e=>!e.retreat&&!e.raid).length)<=Math.max(1,Math.floor(ai.sent*.3))){b.order='defend';if(surv){qAdd('wave');stats.waves++;if(stats.waves%5===0)findRelic();if(stats.waves>=10)unlock('siege10');toast('Vague '+stats.waves+' repoussée ! La suivante sera plus forte.',4,COL.gold);sfx.buy()}else toast('L\'ennemi bat en retraite.',3,'#9fd0ff')}}
+  if(ready&&!ai.wait){b.order='attack';ai.waveNo=(ai.waveNo||0)+1;for(const e of fighters)e.waveNo=ai.waveNo;ai.holdT=0;ai.holdMsg=false;ai.sent=fighters.length;ai.lastWave=time;ai.wave=Math.min(surv?44:D.wmax,ai.wave+D.grow);
+    toast('L\'armée rouge marche sur ta base ('+fighters.length+' unités) !',4,'#ff9a8a');
+    // Difficile+ : le champion quitte la mine et mène la vague
+    if(iq>=2&&!surv&&ai.champ&&!ai.champ.dead&&ai.champ.hp>ai.champ.maxhp*.6&&(ai.waveNo>=2||iq>=3)){ai.champ.war=true;ai.champ.state='seek';ai.champ.tgt=null;toast('Le champion rouge mène l\'assaut : ses voisins frappent plus fort !',4,'#ff6a5a')}
+    // Brutal+ : un commando de mêlée file droit sur ton cœur pendant que la ligne fixe tes défenseurs
+    if(iq>=3)for(const e of fighters.filter(e=>canStrike(e)&&!UNITS[e.kind].ranged&&!UNITS[e.kind].big&&!e.raid).slice(0,Math.min(4,Math.floor(fighters.length*.2))))e.strike=e.cmd=true;
+    // Cauchemar : chaque vague lancée aguerrit les recrues suivantes (+6 % de PV et de dégâts, jusqu'à +48 %)
+    if(iq>=4)ai.vet=Math.min(.48,(ai.vet||0)+.06)}
+  else if(b.order==='attack'){const atk=fighters.filter(e=>!e.retreat&&!e.raid),left=surv?(time-ai.lastWave>200?0:fighters.filter(e=>e.waveNo===ai.waveNo&&!e.retreat).length):atk.length;
+    let back=left<=Math.max(1,Math.floor(ai.sent*(iq?.3:.45))),regroup=false;
+    // Brutal+ : repli tactique. En nette infériorité loin de ton cœur, la vague rentre se regrouper au lieu de mourir au compte-gouttes
+    if(!back&&iq>=3&&!surv&&atk.length){const fx=atk.reduce((a,e)=>Math.abs(e.x-pc)<Math.abs(a-pc)?e.x:a,atk[0].x);
+      if(Math.abs(fx-pc)>35*T&&atk.reduce((a,e)=>a+POW[e.kind]*e.hp/e.maxhp,0)<teamPow(0,fx,30*T)*.45)back=regroup=true}
+    if(back){b.order='defend';ai.restT=time+D.rest*(regroup?.5:1);endWave();
+      if(surv){qAdd('wave');stats.waves++;if(stats.waves%5===0)findRelic();if(stats.waves>=10)unlock('siege10');toast('Vague '+stats.waves+' repoussée ! La suivante sera plus forte.',4,COL.gold);sfx.buy()}
+      else toast(regroup?'L\'armée rouge se replie pour se regrouper.':'L\'ennemi bat en retraite.',3,'#9fd0ff')}}}
 function applyUpg(team,id){const b=bases[team];if(id==='core'){b.core.maxhp+=300;b.core.hp+=300}}
 function updateTowers(dt){for(const b of bases){if(b.core.dead)continue;const tw=b.tower;tw.cd-=dt;if(tw.cd>0)continue;const lv=b.upg.tower;
   const fake={x:tw.x,y:tw.y,w:0,h:0,team:b.team},rng=220+lv*18;let t=null,bd=rng;
@@ -1200,8 +1334,8 @@ function updateArrows(dt){for(const a of arrows){a.vy+=300*dt;a.x+=a.vx*dt;a.y+=
 //  BOUCLE DE MISE À JOUR
 // =====================================================================
 function endGame(win){const dur=time-stats.start;PROF.tot.mined+=stats.mined;PROF.tot.kills+=stats.kills;PROF.tot.recruited+=stats.recruited;endInfo={rec:false,dur};
-  if(win){PROF.wins++;qAdd('win');unlock('win'+diff);if(dur<1200)unlock('speed');if(daily){unlock('daily');PROF.daily.won=daily.key}
-    const k=daily?'d'+daily.key:''+diff,prev=PROF.rec[k];endInfo.prev=prev;if(!prev||dur<prev){PROF.rec[k]=Math.round(dur);endInfo.rec=!!prev||true}}
+  if(win){PROF.wins++;qAdd('win');unlock(DF().ach);if(dur<1200)unlock('speed');if((stats.coreHit||0)<bases[0].core.maxhp*.1)unlock('fort');if(daily){unlock('daily');PROF.daily.won=daily.key}
+    const k=daily?'d'+daily.key:'k'+DF().id,prev=PROF.rec[k];endInfo.prev=prev;if(!prev||dur<prev){PROF.rec[k]=Math.round(dur);endInfo.rec=!!prev||true}}
   if(surv){const prev=PROF.rec.surv||0;endInfo.prev=prev;if(stats.waves>prev){PROF.rec.surv=stats.waves;endInfo.rec=true}}
   saveProf()}
 // effets d'interface et de monde qui vivent même en pause ou à l'écran titre
@@ -1209,9 +1343,9 @@ function updateFx(dt){if(state==='title')titleT+=dt;else titleT=0;if(fade>0)fade
   if(achPop[0]){achPop[0].t+=dt;if(achPop[0].t>=4)achPop.shift()}if(panelT<1)panelT=Math.min(1,panelT+dt*7);
   for(const c of confetti){c.vy+=60*dt;c.x+=c.vx*dt;c.y+=c.vy*dt;c.r+=c.vr*dt;c.vx*=Math.pow(.6,dt)}confetti=confetti.filter(c=>c.y<VH+10);
   if(state!==shownState){shownState=state;lastEndChange=performance.now();fade=.8;if(state==='win')for(let i=0;i<140;i++)confetti.push({x:R(0,VW),y:R(-VH,0),vx:R(-20,20),vy:R(10,60),r:R(0,6),vr:R(-8,8),col:['#ffe066','#4f9df5','#63ebca','#ff6fae','#ffffff'][RI(0,4)]})}}
-// lune de sang : une nuit sur quatre (toutes en défi « Nuits rouges »), monstres doublés
+// lune de sang : la 2e nuit puis une nuit sur trois (toutes en défi « Nuits rouges »), monstres doublés et ogre de sang
 const nightNo=()=>Math.floor(time/dayLen);
-const isBlood=()=>daylight()<.25&&(daily&&daily.mod.id==='blood'||nightNo()%4===3);
+const isBlood=()=>daylight()<.25&&(daily&&daily.mod.id==='blood'||nightNo()%3===1);
 function updateWorldFx(dt){
   for(let i=visualDebris.length-1;i>=0;i--){visualDebris[i].t+=dt;if(visualDebris[i].t>.65)visualDebris.splice(i,1)}
   for(const e of ents)if(!e.dead&&e.kind==='golem'){
@@ -1219,7 +1353,7 @@ function updateWorldFx(dt){
     if(e.onGround&&((e.visualGround===false)||(Math.abs(e.vx)>4&&e.visualBeat!==undefined&&e.visualBeat!==beat)))visualPuff(e.x+e.w/2,e.y+e.h,'#9b8aaa',6);
     e.visualGround=e.onGround;e.visualBeat=beat;
   }
-  const bl=isBlood();if(bl&&bloodNight!==nightNo()){bloodNight=nightNo();weather.blood=true;toast('Lune de sang ! Les monstres sont deux fois plus nombreux cette nuit.',5,'#ff5a5a');sfx.horn();buzz(150)}
+  const bl=isBlood();if(bl&&bloodNight!==nightNo()){bloodNight=nightNo();weather.blood=true;toast('Lune de sang ! Les monstres sont deux fois plus nombreux cette nuit.',5,'#ff5a5a');sfx.horn();buzz(150);spawnOgre()}
   if(!bl&&weather.blood&&daylight()>.4){weather.blood=false;if(!player.dead){unlock('bloodmoon');toast('Tu as survécu à la lune de sang !',3,COL.gold)}}
   // météo : averses de temps en temps, orages avec éclairs
   const W=weather;W.t-=dt;if(W.t<=0){W.target=rnd()<.35?R(.4,1):0;W.t=R(35,90)}W.rain+=(W.target-W.rain)*Math.min(1,dt*.3);if(W.flash>0)W.flash-=dt*2.5;
@@ -1383,6 +1517,9 @@ function sprFrame(set,e,ignoreSwing=false){const s=e.dir<0?set.L:set.R;
   if(!e.onGround)return s.jump;if(Math.abs(e.vx)>4)return s.walk[Math.floor(e.anim)%s.walk.length];return s.idle[Math.floor(time*1.6+(e.x|0)%7*.13)%2]}
 function drawEnts(g,cx,cy){
   const ox=-cx,oy=-cy;
+  // fanion de l'ordre Tenir, planté à la surface
+  {const b=bases[0];if(b.order==='hold'&&b.holdX!=null){const X=Math.round(b.holdX+ox),Y=surf[clamp(Math.floor(b.holdX/T),0,WW-1)]*T+oy;if(X>-20&&X<VW+20){const wv=Math.sin(time*5)>0?1:0;
+    g.fillStyle='#120e1c';g.fillRect(X-1,Y-29,3,29);g.fillRect(X+1,Y-29,11,8);g.fillStyle='#c9d4ff';g.fillRect(X,Y-28,1,28);g.fillStyle='#4f9df5';g.fillRect(X+1,Y-28,9,6);g.fillStyle='#9fd0ff';g.fillRect(X+1,Y-28+wv,9,1);g.fillRect(X+3+wv*3,Y-26,2,2)}}}
   for(const e of ents){if(e.dead&&e.type!=='core')continue;if(e.type==='player')continue;
     if(e.x+40<cx||e.x-40>cx+VW||e.y+40<cy||e.y-60>cy+VH)continue;
     // troupe à l'arrêt : léger décalage propre à chaque unité pour lire une foule plutôt qu'un seul soldat
@@ -1400,12 +1537,17 @@ function drawEnts(g,cx,cy){
       if(e.kind==='archer'&&!(e.atk>0&&e.atk<.18))drawHeld(g,ICON.bow,X+e.w/2+(e.swing>0?e.dir*2:0),Y+11,e.dir,-1);
       if(e.kind==='miner'&&(e.carryN>0||e.junk>0)){const best=['diamond','gold','silver','iron','copper','coal','stone','wood'].find(k=>e.carry[k]>0);if(best){g.drawImage(ICON[best],X-4+(e.dir>0?-6:6),Y+3,10,10)}}
       g.globalAlpha=1;if(e.spawnT>.3){g.globalCompositeOperation='lighter';g.globalAlpha=(e.spawnT-.3)/.3;g.drawImage(img,X-(e.kind==='golem'?2:5),Y+e.h-img.height+1);g.globalAlpha=1;g.globalCompositeOperation='source-over'}}
-    else if(e.type==='monster'){if(e.kind==='slime'){const fr=(e.blue?SPR.slimeB:SPR.slime);img=fr[e.onGround?(Math.sin(e.anim*6)>0?0:1):2];g.drawImage(img,X-2,Y+e.h-img.height+1)}
+    else if(e.type==='monster'){if(e.kind==='ogre'){const im=sprFrame(SPR.ogre,e),dx=X-10,dy=Y+e.h-im.height*2+3;g.drawImage(im,dx,dy,im.width*2,im.height*2);
+        if(e.flash>0){g.globalCompositeOperation='lighter';g.globalAlpha=.7;g.drawImage(im,dx,dy,im.width*2,im.height*2);g.globalAlpha=1;g.globalCompositeOperation='source-over'}
+        wtxt(g,'Ogre de sang',X+e.w/2,Y-17,'#ff6fae',7)}
+      else if(e.kind==='slime'){const fr=(e.blue?SPR.slimeB:SPR.slime);img=fr[e.onGround?(Math.sin(e.anim*6)>0?0:1):2];g.drawImage(img,X-2,Y+e.h-img.height+1)}
       else{img=sprFrame(SPR.zombie,e);g.drawImage(img,X-5,Y+e.h-img.height+1)}}
     if(e.flash>0&&img){g.globalCompositeOperation='lighter';g.globalAlpha=.7;g.drawImage(img,X-(e.kind==='golem'?2:e.kind==='slime'?2:5),Y+e.h-img.height+1);g.globalAlpha=1;g.globalCompositeOperation='source-over'}
     // barre de vie
     if(e.kind==='champion')wtxt(g,'Champion',X+e.w/2,Y-15,'#ff9a8a',7)
-    if(e.hp<e.maxhp||e.kind==='champion'){const wd=Math.max(12,e.w+4);g.fillStyle='#120e1c';g.fillRect(X+e.w/2-wd/2-1,Y-6,wd+2,3);g.fillStyle=e.team===0?'#5fb0ff':e.team===1?'#ff5a4a':'#7ddf6a';g.fillRect(X+e.w/2-wd/2,Y-5,Math.max(1,wd*e.hp/e.maxhp),1)}}
+    // galvanisé par le champion : étincelle au-dessus de la tête
+    if(e.aura>time&&((time*6+e.x)|0)%3===0){g.fillStyle='#ffd27a';g.fillRect(X+(e.w>>1),Y-4,1,2);g.fillRect(X+(e.w>>1)-1,Y-3,3,1)}
+    if(e.hp<e.maxhp||e.kind==='champion'||e.boss){const wd=e.boss?34:Math.max(12,e.w+4);g.fillStyle='#120e1c';g.fillRect(X+e.w/2-wd/2-1,Y-6,wd+2,3);g.fillStyle=e.team===0?'#5fb0ff':e.team===1?'#ff5a4a':'#7ddf6a';g.fillRect(X+e.w/2-wd/2,Y-5,Math.max(1,wd*e.hp/e.maxhp),1)}}
   // joueur
   const p=player;if(!p.dead&&!(p.iframes>0&&Math.floor(time*20)%2)){const img=sprFrame(SPR.player,p,!!mining);const X=Math.round(p.x+ox),Y=Math.round(p.y+oy+(p.stepOff||0));
     // écrasement à l'atterrissage, étirement au saut
@@ -1510,7 +1652,7 @@ function render(){
 //  INTERFACE
 // =====================================================================
 let uiHits=[];
-const VERSION='1.1.0';
+const VERSION='1.2.0';
 const COL={panel:'#05050cee',panel2:'#05050c',edge:'#e8ecff8c',gold:'#ffe066',txt:'#e4e9ff',dim:'#a0a4be',blue:'#4f9df5',red:'#e5534b',ok:'#63ebca'};
 // Tiny local bitmap alphabet: integer pixels, independent of downloaded fonts.
 const UI_GLYPHS={
@@ -1594,14 +1736,17 @@ function drawHUD(cx=cam.x,cy=cam.y){
   const heroW=narrow?Math.min(124,Math.floor(VW*.44)):112;
   {const n=Math.max(1,Math.round(p.maxhp/10)),f=p.dead?0:p.hp/p.maxhp*n;const lowp=!p.dead&&p.hp<p.maxhp*.3;for(let i=0;i<n;i++)heart(8+i*8,8+(lowp&&Math.sin(time*8-i*.6)>.6?-1:0)+(hurtFx>.6&&i===Math.floor(f)?Math.round(R(-1,1)):0),clamp(f-i,0,1));
    const night=daylight()<.3;txt((night?'Nuit ':'Jour ')+(Math.floor(time/dayLen)+1),8,18,night?'#b9c0ff':COL.dim,7);
-   if(p.dead)txt('Retour dans '+Math.ceil(p.respawn)+' s',8,27,'#ff6fae',7)}
+   if(p.dead)txt('Retour dans '+Math.ceil(p.respawn)+' s',8,27,'#ff6fae',7);else if(p.recall>0)txt('Rappel dans '+Math.ceil(p.recall)+' s',8,27,'#9fd0ff',7);
+   // blessé avec une potion dans le sac : un bouton pour la boire sans changer d'objet
+   else if(p.hp<p.maxhp*.6&&!paused){const n=countItem('potion');if(n){button(8,26,isTouch?46:54,12,isTouch?'Potion ×'+n:'Potion ×'+n+' F',drinkPotion,true,p.hp<p.maxhp*.3&&Math.sin(time*8)>0);ctx.drawImage(ICON.potion,(isTouch?46:54)+10,25,12,12)}}}
   // minicarte
   // Reserve 50 px below/around the map for cores and two resource rows.
   const mapH=narrow?Math.max(6,Math.min(41,Math.floor(VH*.22)-50)):0;
   const mw=narrow?Math.min(VW-heroW-16,120,Math.floor(mapH*WW/WH)):Math.min(176,Math.floor(VW*.28)),mh=Math.round(mw*WH/WW),mx=VW-mw-6,my=6;
   box(mx-2,my-2,mw+4,mh+4,'#05050c');ctx.imageSmoothingEnabled=false;ctx.drawImage(mmC,mx,my,mw,mh);
   const sc=mw/(WW*T);ctx.strokeStyle='#e8ecff99';ctx.lineWidth=1;ctx.strokeRect(mx+cam.x*sc,my+cam.y*sc,VW*sc,VH*sc);
-  for(const e of ents){if(e.dead||(e.type!=='unit'&&e.type!=='player'&&e.type!=='core'&&e.type!=='monster'))continue;ctx.fillStyle=e.type==='player'?'#fff':e.team===0?COL.blue:e.team===1?COL.red:'#7ddf6a';const z=e.type==='core'?3:e.type==='player'?2:1.5;ctx.fillRect(mx+(e.x+e.w/2)*sc-z/2,my+(e.y+e.h/2)*sc-z/2,z,z)}
+  for(const e of ents){if(e.dead||(e.type!=='unit'&&e.type!=='player'&&e.type!=='core'&&e.type!=='monster'))continue;ctx.fillStyle=e.type==='player'?'#fff':e.team===0?COL.blue:e.team===1?COL.red:e.boss?'#ff6fae':'#7ddf6a';const z=e.type==='core'||e.boss?3:e.type==='player'?2:1.5;ctx.fillRect(mx+(e.x+e.w/2)*sc-z/2,my+(e.y+e.h/2)*sc-z/2,z,z)}
+  if(b0.order==='hold'&&b0.holdX!=null){const fx=Math.round(mx+b0.holdX*sc),fy=Math.round(my+surf[clamp(Math.floor(b0.holdX/T),0,WW-1)]*T*sc);ctx.fillStyle='#ffffff';ctx.fillRect(fx,fy-4,1,4);ctx.fillStyle=COL.blue;ctx.fillRect(fx+1,fy-4,2,2)}
   // barres des cœurs (+ effectifs)
   let cx0,cw,cy0;const midW=mx-heroW-26;
   if(narrow){cx0=8;cw=VW-16;cy0=my+mh+3}else if(midW>=150){cw=Math.min(240,midW);cx0=Math.round(heroW+12+(midW-cw)/2+4);cy0=4}else{cx0=8;cw=VW-16;cy0=Math.max(42,my+mh+6)}
@@ -1669,12 +1814,12 @@ function drawHUD(cx=cam.x,cy=cam.y){
 function drawPadFocus(h){ctx.strokeStyle=COL.gold;ctx.lineWidth=1;ctx.strokeRect(Math.round(h.x)-1.5,Math.round(h.y)-1.5,Math.round(h.w)+3,Math.round(h.h)+3)}
 function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0,VW,VH);if(menuPanel)return drawMenuPanel(()=>{menuPanel=null});
   const W=Math.min(VW-16,pauseHelp?300:170),help=isTouch?
-    ['Flèches à l\'écran : marcher. ▲ : sauter, nager vers le haut.','Gros bouton : utiliser l\'objet, vise tout seul. ▼ + bouton : creuser dessous.','Toucher le monde : utiliser l\'objet à cet endroit précis.','Barre du bas : choisir un objet. Base : recruter et améliorer.','Forge : fabriquer outils et armes. Ordre : Assaut, Défense ou Suivre.']:
-    ['Q D ou ← → : marcher. Z, Espace ou ↑ : sauter, nager.','Clic gauche : utiliser l\'objet. Clic droit : miner. Molette : objet.','B : base · C : forge · E : sac · R : ordre · M : son · Échap : menu.'];
-  const goal=['But : détruire le cœur rouge à l\'autre bout du monde.','Ton minerai est déposé tout seul à ta base. Les mineurs en rapportent aussi.','La nuit, slimes et zombies sortent. Le champion rouge pille la montagne.'];
+    ['Flèches à l\'écran : marcher. ▲ : sauter, nager vers le haut.','Gros bouton : utiliser l\'objet, vise tout seul. ▼ + bouton : creuser dessous.','Toucher le monde : utiliser l\'objet à cet endroit précis.','Barre du bas : choisir un objet. Base : recruter, améliorer, rappel à la base.','Forge : fabriquer outils et armes. Ordre : Assaut, Défense, Tenir ou Suivre.','Blessé : le bouton Potion apparaît sous tes cœurs.']:
+    ['Q D ou ← → : marcher. Z, Espace ou ↑ : sauter, nager.','Clic gauche : utiliser l\'objet. Clic droit : miner. Molette : objet.','B : base · C : forge · E : sac · R : ordre · M : son · Échap : menu.','F : boire une potion · H : rappel à la base (3 s sans bouger).'];
+  const goal=['But : détruire le cœur rouge à l\'autre bout du monde.','Ton minerai est déposé tout seul à ta base. Les mineurs en rapportent aussi.','La nuit, slimes et zombies sortent. Le champion rouge pille la montagne.','Lune de sang : un ogre marche sur ta base. Abats-le avant l\'aube pour son trésor.'];
   // 2e page : ce que fait chaque unité et chaque ordre (la base n'affiche qu'une ligne par unité)
-  const units=['Mineur : creuse et rapporte le minerai. Fuit les pillards vers la tour.','Guerrier : mêlée solide. Archer : tire de loin, recule au contact.','Golem : colosse lent qui brise tout, idéal contre le cœur.','Tour de guet : tire sur les ennemis proches de ton cœur. Améliore-la à la base.','',
-    'Défense : tes troupes tiennent une ligne devant le cœur, sous la tour. 3 d\'entre elles chassent les pillards.','Assaut : l\'armée marche groupée vers le cœur rouge.','Suivre : tes troupes t\'escortent partout.','Blessées, les unités rentrent se soigner à la base.'];
+  const units=['Mineur : creuse et rapporte le minerai. Fuit les pillards vers la tour.','Guerrier : mêlée solide. Archer : tire de loin, recule au contact.','Guérisseur : soigne les alliés proches et reste derrière la ligne.','Golem : colosse lent qui brise tout, idéal contre le cœur.','Tour de guet : tire sur les ennemis proches de ton cœur. Améliore-la à la base.','',
+    'Défense : tes troupes tiennent une ligne devant le cœur, sous la tour. 3 d\'entre elles chassent les pillards.','Assaut : l\'armée marche groupée vers le cœur rouge, la mêlée devant.','Tenir : plante un fanion où tu te tiens, tes troupes gardent cette position.','Suivre : tes troupes t\'escortent partout.','Blessées, les unités rentrent se soigner à la base.'];
   const lines=pauseHelp?(pauseHelp===2?units:[...goal,'',...help]).flatMap(l=>l?wrapLines(l,W-16,7):['']):[];
   const H=pauseHelp?30+lines.length*10+24:174,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   box(x,y,W,H);txt(pauseHelp===2?'Unités et ordres':pauseHelp?'Aide':'Pause',x+W/2,y+7,COL.txt,10,'center');
@@ -1688,22 +1833,25 @@ function drawPause(){uiHits=[];ctx.fillStyle='rgba(8,6,16,.72)';ctx.fillRect(0,0
     button(bx,y+112,bw,18,'Sauvegarder et quitter',()=>{saveGame();paused=false;panel=null;state='title'});
     txt(daily?'Défi du jour : '+daily.mod.n:surv?'Siège · vague '+(stats.waves+1):'Difficulté '+DIFFS[diff].n,x+W/2,y+138,daily?COL.gold:COL.dim,6,'center');
     txt('Partie sauvegardée toutes les 20 s',x+W/2,y+152,COL.dim,6,'center')}}
-const ORDERS={attack:'Assaut',defend:'Défense',follow:'Suivre'};
-function toggleOrder(){const b=bases[0];b.order=b.order==='attack'?'defend':b.order==='defend'?'follow':'attack';
-  toast({attack:'Tes troupes partent à l\'assaut du cœur rouge.',defend:'Tes troupes se regroupent devant ta base.',follow:'Tes troupes t\'escortent.'}[b.order],2.5,'#9fd0ff');sfx.place()}
+const ORDERS={attack:'Assaut',defend:'Défense',hold:'Tenir',follow:'Suivre'},ORDER_SEQ=['attack','defend','hold','follow'];
+// Tenir : un fanion est planté là où se tient le héros, les troupes forment la ligne autour (avant-poste, embuscade, siège patient)
+function toggleOrder(){const b=bases[0];b.order=ORDER_SEQ[(ORDER_SEQ.indexOf(b.order)+1)%ORDER_SEQ.length];if(b.order==='hold')b.holdX=player.x+player.w/2;
+  toast({attack:'Tes troupes partent à l\'assaut du cœur rouge.',defend:'Tes troupes se regroupent devant ta base.',hold:'Fanion planté : tes troupes tiennent cette position.',follow:'Tes troupes t\'escortent.'}[b.order],2.5,'#9fd0ff');sfx.place()}
 function togglePanel(n){panel=panel===n?null:n;cursorItem=null;panelT=0;sfx.place()}
 const panelY=(H,y)=>HL.barTop&&HL.barTop-H-3>=2?Math.max(2,Math.min(y,HL.barTop-H-3)):y;
-function drawBasePanel(){const b=bases[0],W=262,H=196,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-6);panelRect={x,y,w:W,h:H};
+function drawBasePanel(){const b=bases[0],p=player,kinds=Object.entries(UNITS).filter(([,u])=>!u.hero),RP=21,W=262,H=98+kinds.length*RP,x=Math.round(VW/2-W/2),y=panelY(H,Math.round(VH/2-H/2)-6);panelRect={x,y,w:W,h:H};
   box(x,y,W,H);txt('Ta base',x+8,y+6,COL.txt,10,'left');button(x+W-18,y+4,14,12,'×',()=>togglePanel('base'));
   txt('Recruter',x+8,y+22,COL.dim,7);
-  Object.entries(UNITS).filter(([,u])=>!u.hero).forEach(([k,u],i)=>{const yy=y+32+i*24;box(x+6,yy,W-12,22,COL.panel2,'#e8ecff18');
-    const img=SPR[k+'0'].R.idle[0];ctx.drawImage(img,x+9,yy+(k==='golem'?-3:-2));txt(u.n,x+30,yy+3,COL.txt,8);
+  kinds.forEach(([k,u],i)=>{const yy=y+31+i*RP;box(x+6,yy,W-12,RP-2,COL.panel2,'#e8ecff18');
+    const img=SPR[k+'0'].R.idle[0];ctx.drawImage(img,x+9,yy+(k==='golem'?-7:-6));txt(u.n,x+30,yy+2,COL.txt,8);
     // effectif actuel de ce type, pour savoir quoi recruter sans compter à l'écran
-    const own=ents.filter(e=>e.type==='unit'&&e.team===0&&e.kind===k&&!e.dead).length;if(own)txt('×'+own,x+34+uiWidth(u.n,8),yy+3,'#9fd0ff',8);txt(uiFit(u.d,101,6),x+30,yy+12,COL.dim,6);
-    costLine(u.cost,x+136,yy+7,b.storage);button(x+W-48,yy+4,40,14,'Recruter',()=>{if(recruit(0,k))toast(u.n+' recruté !',2,'#9fd0ff')},canPay(b.storage,u.cost))});
-  txt('Améliorations',x+8,y+132,COL.dim,7);
-  UPG.forEach((u,i)=>{const xx=x+6+(i%2)*126,yy=y+141+Math.floor(i/2)*25,l=b.upg[u.id],c=upgCost(u,l);box(xx,yy,123,23,COL.panel2,'#e8ecff18');
+    const own=ents.filter(e=>e.type==='unit'&&e.team===0&&e.kind===k&&!e.dead).length;if(own)txt('×'+own,x+34+uiWidth(u.n,8),yy+2,'#9fd0ff',8);txt(uiFit(u.d,101,6),x+30,yy+11,COL.dim,6);
+    costLine(u.cost,x+136,yy+6,b.storage);button(x+W-48,yy+3,40,13,'Recruter',()=>{if(recruit(0,k))toast(u.n+' recruté !',2,'#9fd0ff')},canPay(b.storage,u.cost))});
+  const uy=y+33+kinds.length*RP;txt('Améliorations',x+8,uy,COL.dim,7);
+  UPG.forEach((u,i)=>{const xx=x+6+(i%2)*126,yy=uy+9+Math.floor(i/2)*25,l=b.upg[u.id],c=upgCost(u,l);box(xx,yy,123,23,COL.panel2,'#e8ecff18');
     txt(u.n+' '+'★'.repeat(l)+'☆'.repeat(3-l),xx+4,yy+3,l>=3?COL.gold:COL.txt,7);if(l<3){costLine(c,xx+4,yy+13,b.storage);txt(uiFit(u.s,44,6),xx+92,yy+14,COL.dim,6,'right');button(xx+95,yy+10,25,11,'+',()=>{if(canPay(b.storage,c)){pay(b.storage,c);b.upg[u.id]++;applyUpg(0,u.id);sfx.buy();toast(u.n+' : niveau '+b.upg[u.id],2,COL.gold)}},canPay(b.storage,c))}else{txt('max',xx+4,yy+13,COL.gold,7);txt(u.s,xx+119,yy+14,COL.dim,6,'right')}});
+  // rappel : rentrer à la base d'où qu'on soit (cœur attaqué, sac plein au fond d'une grotte)
+  {const far=Math.abs(p.x-b.core.x)>=12*T,cd=p.recallCd>0;button(x+46,y+4,60,12,cd?'Rappel '+Math.ceil(p.recallCd)+' s':isTouch?'Rappel':'Rappel H',startRecall,!p.dead&&!cd&&far,!p.dead&&!cd&&far&&b.core.alertT>time)}
   const nearB=Math.abs(player.x-b.core.x)<90;button(x+W-108,y+4,86,12,'Déposer pierre/bois',()=>{let n=0;for(const k of['stone','wood']){const c=countItem(k);takeItem(k,c);b.storage[k]+=c;n+=c}toast(n?('Déposé : '+n):'Rien à déposer.',2,'#9fd0ff');if(n)sfx.buy()},nearB);
 }
 function drawCraftPanel(){const W=250,rows=RECIPES.length,RH=clamp(Math.floor(((HL.barTop||VH)-6-30)/rows),12,17),H=30+rows*RH,x=Math.round(VW/2-W/2),y=panelY(H,Math.max(30,Math.round(VH/2-H/2)-6));panelRect={x,y,w:W,h:H};
@@ -1739,7 +1887,7 @@ function drawTitle(){
   const sv=hasSave();if(sv){button(bx-slideIn(k++),y,bw,20,'Continuer la partie',()=>{audioInit();if(!loadGame())toast('Sauvegarde illisible.',2)},true,true);y+=24}
   const D=dailyInfo(),done=PROF.daily.won===D.key;
   button(bx+slideIn(k++),y,bw,20,(done?'★ ':'')+'Défi du jour : '+D.mod.n,()=>{audioInit();newGame(1,D)},true,!sv&&false);y+=24;
-  const g3=Math.floor((bw-8)/3);DIFFS.forEach((d,i)=>button(bx+i*(g3+4)-slideIn(k),y,g3,20,d.n,()=>{audioInit();newGame(i)},true,i===1&&!sv));k++;y+=24;
+  button(bx-slideIn(k++),y,bw,20,'Nouvelle partie',()=>{audioInit();menuPanel='new';panelT=0;sfx.place()},true,!sv);y+=24;
   button(bx+slideIn(k++),y,bw,20,'Mode Siège : vagues infinies'+(PROF.rec.surv?' · record '+PROF.rec.surv:''),()=>{audioInit();newGame(1,null,true)},true);y+=24;
   const g3b=Math.floor((bw-8)/3),na=Object.keys(PROF.ach).length,nr=Object.keys(PROF.relics).length;
   button(bx+slideIn(k),y,g3b,18,'Succès '+na+'/'+ACH.length,()=>{menuPanel='ach';panelT=0;sfx.place()});
@@ -1749,12 +1897,22 @@ function drawTitle(){
   const st=PROF.daily.streak&&PROF.daily.last>=dayKey(new Date(Date.now()-864e5))?PROF.daily.streak:0;
   txt(uiFit(D.mod.d+(st?' · Série : '+st+' jour'+(st>1?'s':''):''),bw,7),VW/2,y,done?COL.gold:'#ffd27a',7,'center');y+=12;
   const lines=isTouch?['← → Marcher   ▲ Sauter','Gros bouton : miner, frapper, lancer','Base · Forge · Sac : commandes du bas']:
-    ['Q D / ← → Marcher   Espace Sauter','Clic gauche Utiliser   Clic droit Miner','B Base   C Forge   E Sac   R Ordre   M Son'];
+    ['Q D / ← → Marcher   Espace Sauter','Clic gauche Utiliser   Clic droit Miner','B Base  C Forge  E Sac  R Ordre  F Potion  H Rappel'];
   if(y+40<VH){const ww=Math.min(VW-20,uiWidth(lines[2])+20);box(Math.round((VW-ww)/2),y,ww,39,COL.panel,'#e8ecff33');lines.forEach((l,i)=>txt(uiFit(l,ww-12),VW/2,y+7+i*10,COL.dim,7,'center'))}
   txt('v'+VERSION,VW-4,VH-9,'#e8ecff40',6,'right');
 }
 // panneaux Réglages / Succès, partagés par l'écran titre et le menu pause
-function drawMenuPanel(close){if(menuPanel==='set')return drawSettings(close);if(menuPanel==='quest')return drawQuestPanel(close);if(menuPanel==='relic')return drawRelicPanel(close);return drawAchPanel(close)}
+function drawMenuPanel(close){if(menuPanel==='new')return drawNewPanel(close);if(menuPanel==='set')return drawSettings(close);if(menuPanel==='quest')return drawQuestPanel(close);if(menuPanel==='relic')return drawRelicPanel(close);return drawAchPanel(close)}
+// choix de la difficulté : une ligne par niveau (ce que l'ennemi sait faire, record, étoile si déjà gagné) ; le niveau conseillé est en surbrillance
+const DCOL=['#63ebca','#e4e9ff','#ffd27a','#ff8a54','#ff5a8a'];
+function drawNewPanel(close){const W=Math.min(VW-16,264),rh=27,H=28+DIFFS.length*rh+24,x=Math.round(VW/2-W/2),y=Math.max(2,Math.round(VH/2-H/2));
+  const an=panelAnim(x,y,W,H);box(x,y,W,H);txt('Nouvelle partie',x+W/2,y+8,COL.txt,10,'center');
+  const reco=Math.max(1,DIFFS.findIndex((d,i)=>i>=1&&!PROF.ach[d.ach]&&diffOpen(i)));
+  DIFFS.forEach((d,i)=>{const yy=y+24+i*rh,open=diffOpen(i),rec=PROF.rec['k'+d.id],won=!!PROF.ach[d.ach];
+    button(x+8,yy,W-16,rh-3,'',()=>{close();newGame(i)},open,i===reco);
+    txt((won?'★ ':'')+d.n,x+14,yy+4,open?DCOL[i]:COL.dim,8);if(rec)txt(fmtT(rec),x+W-14,yy+4,COL.gold,7,'right');
+    txt(uiFit(open?d.d:'Gagne en Difficile ou en Brutal pour l\'ouvrir',W-28,6),x+14,yy+14,open?COL.dim:'#e8ecff60',6)});
+  button(x+W/2-40,y+H-20,80,15,'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
 function panelAnim(x,y,W,H){const k=1-Math.pow(1-panelT,3);if(k>=1)return false;ctx.save();ctx.globalAlpha=k;const cx=x+W/2,cy=y+H/2,z=.9+.1*k;ctx.translate(cx,cy+(1-k)*8);ctx.scale(z,z);ctx.translate(-cx,-cy);return true}
 function drawSettings(close){const S2=PROF.set,W=Math.min(VW-16,220),rows=[['sound','Son'],['music','Musique'],['vib','Vibrations'],['shake','Secousses de l\'écran'],['crt','Effet rétro (lignes)'],['lefty','Commandes'],['en','Langue / Language']],H=30+rows.length*22+26,x=Math.round(VW/2-W/2),y=Math.round(VH/2-H/2);
   const an=panelAnim(x,y,W,H);box(x,y,W,H);txt('Réglages',x+W/2,y+8,COL.txt,10,'center');
@@ -1762,7 +1920,7 @@ function drawSettings(close){const S2=PROF.set,W=Math.min(VW-16,220),rows=[['sou
   button(x+W/2-40,y+H-22,80,16,'Retour',()=>{close();sfx.place()});if(an)ctx.restore()}
 function drawAchPanel(close){const two=VW>=380,cols=two?2:1,rowsN=Math.ceil(ACH.length/cols),RH=Math.min(20,Math.floor((VH-70)/rowsN)),W=Math.min(VW-12,two?400:240),H=48+rowsN*RH+20,x=Math.round(VW/2-W/2),y=Math.max(2,Math.round(VH/2-H/2));
   const an=panelAnim(x,y,W,H);box(x,y,W,H);const na=Object.keys(PROF.ach).length;txt('Succès '+na+'/'+ACH.length,x+W/2,y+7,COL.gold,10,'center');
-  const rec=[0,1,2].map(i=>PROF.rec[i]?DIFFS[i].n+' '+fmtT(PROF.rec[i]):null).filter(Boolean);
+  const rec=DIFFS.map(d=>PROF.rec['k'+d.id]?d.n+' '+fmtT(PROF.rec['k'+d.id]):null).filter(Boolean);
   txt(uiFit('Parties '+PROF.games+' · Victoires '+PROF.wins+(rec.length?' · Records : '+rec.join(', '):''),W-12,6),x+W/2,y+22,COL.dim,6,'center');
   const cw=(W-12)/cols;ACH.forEach((a,i)=>{const c=Math.floor(i/rowsN),r=i%rowsN,xx=Math.round(x+6+c*cw),yy=y+34+r*RH,on=!!PROF.ach[a.id];
     txt(on?'★':'☆',xx+2,yy+2,on?COL.gold:'#e8ecff40',7);txt(uiFit(a.n,cw-16,7),xx+12,yy+1,on?COL.txt:COL.dim,7);if(RH>=17)txt(uiFit(a.d,cw-16,6),xx+12,yy+9,on?COL.dim:'#e8ecff50',6)});
@@ -1802,6 +1960,7 @@ function drawEnd(){if(!endShownT||endShownT<lastEndChange)endShownT=performance.
   // conseil adapté à ce qui s'est passé, pour que la partie suivante se joue autrement
   const rk=stats.rk||{},army=(rk.warrior||0)+(rk.archer||0)+(rk.golem||0);
   const tip=surv?(stats.waves<3?'Astuce : améliore la tour et garde l\'ordre Défense, les vagues viennent à toi.':'Chaque vague repoussée renforce la suivante : investis vite dans les améliorations.'):win?(diff<DIFFS.length-1?'Prêt pour plus dur ? Essaie la difficulté '+DIFFS[diff+1].n+'.':'Victoire en '+DIFFS[diff].n+' : bravo !')
+    :diff>0&&!PROF.wins&&PROF.games>=3?'Astuce : la difficulté Paisible laisse bien plus de temps pour bâtir ton armée.'
     :stats.recruited===0?'Astuce : rapporte du minerai à ta base et recrute des mineurs, puis des guerriers (bouton Base).'
     :(rk.miner||0)===0?'Astuce : des mineurs remplissent la réserve tout seuls, recrute-les en premier.'
     :army===0?'Astuce : recrute aussi des guerriers et des archers pour protéger ton cœur.'
@@ -1910,7 +2069,7 @@ addEventListener('keydown',ev=>{keys[ev.code]=true;audioInit();
   if(ev.code.startsWith('Digit')){const n=+ev.code.slice(5);if(n>=1&&n<=9)player.sel=n-1}
   if(paused&&ev.code!=='Escape'&&ev.code!=='KeyP')return;
   if(ev.code==='KeyB')togglePanel('base');if(ev.code==='KeyC')togglePanel('craft');if(ev.code==='KeyE'||ev.code==='KeyI')togglePanel('inv');
-  if(ev.code==='KeyR')toggleOrder();if(ev.code==='Escape'||ev.code==='KeyP'){if(panel&&ev.code==='Escape'){panel=null;cursorItem=null}else{paused=!paused;pauseHelp=false}}if(ev.code==='KeyM'){muted=!muted;toast(muted?'Son coupé':'Son activé',1.5)}
+  if(ev.code==='KeyR')toggleOrder();if(ev.code==='KeyF')drinkPotion();if(ev.code==='KeyH')startRecall();if(ev.code==='Escape'||ev.code==='KeyP'){if(panel&&ev.code==='Escape'){panel=null;cursorItem=null}else{paused=!paused;pauseHelp=false}}if(ev.code==='KeyM'){muted=!muted;toast(muted?'Son coupé':'Son activé',1.5)}
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(ev.code))ev.preventDefault()});
 addEventListener('keyup',ev=>{keys[ev.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;mouse.l=mouse.r=false;if(state==='play')paused=true});
@@ -1965,5 +2124,5 @@ function pollPad(dt){const gp=navigator.getGamepads?[...navigator.getGamepads()]
 addEventListener('gamepadconnected',()=>audioInit());
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;try{pollPad(dt);update(dt);render()}catch(err){console.error(err)}requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
-window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{TRM,set panel(v){panel=v},set help(v){pauseHelp=v},endGame,SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,shareText,shareResult,findRelic,set paused(v){paused=v}},get objTgt(){return objTgt},get tut(){return tut},get firstRun(){return firstRun},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
+window.__dbgT=(x,y)=>{const t=getT(x,y);return t===0?'.':t===LOG||t===LEAF||t===PLANT?',':t>=10?String.fromCharCode(55+t):''+t};window.__game={get stats(){return stats},get paused(){return paused},set paused(v){paused=v},saveGame,loadGame,step(n,dt=1/30){for(let i=0;i<n;i++)update(dt)},get state(){return state},newGame,dbg:{TRM,set panel(v){panel=v},set help(v){pauseHelp=v},endGame,SPR,ICON,text:(g,s,x,y,col,size,align='center')=>{TXC=g;txt(s,x,y,col,size,align);TXC=null},uiWidth,get weather(){return weather},explode,throwBomb,unlock,kill,addItem,menu:m=>{menuPanel=m;panelT=1},PROF,shareText,shareResult,findRelic,set paused(v){paused=v},hurt,DIFFS,diffOpen,UNITS,tr,startRecall,drinkPotion,toggleOrder,get ai(){return ai},get msgs(){return msgs}},get objTgt(){return objTgt},get tut(){return tut},get firstRun(){return firstRun},get player(){return player},get ents(){return ents},get bases(){return bases},recruit,set time(v){time=v},get time(){return time},cam};
 </script>

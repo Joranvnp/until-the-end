@@ -8,16 +8,17 @@ Mine, forge, recrute ton armée et pulvérise le cœur ennemi. Pixel art hors li
 **Description complète** :
 Deux cœurs. Un monde à creuser. Un seul survivra.
 
-Until The End mélange le minage façon bac à sable et la stratégie en temps réel. Creuse la montagne, découvre filons de cuivre, d'argent, d'or et de diamant, forge de meilleures pioches et épées, puis recrute mineurs, guerriers, archers et golems pour protéger ton cœur bleu… et détruire le cœur rouge à l'autre bout du monde.
+Until The End mélange le minage façon bac à sable et la stratégie en temps réel. Creuse la montagne, découvre filons de cuivre, d'argent, d'or et de diamant, forge de meilleures pioches et épées, puis recrute mineurs, guerriers, archers, guérisseurs et golems pour protéger ton cœur bleu… et détruire le cœur rouge à l'autre bout du monde.
 
-En face, une vraie intelligence adverse : le commandant rouge choisit sa stratégie, envoie des pillards traquer tes mineurs, regroupe ses vagues et contre-attaque dès que ta base est dégarnie. Son champion mine, se bat et revient toujours.
+En face, une vraie intelligence adverse : le commandant rouge choisit sa stratégie, envoie des pillards traquer tes mineurs, regroupe ses vagues et contre-attaque dès que ta base est dégarnie. Son champion mine, se bat, mène l'assaut dans les difficultés hautes et revient toujours.
 
 ★ Un monde unique à chaque partie : grottes, lacs souterrains, champignons lumineux, coffres au trésor
-★ Cycle jour et nuit, pluie et orages, et une lune de sang une nuit sur quatre
+★ Cycle jour et nuit, pluie et orages, et la lune de sang : un ogre marche sur ta base, abats-le avant l'aube pour son trésor
 ★ Bombes, potions, tour de guet, améliorations de base
-★ Donne tes ordres : Assaut, Défense ou Suivre
+★ Donne tes ordres : Assaut, Défense, Tenir une position ou Suivre
 ★ Défi du jour : même monde et même règle spéciale pour tous, garde ta série
-★ 16 succès et des records à battre dans 3 difficultés
+★ 5 difficultés, de Paisible à Cauchemar : plus le niveau monte, plus le commandant rouge est malin
+★ 21 succès, des reliques à collectionner et des records à battre
 ★ Commandes tactiles pensées pour le téléphone (mode gaucher), portrait ou paysage
 ★ 100 % hors ligne, sans publicité, sans achat intégré, aucune donnée collectée
 

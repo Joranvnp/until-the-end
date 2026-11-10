@@ -42,7 +42,37 @@
 - [x] PWA (manifeste + service worker) : installable et jouable hors ligne depuis le navigateur
 - [x] Politique de confidentialité, fiche Play Store, guide de publication
 
-## Version 1.2 — en cours (rendre le jeu addictif et prêt pour le Play Store)
+## Fait (version 1.2.0) — IA, difficultés et jouabilité
+### Difficultés
+- [x] 5 niveaux (Paisible, Normal, Difficile, Brutal, Cauchemar) réglés par une seule table `DIFFS` : revenu rouge, PV des cœurs, délai et taille des vagues,
+      effectif max, repos entre deux vagues, champion, monstres, dégâts subis, délai de retour du héros, et ce que le commandant sait faire (`iq`)
+- [x] Écran « Nouvelle partie » : une ligne par niveau (description, record, étoile si gagné), niveau conseillé en surbrillance, Cauchemar à débloquer
+- [x] Anciens profils et sauvegardes repris tels quels (records rangés par niveau, l'ancien Brutal reste Brutal)
+
+### IA adverse
+- [x] Composition réfléchie : contre ce que le joueur aligne, guérisseurs et colosses dès Difficile (tour bleue améliorée = plus de golems)
+- [x] Le champion quitte la mine pour mener la vague (Difficile+) et galvanise ses voisins (+20 % de dégâts)
+- [x] Opportunisme (Difficile+) : héros à terre ou parti loin, la vague part tout de suite
+- [x] Commando de mêlée qui file sur le cœur pendant que la ligne fixe la défense, repli tactique en infériorité, pillards plus nombreux (Brutal+)
+- [x] Vétérans (Cauchemar) : chaque vague lancée renforce les recrues suivantes
+- [x] Dernier carré : sous 40 % de PV, la garde d'élite du cœur rouge sort du château ; Paisible : vagues plus timides et longues pauses
+- [x] Améliorations rouges choisies selon la situation ; cadence de réflexion du commandant selon le niveau
+
+### IA des unités
+- [x] Formation : mêlée devant, tireurs et guérisseurs un rang derrière (marche, défense, position tenue), golems en avant
+- [x] Tir concentré : on achève les blessés, on vise d'abord les guérisseurs, les archers se répondent
+- [x] Nouvelle unité Guérisseur (soigne unités, champion et héros, s'écarte de la mêlée)
+
+### Jouabilité et nouveautés
+- [x] Ordre « Tenir » : un fanion planté où se tient le héros, l'armée garde cette position (visible aussi sur la minicarte)
+- [x] Rappel à la base (touche H ou bouton du panneau Base) : 3 s immobile, 45 s de recharge
+- [x] Potion rapide : touche F, ou bouton qui apparaît sous les cœurs quand on est blessé
+- [x] Onde de choc du cœur bleu, une fois par partie quand il passe sous 25 % (jusqu'en Difficile)
+- [x] Lune de sang dès la 2e nuit puis une nuit sur trois, avec son boss : l'ogre de sang marche sur la base, à abattre avant l'aube (diamants, or, relique)
+- [x] 4 nouveaux succès (21 au total) : Stratège, Fin du cauchemar, Tueur d'ogre, Forteresse
+- [x] `npm test` : tests de fumée sans écran (règles du jeu, sauvegarde, migrations, anglais, 4 tailles d'écran)
+
+## Version 1.2 — reste à faire (rendre le jeu addictif et prêt pour le Play Store)
 ### Graphismes et animations (Codex)
 - [ ] Animations manquantes : marche/minage/attaque des unités, cycle de marche du joueur, coups de pioche, chute des arbres, ouverture des coffres
 - [ ] Monstres animés (respiration, attaque, mort), projectiles et impacts plus lisibles
@@ -54,7 +84,8 @@
 - [x] Traduction anglaise (langue auto selon le téléphone + réglage)
 - [x] Manette (Gamepad API) et clavier Bluetooth
 - [x] Récompense quotidienne et quêtes (3 objectifs par jour)
-- [ ] Nouveaux biomes (désert, glace profonde) et boss de lune de sang
+- [x] Boss de lune de sang (ogre de sang)
+- [ ] Nouveaux biomes (désert, glace profonde)
 
 ### Innovation (ce qui différencie le jeu)
 - [ ] Héros à débloquer avec un pouvoir chacun (mineur, archer, bâtisseur)
