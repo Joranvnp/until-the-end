@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Android Play Console Release"
+  short_description: "Recovers a stuck NowStack Mobile Play internal release"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DC2626"
+  default_prompt: "Use $ns-android-play-console-release to recovers a stuck NowStack Mobile Play internal release."
+
+policy:
+  allow_implicit_invocation: false

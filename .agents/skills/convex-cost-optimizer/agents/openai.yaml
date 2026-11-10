@@ -1,0 +1,10 @@
+interface:
+  display_name: "Convex Cost Optimizer"
+  short_description: "Use when optimizing Convex database read bandwidth,"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#F97316"
+  default_prompt: "Use $convex-cost-optimizer to use when optimizing Convex database read bandwidth,."
+
+policy:
+  allow_implicit_invocation: false

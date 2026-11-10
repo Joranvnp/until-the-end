@@ -1,0 +1,10 @@
+interface:
+  display_name: "Convex Setup Auth"
+  short_description: "Set up or repair NowStack Mobile authentication with Better"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#2563EB"
+  default_prompt: "Use $convex-setup-auth to set up or repair NowStack Mobile authentication with Better."
+
+policy:
+  allow_implicit_invocation: false

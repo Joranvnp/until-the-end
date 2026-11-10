@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Find ASC Credentials"
+  short_description: "Finds App Store Connect API credentials (key ID, issuer ID,"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#2563EB"
+  default_prompt: "Use $ns-find-asc-credentials to finds App Store Connect API credentials (key ID, issuer ID,."
+
+policy:
+  allow_implicit_invocation: false

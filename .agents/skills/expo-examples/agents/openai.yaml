@@ -1,0 +1,10 @@
+interface:
+  display_name: "Expo Examples"
+  short_description: "Use Expos official example projects to adapt a canonical"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $expo-examples to use Expos official example projects to adapt a canonical."
+
+policy:
+  allow_implicit_invocation: true

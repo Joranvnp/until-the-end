@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Add Documentation"
+  short_description: "Add or update NowStack Mobile Markdown docs in docs/ from the"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#7C3AED"
+  default_prompt: "Use $ns-add-documentation to add or update NowStack Mobile Markdown docs in docs/ from the."
+
+policy:
+  allow_implicit_invocation: false

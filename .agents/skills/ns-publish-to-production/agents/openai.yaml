@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Publish To Production"
+  short_description: "Enforces the NowStack Mobile production credential gate"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DC2626"
+  default_prompt: "Use $ns-publish-to-production to enforces the NowStack Mobile production credential gate."
+
+policy:
+  allow_implicit_invocation: false

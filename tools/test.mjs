@@ -3,11 +3,19 @@
 // 5 difficultés, IA rouge (vagues, champion, dernier carré), guérisseur, ordre Tenir, rappel, potion, ogre de sang, sauvegarde et migrations.
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
+import { createServer } from 'http';
+import { existsSync, readFileSync } from 'fs';
 import path from 'path';
 const require = createRequire(import.meta.url);
 let pw; try { pw = require('playwright'); } catch { pw = createRequire('/opt/node-tools/node_modules/')('playwright'); }
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const game = 'file://' + path.join(root, 'www/index.html');
+// le jeu est servi en HTTP local (comme sur le site) : en file://, le chargement des sons par fetch est refusé
+const www = path.join(root, 'www'), MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.png': 'image/png', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json' };
+const server = createServer((req, res) => { const p = path.join(www, decodeURIComponent(req.url.split('?')[0]).replace(/\/$/, '/index.html'));
+  if (!p.startsWith(www) || !existsSync(p)) { res.writeHead(404); res.end(); return; }
+  res.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream' }); res.end(readFileSync(p)); });
+await new Promise(r => server.listen(0, '127.0.0.1', r));
+const game = 'http://127.0.0.1:' + server.address().port + '/index.html';
 const browser = await pw.chromium.launch();
 let failed = 0;
 // chaque test reçoit une page neuve (profil vide) ; `fn` s'exécute dans la page et renvoie '' si tout va bien, sinon le problème
@@ -27,7 +35,7 @@ const start = `const G=__game,D=G.dbg;D.PROF.tutDone=true;const sec=n=>G.step(n*
 const run = body => new Function(start + body);
 
 await test('écran titre et panneaux de menu', run(`
-  for(const m of ['new','set','ach','quest','relic'])D.menu(m);return new Promise(r=>setTimeout(()=>r(G.state==='title'?'':'état '+G.state),400))`));
+  for(const m of ['set','ach','quest','relic','shop'])D.menu(m);return new Promise(r=>setTimeout(()=>r(G.state==='title'?'':'état '+G.state),400))`));
 await test('5 difficultés jouables, de plus en plus dures', run(`
   if(D.DIFFS.length!==5)return 'DIFFS = '+D.DIFFS.length;const inc=[],first=[];
   for(let d=0;d<5;d++){G.newGame(d);sec(60);if(G.state!=='play')return 'difficulté '+d+' : état '+G.state;inc.push(D.DIFFS[d].inc);first.push(D.DIFFS[d].first)}
@@ -70,10 +78,10 @@ await test('sauvegarde et reprise (ordre Tenir, garde, vétérans)', run(`
   G.newGame(0);if(!G.loadGame())return 'chargement refusé';const b2=G.bases[0];
   return b2.order==='hold'&&b2.holdX===999&&D.ai.vet===.1&&D.ai.stand&&units(0,'healer').length===4&&Math.abs(G.time-t)<1?'':'données perdues'`));
 await test('migration : anciens records et ancienne sauvegarde Brutal', run(`
-  if(D.PROF.rec.kb!==777||D.PROF.rec.kn!==555||D.PROF.rec['2'])return 'records : '+JSON.stringify(D.PROF.rec);
+  if(D.PROF.rec.kb!==777||D.PROF.rec.kn!==555||D.PROF.rec['2'])return 'records : '+JSON.stringify(D.PROF.rec);if(D.PROF.lastDiff!==3)return 'dernier niveau choisi : '+D.PROF.lastDiff;
   G.newGame(1);sec(2);G.saveGame();const s=JSON.parse(localStorage.getItem('ute-save-v1'));delete s.dv;s.diff=2;localStorage.setItem('ute-save-v1',JSON.stringify(s));
   G.loadGame();D.kill(G.bases[1].core,G.player);sec(3);return D.PROF.ach.win2?'':'l\\'ancien Brutal n\\'est pas rechargé en Brutal'`),
-  { init: `try{if(!localStorage.getItem('ute-profile-v1'))localStorage.setItem('ute-profile-v1',JSON.stringify({games:3,rec:{'1':555,'2':777}}))}catch(e){}` });
+  { init: `try{if(!localStorage.getItem('ute-profile-v1'))localStorage.setItem('ute-profile-v1',JSON.stringify({games:3,lastDiff:2,rec:{'1':555,'2':777}}))}catch(e){}` });
 await test('anglais : aucun nouveau texte resté en français', run(`
   D.PROF.set.en=true;const fr=['Guérisseur','Nouvelle partie','Difficile','Cauchemar','Tenir','Rappel','Ogre de sang','Fanion planté : tes troupes tiennent cette position.',
     'Un ogre de sang marche sur ta base ! Abats-le avant l\\'aube pour son trésor.','Rappel prêt dans 12 s.','Tu es tombé… retour à la base dans 8 s.','Le cœur rouge vacille : sa garde d\\'élite sort du château !',
@@ -84,6 +92,6 @@ for (const [name, viewport, touch] of [['PC 1366x768', { width: 1366, height: 76
     G.newGame(1);const b=G.bases[0];for(const k of ['miner','warrior','archer','healer','golem'])G.recruit(0,k,true);D.addItem('potion',2);G.player.hp=30;sec(3);
     return new Promise(r=>{const seq=['base','craft','inv',null];let i=0;const next=()=>{if(i<seq.length){D.panel=seq[i++];setTimeout(next,120)}else{G.paused=true;D.help=2;setTimeout(()=>{D.help=1;setTimeout(()=>r(''),120)},120)}};next()})`), { viewport, touch });
 
-await browser.close();
+await browser.close(); server.close();
 console.log(failed ? failed + ' test(s) en échec' : 'Tous les tests passent.');
 process.exit(failed ? 1 : 0);

@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Plan Pricing"
+  short_description: "Designs and validates pricing for a paid NowStack Mobile app"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#4F46E5"
+  default_prompt: "Use $ns-plan-pricing to designs and validates pricing for a paid NowStack Mobile app."
+
+policy:
+  allow_implicit_invocation: false

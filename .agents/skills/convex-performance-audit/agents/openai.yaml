@@ -1,0 +1,10 @@
+interface:
+  display_name: "Convex Performance Audit"
+  short_description: "Audit Convex performance for hot reads, write contention,"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#F97316"
+  default_prompt: "Use $convex-performance-audit to audit Convex performance for hot reads, write contention,."
+
+policy:
+  allow_implicit_invocation: false

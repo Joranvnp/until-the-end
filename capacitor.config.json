@@ -7,5 +7,10 @@
     "backgroundColor": "#0b0a16",
     "allowMixedContent": false,
     "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "style": "DARK"
+    }
   }
 }

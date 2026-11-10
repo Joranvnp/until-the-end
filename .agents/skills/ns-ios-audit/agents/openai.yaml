@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS iOS Audit"
+  short_description: "Audit App Store readiness without mutations"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $ns-ios-audit to audit App Store readiness without mutations."
+
+policy:
+  allow_implicit_invocation: true

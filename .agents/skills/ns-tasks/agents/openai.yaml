@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Tasks"
+  short_description: "Slices the NowStack Mobile plan into task files"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#7C3AED"
+  default_prompt: "Use $ns-tasks to slices the NowStack Mobile plan into task files."
+
+policy:
+  allow_implicit_invocation: false

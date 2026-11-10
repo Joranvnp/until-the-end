@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS iOS Setup"
+  short_description: "Sets up local iOS dev tooling for NowStack Mobile on macOS -"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $ns-ios-setup to sets up local iOS dev tooling for NowStack Mobile on macOS -."
+
+policy:
+  allow_implicit_invocation: false

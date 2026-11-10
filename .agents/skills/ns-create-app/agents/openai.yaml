@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Create App"
+  short_description: "Turns an app idea into a build-ready plan"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#4F46E5"
+  default_prompt: "Use $ns-create-app to turns an app idea into a build-ready plan."
+
+policy:
+  allow_implicit_invocation: false

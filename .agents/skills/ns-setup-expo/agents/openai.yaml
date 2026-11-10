@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Setup Expo"
+  short_description: "Link NowStack Mobile to Expo and EAS"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $ns-setup-expo to link NowStack Mobile to Expo and EAS."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS iOS Testflight"
+  short_description: "Builds a NowStack Mobile iOS app and uploads it to TestFlight"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DC2626"
+  default_prompt: "Use $ns-ios-testflight to builds a NowStack Mobile iOS app and uploads it to TestFlight."
+
+policy:
+  allow_implicit_invocation: false

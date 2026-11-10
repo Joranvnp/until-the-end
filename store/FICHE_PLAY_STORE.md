@@ -25,7 +25,7 @@ En face, une vraie intelligence adverse : le commandant rouge choisit sa straté
 **Catégorie** : Jeux > Stratégie (secondaire : Action)
 **Tags** : pixel art, minage, bac à sable, stratégie en temps réel, hors ligne
 **E-mail de contact** : à renseigner dans la Play Console
-**Règles de confidentialité** : https://joranvnp.github.io/until-the-end/confidentialite.html
+**Règles de confidentialité** : https://until-the-end-game.vercel.app/confidentialite.html
 
 **Images** (dans ce dossier) :
 - `icone-512.png` — icône 512 × 512

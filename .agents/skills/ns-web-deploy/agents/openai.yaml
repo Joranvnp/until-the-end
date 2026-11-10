@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Web Deploy"
+  short_description: "Deploy the NowStack Mobile web app to Vercel with Convex"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DC2626"
+  default_prompt: "Use $ns-web-deploy to deploy the NowStack Mobile web app to Vercel with Convex."
+
+policy:
+  allow_implicit_invocation: false

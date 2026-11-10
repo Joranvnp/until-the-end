@@ -1,0 +1,21 @@
+# EAS uses this file INSTEAD of .gitignore when uploading the project archive,
+# so it must list everything that should never reach the build server.
+
+# Dependencies + native dirs (EAS reinstalls / regenerates these via prebuild)
+node_modules/
+/ios
+/android
+
+# Local-only / build artifacts
+.git/
+.expo/
+dist/
+web-build/
+*.md
+*.log
+.DS_Store
+
+# Secrets — never upload (EAS injects env via eas.json / EAS secrets)
+.env
+.env.local
+.env.*.local

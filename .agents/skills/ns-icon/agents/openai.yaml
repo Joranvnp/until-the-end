@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Icon"
+  short_description: "Generate NowStack Mobile app icons and logos: 8 iOS-quality"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $ns-icon to generate NowStack Mobile app icons and logos: 8 iOS-quality."
+
+policy:
+  allow_implicit_invocation: false

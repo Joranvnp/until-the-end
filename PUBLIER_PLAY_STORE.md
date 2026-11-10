@@ -62,7 +62,7 @@ ainsi que `VERSION` dans `www/index.html` et `CACHE` dans `www/sw.js`, puis pous
 ## 6. Version web et politique de confidentialité en ligne
 Settings > Pages > Source : **GitHub Actions**, puis ajoute la variable de dépôt `WEB_PAGES` = `on`
 (Settings > Secrets and variables > Actions > Variables). Le jeu sera jouable sur
-`https://joranvnp.github.io/until-the-end/` et la politique sur `…/confidentialite.html` (URL à donner au Play Store).
+`https://joranvnp.github.io/until-the-end/`. Le site vitrine (accueil, assistance, confidentialité) est sur Vercel : `./tools/deploy-site.sh` publie `https://until-the-end-game.vercel.app` ; c'est `https://until-the-end-game.vercel.app/confidentialite.html` qu'on donne aux stores.
 
 ## 7. Régénérer icônes, écran de démarrage et visuels
 `npm run art` (dessine à partir des sprites du jeu) puis `npm run assets` (icônes Android toutes tailles).

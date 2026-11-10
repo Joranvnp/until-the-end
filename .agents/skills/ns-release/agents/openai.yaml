@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Release"
+  short_description: "Build, verify, and publish one coherent release"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DC2626"
+  default_prompt: "Use $ns-release to build, verify, and publish one coherent release."
+
+policy:
+  allow_implicit_invocation: false

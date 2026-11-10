@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS iOS Distribute"
+  short_description: "Submits a NowStack Mobile TestFlight build to App Store review"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DC2626"
+  default_prompt: "Use $ns-ios-distribute to submits a NowStack Mobile TestFlight build to App Store review."
+
+policy:
+  allow_implicit_invocation: false

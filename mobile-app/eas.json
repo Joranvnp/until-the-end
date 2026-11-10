@@ -1,0 +1,39 @@
+{
+  "cli": {
+    "version": ">= 18.5.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "22.20.0"
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal"
+    },
+    "production": {
+      "extends": "base",
+      "autoIncrement": true,
+      "cache": {
+        "disabled": true
+      },
+      "credentialsSource": "local",
+      "android": {
+        "credentialsSource": "remote",
+        "ndk": "28.0.13004108"
+      },
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://earnest-giraffe-201.convex.cloud",
+        "EXPO_PUBLIC_CONVEX_SITE_URL": "https://earnest-giraffe-201.convex.site"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

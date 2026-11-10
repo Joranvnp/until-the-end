@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Setup Stripe"
+  short_description: "Configures Stripe for web and Android payments in Convex"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#4F46E5"
+  default_prompt: "Use $ns-setup-stripe to configures Stripe for web and Android payments in Convex."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Intercepted Route Using Tanstack Start"
+  short_description: "Implement masked modal detail routes in the NowStack Mobile"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#7C3AED"
+  default_prompt: "Use $ns-intercepted-route-using-tanstack-start to implement masked modal detail routes in the NowStack Mobile."
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS iOS Verification"
+  short_description: "Prove iOS behavior in the real Simulator"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DB2777"
+  default_prompt: "Use $ns-ios-verification to prove iOS behavior in the real Simulator."
+
+policy:
+  allow_implicit_invocation: true

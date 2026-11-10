@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Find GPC Credentials"
+  short_description: "Finds and verifies the Google Play service account for gpc"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#2563EB"
+  default_prompt: "Use $ns-find-gpc-credentials to finds and verifies the Google Play service account for gpc."
+
+policy:
+  allow_implicit_invocation: false

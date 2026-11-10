@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS Convex"
+  short_description: "Route NowStack Mobile Convex work to the right skill"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#F97316"
+  default_prompt: "Use $ns-convex to route NowStack Mobile Convex work to the right skill."
+
+policy:
+  allow_implicit_invocation: false

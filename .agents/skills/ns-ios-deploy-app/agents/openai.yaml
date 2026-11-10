@@ -1,0 +1,10 @@
+interface:
+  display_name: "NS iOS Deploy App"
+  short_description: "App Store Connect command reference for NowStack Mobile using"
+  icon_small: "./assets/codex-icon.svg"
+  icon_large: "./assets/codex-icon.svg"
+  brand_color: "#DC2626"
+  default_prompt: "Use $ns-ios-deploy-app to app Store Connect command reference for NowStack Mobile using."
+
+policy:
+  allow_implicit_invocation: false

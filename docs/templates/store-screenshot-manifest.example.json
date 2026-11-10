@@ -1,0 +1,742 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-01-01T00:00:00.000Z",
+  "app": {
+    "name": "NowStack",
+    "bundleId": "com.nowstack.mobile",
+    "version": "1.0.0",
+    "buildNumber": "1",
+    "gitSha": "0000000000000000000000000000000000000000"
+  },
+  "demoMode": {
+    "enabled": true,
+    "seed": "nowstack-store-demo-v1",
+    "locale": "fr-FR",
+    "dataPolicy": "Seeded demo data only; no production users, tokens, emails, or private content."
+  },
+  "outputRoot": "documents/store-screenshots/2026-01-01",
+  "screenshots": [
+    {
+      "id": "ios-iphone-67-fr-01-onboarding",
+      "platform": "ios",
+      "device": {
+        "name": "iPhone 15 Pro Max",
+        "family": "iphone-6.7",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1290,
+          "height": 2796
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/onboarding",
+      "flow": "mobile-app/maestro/store/ios-store-screenshots.example.yaml",
+      "captureCommand": "xcrun simctl io <udid> screenshot documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/01-onboarding.png",
+      "path": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/01-onboarding.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/01-onboarding.png",
+      "framedPath": null,
+      "storeSlot": 1,
+      "requiredVisibleText": [
+        "NowStack",
+        "Commencer"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "sk_",
+        "pk_test_"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "ios-iphone-67-fr-02-auth",
+      "platform": "ios",
+      "device": {
+        "name": "iPhone 15 Pro Max",
+        "family": "iphone-6.7",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1290,
+          "height": 2796
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/auth",
+      "flow": "mobile-app/maestro/store/ios-store-screenshots.example.yaml",
+      "captureCommand": "xcrun simctl io <udid> screenshot documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/02-auth.png",
+      "path": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/02-auth.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/02-auth.png",
+      "framedPath": null,
+      "storeSlot": 2,
+      "requiredVisibleText": [
+        "Se connecter",
+        "Continuer avec Apple"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "sk_",
+        "pk_test_"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "ios-iphone-67-fr-03-home",
+      "platform": "ios",
+      "device": {
+        "name": "iPhone 15 Pro Max",
+        "family": "iphone-6.7",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1290,
+          "height": 2796
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/home",
+      "flow": "mobile-app/maestro/store/ios-store-screenshots.example.yaml",
+      "captureCommand": "xcrun simctl io <udid> screenshot documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/03-home.png",
+      "path": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/03-home.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/03-home.png",
+      "framedPath": null,
+      "storeSlot": 3,
+      "requiredVisibleText": [
+        "Tableau de bord"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "sk_",
+        "pk_test_"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "ios-iphone-67-fr-04-core-feature",
+      "platform": "ios",
+      "device": {
+        "name": "iPhone 15 Pro Max",
+        "family": "iphone-6.7",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1290,
+          "height": 2796
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/core-feature",
+      "flow": "mobile-app/maestro/store/ios-store-screenshots.example.yaml",
+      "captureCommand": "xcrun simctl io <udid> screenshot documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/04-core-feature.png",
+      "path": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/04-core-feature.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/04-core-feature.png",
+      "framedPath": null,
+      "storeSlot": 4,
+      "requiredVisibleText": [
+        "Assistant"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "sk_",
+        "pk_test_"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "ios-iphone-67-fr-05-paywall",
+      "platform": "ios",
+      "device": {
+        "name": "iPhone 15 Pro Max",
+        "family": "iphone-6.7",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1290,
+          "height": 2796
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/paywall",
+      "flow": "mobile-app/maestro/store/ios-store-screenshots.example.yaml",
+      "captureCommand": "xcrun simctl io <udid> screenshot documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/05-paywall.png",
+      "path": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/05-paywall.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/05-paywall.png",
+      "framedPath": null,
+      "storeSlot": 5,
+      "requiredVisibleText": [
+        "Débloquer NowStack",
+        "Restaurer"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "sk_",
+        "pk_test_"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "ios-iphone-67-fr-06-settings",
+      "platform": "ios",
+      "device": {
+        "name": "iPhone 15 Pro Max",
+        "family": "iphone-6.7",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1290,
+          "height": 2796
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/settings",
+      "flow": "mobile-app/maestro/store/ios-store-screenshots.example.yaml",
+      "captureCommand": "xcrun simctl io <udid> screenshot documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/06-settings.png",
+      "path": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/06-settings.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/ios/iphone-67/fr-FR/06-settings.png",
+      "framedPath": null,
+      "storeSlot": 6,
+      "requiredVisibleText": [
+        "Confidentialité",
+        "Supprimer le compte"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "sk_",
+        "pk_test_"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "android-phone-fr-01-onboarding",
+      "platform": "android",
+      "device": {
+        "name": "Pixel 8 Pro",
+        "family": "android-phone",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1344,
+          "height": 2992
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/onboarding",
+      "flow": "mobile-app/maestro/store/android-store-screenshots.example.yaml",
+      "captureCommand": "adb -s <serial> exec-out screencap -p > documents/store-screenshots/2026-01-01/android/phone/fr-FR/01-onboarding.png",
+      "path": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/01-onboarding.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/01-onboarding.png",
+      "framedPath": null,
+      "storeSlot": 1,
+      "requiredVisibleText": [
+        "NowStack",
+        "Commencer"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "private_key",
+        "AIza"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "android-phone-fr-02-auth",
+      "platform": "android",
+      "device": {
+        "name": "Pixel 8 Pro",
+        "family": "android-phone",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1344,
+          "height": 2992
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/auth",
+      "flow": "mobile-app/maestro/store/android-store-screenshots.example.yaml",
+      "captureCommand": "adb -s <serial> exec-out screencap -p > documents/store-screenshots/2026-01-01/android/phone/fr-FR/02-auth.png",
+      "path": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/02-auth.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/02-auth.png",
+      "framedPath": null,
+      "storeSlot": 2,
+      "requiredVisibleText": [
+        "Se connecter",
+        "Continuer avec Google"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "private_key",
+        "AIza"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "android-phone-fr-03-home",
+      "platform": "android",
+      "device": {
+        "name": "Pixel 8 Pro",
+        "family": "android-phone",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1344,
+          "height": 2992
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/home",
+      "flow": "mobile-app/maestro/store/android-store-screenshots.example.yaml",
+      "captureCommand": "adb -s <serial> exec-out screencap -p > documents/store-screenshots/2026-01-01/android/phone/fr-FR/03-home.png",
+      "path": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/03-home.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/03-home.png",
+      "framedPath": null,
+      "storeSlot": 3,
+      "requiredVisibleText": [
+        "Tableau de bord"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "private_key",
+        "AIza"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "android-phone-fr-04-core-feature",
+      "platform": "android",
+      "device": {
+        "name": "Pixel 8 Pro",
+        "family": "android-phone",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1344,
+          "height": 2992
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/core-feature",
+      "flow": "mobile-app/maestro/store/android-store-screenshots.example.yaml",
+      "captureCommand": "adb -s <serial> exec-out screencap -p > documents/store-screenshots/2026-01-01/android/phone/fr-FR/04-core-feature.png",
+      "path": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/04-core-feature.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/04-core-feature.png",
+      "framedPath": null,
+      "storeSlot": 4,
+      "requiredVisibleText": [
+        "Assistant"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "private_key",
+        "AIza"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "android-phone-fr-05-paywall",
+      "platform": "android",
+      "device": {
+        "name": "Pixel 8 Pro",
+        "family": "android-phone",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1344,
+          "height": 2992
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/paywall",
+      "flow": "mobile-app/maestro/store/android-store-screenshots.example.yaml",
+      "captureCommand": "adb -s <serial> exec-out screencap -p > documents/store-screenshots/2026-01-01/android/phone/fr-FR/05-paywall.png",
+      "path": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/05-paywall.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/05-paywall.png",
+      "framedPath": null,
+      "storeSlot": 5,
+      "requiredVisibleText": [
+        "Débloquer NowStack",
+        "Conditions"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "private_key",
+        "AIza"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    },
+    {
+      "id": "android-phone-fr-06-settings",
+      "platform": "android",
+      "device": {
+        "name": "Pixel 8 Pro",
+        "family": "android-phone",
+        "osVersion": "latest-supported",
+        "resolution": {
+          "width": 1344,
+          "height": 2992
+        }
+      },
+      "locale": "fr-FR",
+      "route": "store/settings",
+      "flow": "mobile-app/maestro/store/android-store-screenshots.example.yaml",
+      "captureCommand": "adb -s <serial> exec-out screencap -p > documents/store-screenshots/2026-01-01/android/phone/fr-FR/06-settings.png",
+      "path": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/06-settings.png",
+      "rawPath": "documents/store-screenshots/2026-01-01/android/phone/fr-FR/06-settings.png",
+      "framedPath": null,
+      "storeSlot": 6,
+      "requiredVisibleText": [
+        "Confidentialité",
+        "Supprimer le compte"
+      ],
+      "forbiddenText": [
+        "localhost",
+        "DEBUG",
+        "lorem ipsum",
+        "Bearer ",
+        "private_key",
+        "AIza"
+      ],
+      "qa": {
+        "status": "pending",
+        "checks": {
+          "correctScreen": "pending",
+          "notBlank": "pending",
+          "readableCopy": "pending",
+          "safeAreasOk": "pending",
+          "noKeyboardOverlay": "pending",
+          "noPrivateData": "pending",
+          "noSecrets": "pending",
+          "noPlaceholders": "pending",
+          "brandConsistent": "pending",
+          "policySafe": "pending"
+        },
+        "aiReview": {
+          "model": null,
+          "reviewedAt": null,
+          "summary": null,
+          "issues": [],
+          "fixInstructions": []
+        },
+        "humanApproval": {
+          "approved": false,
+          "approvedBy": null,
+          "approvedAt": null
+        }
+      }
+    }
+  ],
+  "uploadReady": false,
+  "manualRemainder": [
+    "Apple/Google account verification",
+    "Compliance declarations",
+    "Final store approval"
+  ]
+}

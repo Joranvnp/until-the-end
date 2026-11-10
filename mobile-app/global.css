@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * MONO THEME (sombre uniquement) : valeurs du premier rendu, avant que ThemeProvider
+ * applique `vars()`. Garder synchronisé avec le bloc `dark` de `lib/theme.ts`.
+ */
+:root {
+  --color-background: #0b0a16;
+  --color-foreground: #e4e9ff;
+  --color-card: #15132a;
+  --color-card-foreground: #e4e9ff;
+  --color-muted: #1d1b33;
+  --color-muted-foreground: #a0a4be;
+  --color-primary: #ffe066;
+  --color-primary-foreground: #0b0a16;
+  --color-secondary: #1d1b33;
+  --color-secondary-foreground: #e4e9ff;
+  --color-accent: #1d1b33;
+  --color-accent-foreground: #e4e9ff;
+  --color-destructive: #e5534b;
+  --color-border: #2a2745;
+  --color-input: #2a2745;
+  --color-ring: #ffe066;
+  --color-success: #63ebca;
+  --color-warning: #ffd27a;
+  --color-admin: #facc15;
+  --color-admin-foreground: #1a1a1a;
+  --color-admin-surface: #422006;
+  --color-admin-border: #a16207;
+  --color-admin-text: #fde68a;
+  --color-disabled: #1d1b33;
+  --color-disabled-foreground: #4a4766;
+  --color-brand: #ffe066;
+  --color-brand-foreground: #0b0a16;
+  --color-panel: #05050ce6;
+  --color-edge: #8a8eaa;
+  --color-hero: #2b2110;
+  --color-ally: #4f9df5;
+  --color-ink: #06060f;
+  --color-hero-fill: #f2b941;
+  --color-hero-light: #ffe680;
+  --color-hero-dark: #a8661c;
+  --color-hero-foreground: #2a1606;
+  --color-btn-fill: #1e1c38;
+  --color-btn-light: #3c3966;
+  --color-btn-dark: #0f0e20;
+  --color-ally-fill: #1d4785;
+  --color-ally-light: #4f9df5;
+  --color-ally-dark: #0f2750;
+  --color-danger-fill: #5c1b20;
+  --color-danger-light: #e5534b;
+  --color-danger-dark: #2e0b0e;
+}
