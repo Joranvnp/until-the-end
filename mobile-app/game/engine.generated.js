@@ -849,6 +849,8 @@ function newGame(d,dly=null,sv=false){
     core.maxhp=core.hp=Math.round(1600*(t===1?DIFFS[d].ecore:DIFFS[d].pcore)*(dly&&dly.mod.id==='glass'?.5:1));
     const b={team:t,order:t===0?'attack':'defend',holdX:null,core,storage:{wood:20,stone:20,coal:0,copper:6,iron:0,silver:0,gold:0,diamond:0},upg:{core:0,speed:0,dmg:0,tower:0},
       castleX:coreTx*T-80,tower:{x:coreTx*T-80+(t===0?155:21),y:BASE_GY*T-128,cd:2}};
+    // emprise du plancher indestructible du château (voir escapeFloor)
+    {let x0=coreTx,x1=coreTx;while(getT(x0-1,BASE_GY)===CASTLE)x0--;while(getT(x1+1,BASE_GY)===CASTLE)x1++;b.floor=getT(coreTx,BASE_GY)===CASTLE?[x0*T,(x1+1)*T]:null}
     ents.push(core);return b});
   player={type:'player',team:0,x:22*T,y:BASE_GY*T-24,w:10,h:22,vx:0,vy:0,hp:100,maxhp:100,dir:1,onGround:false,anim:0,flash:0,
     inv:new Array(36).fill(null),sel:0,swing:0,swingDir:1,useCd:0,dead:false,respawn:0,iframes:0,stepOff:0,coyote:0,jumpBuf:0,recall:0,recallCd:0};
@@ -1438,6 +1440,10 @@ function healStep(e,u){if(e.atk>0)return;let best=null,bs=.96;
   if(!best)return;e.atk=u.cd;e.swing=.25;e.dir=Math.sign(best.x-e.x)||e.dir;best.hp=Math.min(best.maxhp,best.hp+u.heal*(1+vet(e.team)));
   if(onScreen(best)){for(let i=0;i<5;i++)parts.push({x:best.x+R(0,best.w),y:best.y+R(4,best.h),vx:R(-6,6),vy:R(-34,-14),g:-20,life:.7,max:.7,col:'#7dffb0',size:1,glow:1});
     if(best===player)floatText(best.x+5,best.y-4,'+'+u.heal,'#7dff9a')}}
+// Sous le niveau du plancher indestructible du château adverse (fosse creusée devant, tunnel dessous) : impossible de percer vers le haut,
+// l'unité taperait le plancher sans fin. Elle ressort par le bord du plancher côté arrivée et monte en pilier jusqu'à son niveau.
+function escapeFloor(e,dt){const fl=bases[1-e.team].floor;if(!fl||e.y+e.h<=BASE_GY*T+4)return false;const cx=e.x+e.w/2;if(cx<fl[0]-4*T||cx>fl[1]+4*T)return false;
+  const m=e.w>T/2?T:T/2,out=e.team===0?fl[0]-m:fl[1]+m;if(Math.abs(out-cx)>3)navigate(e,out,dt,'flat');else climbUp(e,dt,out);return true}
 function retreatSpot(e,home){const hx=home.x+11+(e.team===0?24:-24),cx=e.x+e.w/2,d=hx-cx;
   return Math.abs(d)<=18*T?hx:clamp(cx+Math.sign(d)*18*T,T,(WW-1)*T)}
 function updateUnit(e,dt){
@@ -1475,11 +1481,11 @@ function updateUnit(e,dt){
       if(Math.abs(dx)<T*1.5&&dy<-T*2)return climbUp(e,dt,prey.x+prey.w/2);
       navigate(e,prey.x+prey.w/2,dt,e.stuck>=2?'climb':'auto');return}
     e.raid=false}
-  if(e.strike){const ec=bases[1-e.team].core;const near=pickTarget(e,u,u.ranged?90:34);const tg=Math.abs(ec.x-e.x)<110?ec:near;if(tg)return engage(e,u,tg,dt);
+  if(e.strike){const ec=bases[1-e.team].core;const near=pickTarget(e,u,u.ranged?90:34);const tg=Math.abs(ec.x-e.x)<110?ec:near;if(escapeFloor(e,dt))return;if(tg)return engage(e,u,tg,dt);
     const dtx2=clamp(Math.floor((ec.x+11)/T),0,WW-1);if(Math.abs(ec.x+11-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx2]+1.5)return climbUp(e,dt,ec.x+11);navigate(e,ec.x+11,dt,e.stuck>=2?'climb':'auto');return}
   const follow=b.order==='follow'&&e.team===0&&!player.dead,hold=b.order==='hold'&&b.holdX!=null,fw=e.team===0?1:-1;
   const tgt=u.heal?null:pickTarget(e,u,u.ranged?160:(b.order==='attack'?100:follow?110:150));
-  if(tgt)return engage(e,u,tgt,dt);
+  if(tgt){if(tgt.type==='core'&&escapeFloor(e,dt))return;return engage(e,u,tgt,dt)}
   // escorte distancée : elle sprinte pour rattraper le joueur (il court 2× plus vite qu'une unité)
   e.boost=follow?clamp(1+(Math.abs(player.x-e.x)/T-6)/10,1,2.2):1;
   // en défense, on court intercepter tout intrus qui approche du cœur
@@ -1493,6 +1499,7 @@ function updateUnit(e,dt){
   if(follow){if(Math.abs(dest-(e.x+e.w/2))<10){e.vx=0;moveEnt(e,dt);return}if(player.y<e.y-3*T&&Math.abs(dest-(e.x+e.w/2))<T*2)return climbUp(e,dt,dest)}
   const dtx=clamp(Math.floor(dest/T),0,WW-1);
   if(Math.abs(dest-(e.x+e.w/2))<T*1.5&&(e.y+e.h)/T>surf[dtx]+1.5)return climbUp(e,dt,dest);
+  if(b.order==='attack'&&!follow&&escapeFloor(e,dt))return;
   // armée en marche tombée dans une grotte : elle remonte vers la surface au lieu de traverser la carte sous terre
   // (sinon les deux armées se croisent à 50 blocs d'écart sans jamais se battre et chacune rase un cœur sans défense)
   if(b.order==='attack'&&!follow){const col=clamp(Math.floor((e.x+e.w/2)/T),0,WW-1),fwd=e.team===0?1:-1;
