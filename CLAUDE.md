@@ -3,6 +3,8 @@
 Jeu 2D pixel art façon Terraria, app mobile native (Expo + React Native, iOS et Android) sur le socle NowStack (Convex, better-auth, achats Apple/Google/Stripe).
 Inspiré du projet LÖVE2D d'origine (`3 - Projets/until-the-end` sur Google Drive) et de son document `UNTIL_THE_END_Reference_Complète.md`.
 
+**Reprise de session : lire d'abord `docs/prochaine-session.md`** (état de la branche, suite proposée, décisions en attente de l'auteur, recette Higgsfield, pièges).
+
 ## Où est le jeu
 - **Moteur : `mobile-app/game/engine.js`, source unique.** Tout le jeu (monde, IA, combat, rendu, HUD) est dans ce fichier JavaScript dense, sans dépendance. C'est lui qu'on modifie. Il n'y a plus de version web ni de copie générée (`www/` et `sync-game` supprimés le 2026-11-10, Capacitor aussi).
 - L'app l'exécute sans WebView sur de faux window/document/canvas : `game/canvas.ts` (Canvas2D → Skia, une SkPicture par frame), `game/env.ts` (stockage AsyncStorage, sons react-native-audio-api, tactile, haptique, partage, et l'objet `window.Capacitor` que le moteur interroge encore pour ces services), `game/runtime.ts` (une instance par lancement). Écran : `app/(app)/game.tsx`.
@@ -50,5 +52,6 @@ Monnaie « éclats » (`PROF.coins`, gagnée dans `endGame` via `earnCoins`), te
 ## Tests utilisés
 - `npm test` (`tools/test.mjs`) : tests de fumée sans écran, à relancer après toute modification du jeu.
 - Simulation accélérée : `__game.newGame(1)` puis `__game.step(n)` (exposé sur window pour les tests ; `__game.dbg` donne accès à la météo, aux bombes, aux succès et aux panneaux).
+- Équilibrage : `node tools/bot.mjs <difficulté> <nov|avg|exp> <graines>` joue des parties appariées avec et sans bénédictions ; `node tools/bot.mjs --diag <graine> [minutes]` détaille une partie qui s'enlise (positions des unités, état du commandant rouge, terrain).
 - Vérifier : aucune erreur console, une partie AFK se termine en défaite, une grosse armée finit par gagner,
   captures à 1366x768, 390x844 (mobile portrait), 844x390 (paysage), 1024x768 (tablette).
