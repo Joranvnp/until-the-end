@@ -1,7 +1,7 @@
 # Until The End — version web
 
 Jeu 2D pixel art façon Terraria, en un seul fichier `www/index.html` (HTML + JavaScript, aucune dépendance, aucun build).
-Emballé pour Android et iOS avec Capacitor (`android/`, `ios/`, `capacitor.config.json`) : voir `PUBLIER_PLAY_STORE.md` et `PUBLIER_APP_STORE.md`.
+Ce fichier est le moteur du jeu : l'app native Expo (`mobile-app/`) l'exécute tel quel (voir ci-dessous). L'emballage Capacitor (`android/`, `ios/`, `capacitor.config.json`, guides `PUBLIER_*`) a été retiré le 2026-11-10 ; le moteur parle toujours à un objet `window.Capacitor` (haptique, partage, bouton retour), désormais fourni par `mobile-app/game/env.ts`.
 Inspiré du projet LÖVE2D d'origine (`3 - Projets/until-the-end` sur Google Drive) et de son document `UNTIL_THE_END_Reference_Complète.md`.
 
 ## Portage natif en cours (branche `expo-port`)
@@ -9,12 +9,12 @@ Le jeu est porté en vraie app mobile sur le socle NowStack (Expo + React Native
 - `mobile-app/` (app Expo, identité dans `site-config.ts` : bundle `com.joranvnp.untiltheend`, version 2.0.0), `convex/` (backend), `web-app/` (site, landing et pages légales).
 - Règles du socle : lire `AGENTS.md` et `.agents/rules/*` avant de toucher ces dossiers. Couleurs uniquement dans `mobile-app/lib/theme.ts` (thème sombre unique).
 - Vérifier : `cd mobile-app && npx tsc --noEmit && npm run lint`.
-- `www/` reste la référence du gameplay jusqu'à la parité, puis Capacitor (`android/`, `ios/`) sera retiré.
+- `www/` reste la référence du gameplay : ne pas le supprimer, l'app charge aussi ses sons et images depuis `www/audio` et `www/art`.
 - Parcours façon jeu (fait le 2026-11-01) : écran de chargement (`components/ui/loading.tsx`, barre pixel + astuces), écran titre `app/onboarding/index.tsx` (Jouer en invité / S'inscrire / Se connecter, mode invité dans `lib/guest-store`), camp `app/(app)/home.tsx`, réglages `app/(app)/settings.tsx` et paywall en français. App en paysage uniquement, sans barre d'onglets (fait le 2026-11-05) : boutons de coin façon Stardew Valley (aide, compte, réglages). Composants jeu dans `components/game/` (GameButton, GameIconButton, GamePanel, GameLogo, MenuBackdrop), polices Pixelify Sans et Press Start 2P. Les boutons Jouer/Défi/Boutique du camp ouvrent l'écran de jeu.
 - Jeu natif (fait le 2026-11-01, sans WebView) : `mobile-app/scripts/sync-game.mjs` recopie le script de `www/index.html` dans `game/engine.generated.js` (ne pas modifier à la main) ; relancer `cd mobile-app && npm run sync-game` après chaque changement du jeu web. Le moteur tourne sur des faux window/document/canvas : `game/canvas.ts` (Canvas2D → Skia, une SkPicture par frame), `game/env.ts` (stockage AsyncStorage, sons react-native-audio-api, tactile, haptique, partage), `game/runtime.ts` (une instance par lancement). Écran : `app/(app)/game.tsx`.
 
 ## Lancer
-Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx cap sync` (fait aussi par la CI, workflows Android et iOS). Pour les tests headless : `npx playwright` avec Chromium.
+Ouvrir `www/index.html` dans un navigateur (développement et tests). Après modification du jeu : `cd mobile-app && npm run sync-game` pour mettre à jour l'app. Pour les tests headless : `npx playwright` avec Chromium.
 
 ## Priorités de l'auteur
 1. Fonctionnalités et interface : tout lisible et utilisable sur téléphone (portrait/paysage), tablette et ordinateur.
@@ -34,8 +34,8 @@ Ouvrir `www/index.html` dans un navigateur. Après modification du jeu : `npx ca
 
 ## Visuels
 Décor en calques (parallaxe) : 4 images Higgsfield (`art/calques/`) converties en pixel art à 4 tons par `python3 tools/gen-calques.py`, incrustées dans `index.html` entre `// <calques>` et `// </calques>`, coloriées au rendu selon le ciel (`drawCalque`). Procédure complète : skill `.claude/skills/calques-decor`. Skills pixel art installées : `codixel` (sprite à partir d'une image de référence) et `pixelfx` (effets animés en code).
-`npm run art` régénère icônes, écran de démarrage et visuels Play Store (`tools/gen-art.mjs`), puis `npm run assets` pour Android et iOS (captures App Store dans `store/ios/`, anglais dans `store/en/`).
-Sprites HD (Higgsfield façon Animal Well) : `www/art/units-hd.png` (personnages et monstres, ~34 px), `tiles-hd.png` (16 variantes par matière), `trees-hd.png` (canopées), générés par `python3 tools/gen-hd-art.py` depuis `art/hd-sources/`. Chargés par `UNIT_ART`, `HD_TILES` et `TREE_ART` avec repli procédural. Ajouter toute nouvelle image à `IMAGES` dans `mobile-app/game/env.ts`.
+`npm run art` régénère les icônes web et les visuels des stores (`tools/gen-art.mjs` ; captures App Store dans `store/ios/`, anglais dans `store/en/`).
+Sprites HD (Higgsfield façon Animal Well) : `www/art/units-hd.png` (personnages et monstres, ~34 px), `tiles-hd.png` (16 variantes par matière), `trees-hd.png` (canopées), générés par `python3 tools/gen-hd-art.py` depuis `art/hd-sources/`. Pour ajouter une unité : `python3 tools/gen-hd-art.py --add nom:hauteur` (colle le sprite à droite de l'atlas sans régénérer le reste, les sources à 512 px ne redonnant pas exactement les PNG livrés), puis recopier le rectangle affiché dans `UNIT_ART.r` et le nom dans `artSprites`. Chargés par `UNIT_ART`, `HD_TILES` et `TREE_ART` avec repli procédural. Ajouter toute nouvelle image à `IMAGES` dans `mobile-app/game/env.ts`.
 Héros modulaire : le sprite HD Higgsfield du héros découpé en calques et animé par code (`heroHDParts`, `heroHDFrame`, `heroHDDoll`, `heroPick`), recolorié par `headCol`/`tunic`, avec ou sans épée selon l'objet en main ; repli procédural `heroFrame`. Préréglages `OUTFITS[].look`, surcharge future `PROF.look`. Détails dans `docs/direction-artistique.md` (« Héros modulaire »).
 Assets générés par IA (Higgsfield : fonds de menu, logo, concepts, sprites) : suivre `docs/direction-artistique.md` (palette, STYLE FORMULA figée, réduction au plus proche voisin, coût validé avant toute génération).
 

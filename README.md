@@ -3,8 +3,7 @@
 Jeu 2D pixel art façon Terraria : mine, forge, recrute des troupes et détruis le cœur de la base adverse.
 
 - **Jouer sur navigateur** : ouvre `www/index.html` (ordinateur, tablette ou téléphone), ou `npm run serve`.
-- **Android / Play Store** : projet Capacitor dans `android/` — voir [PUBLIER_PLAY_STORE.md](PUBLIER_PLAY_STORE.md).
-- **iPhone, iPad / App Store** : projet Capacitor dans `ios/` — voir [PUBLIER_APP_STORE.md](PUBLIER_APP_STORE.md).
+- **iPhone, iPad et Android** : app native Expo dans `mobile-app/` (le moteur du jeu, `www/index.html`, y est recopié par `cd mobile-app && npm run sync-game`). L'ancien emballage Capacitor (`android/`, `ios/`) a été retiré.
 - **Tests** : `npm test` (tests de fumée sans écran, Playwright requis).
 - **Liste de tâches** : [ROADMAP.md](ROADMAP.md).
 

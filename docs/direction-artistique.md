@@ -221,7 +221,7 @@ Couleur clé (transparence) : `#FF00FF` par défaut ; `#00FF00` si l'asset conti
 5. Ranger :
    - jeu web : `www/art/` (ex. `www/art/menu.png`) ;
    - app : `mobile-app/assets/art/` (même nom de fichier) ;
-   - visuels de store : régénérer avec `npm run art` puis `npm run assets` (`tools/gen-art.mjs`).
+   - visuels de store : régénérer avec `npm run art` (`tools/gen-art.mjs`) ; icône et écran de démarrage de l'app dans `mobile-app/assets/`.
 6. Brancher :
    - fonds de menu : `mobile-app/components/game/menu-backdrop.tsx` (garder le ratio 960/540 ou mettre à jour `ART_RATIO`) ;
    - si le moteur du jeu change : `cd mobile-app && npm run sync-game` (ne jamais modifier `game/engine.generated.js` à la main).

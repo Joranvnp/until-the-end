@@ -1,4 +1,5 @@
-// Génère icônes, écran de démarrage et visuels Play Store à partir des sprites du jeu.
+// Génère les icônes web et les visuels des stores (icône, bannière, captures) à partir des sprites du jeu.
+// Les icônes et l'écran de démarrage de l'app sont dans mobile-app/assets/ (app Expo).
 // Usage : node tools/gen-art.mjs   (Playwright + Chromium requis)
 import { createRequire } from 'module';
 import { writeFileSync, mkdirSync } from 'fs';
@@ -32,11 +33,6 @@ const art = (kind, w, h) => page.evaluate(([kind, w, h]) => {
 save(path.join(root, 'www/icons/icon-512.png'), await art('icon', 512, 512));
 save(path.join(root, 'www/icons/icon-192.png'), await art('icon', 192, 192));
 save(path.join(root, 'www/icons/icon-maskable-512.png'), await art('mask', 512, 512));
-save(path.join(root, 'assets/icon-only.png'), await art('icon', 1024, 1024));
-save(path.join(root, 'assets/icon-foreground.png'), await art('fg', 1024, 1024));
-save(path.join(root, 'assets/icon-background.png'), await art('bgonly', 1024, 1024));
-save(path.join(root, 'assets/splash.png'), await art('splash', 2732, 2732));
-save(path.join(root, 'assets/splash-dark.png'), await art('splash', 2732, 2732));
 save(path.join(root, 'store/icone-512.png'), await art('icon', 512, 512));
 save(path.join(root, 'store/banniere-1024x500.png'), await art('feature', 1024, 500));
 await page.close();

@@ -1,9 +1,4 @@
-# Jeu actuel (Capacitor, supprimé en fin de portage)
-# Android (généré / secrets)
-android/app/build/
-android/build/
-android/.gradle/
-android/local.properties
+# Secrets de signature
 *.keystore
 *.jks
 keystore.properties

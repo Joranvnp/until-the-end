@@ -31,7 +31,7 @@
 ### iOS / App Store
 - [x] Projet iOS Capacitor 8 (iPhone + iPad), zone sûre (encoche), barre de statut masquée, son relancé après interruption, haptique iPhone
 - [x] GitHub Actions : compilation à chaque push + envoi TestFlight sans Mac (clé d'API App Store Connect)
-- [x] Captures App Store iPhone 6,9" et iPad 13" (français et anglais), guide `PUBLIER_APP_STORE.md`
+- [x] Captures App Store iPhone 6,9" et iPad 13" (français et anglais), guide `PUBLIER_APP_STORE.md` (retiré avec Capacitor le 2026-11-10)
 
 ### Mobile / Play Store
 - [x] Projet Android Capacitor 8 (SDK 36), plein écran immersif, écran toujours allumé
@@ -97,7 +97,7 @@
 ### Play Store
 - [ ] Brancher `main` sur la version fusionnée (le workflow Android construit l'APK/AAB depuis `main`)
 - [ ] Tester sur téléphone réel, mesurer les performances entrée de gamme
-- [ ] Test fermé 12 testeurs / 14 jours puis production (voir PUBLIER_PLAY_STORE.md)
+- [ ] Test fermé 12 testeurs / 14 jours puis production (app Expo, skills `ns-android-beta` puis `ns-android-distribute`)
 
 ## À faire ensuite (idées)
 - [ ] Tester l'APK sur plusieurs téléphones réels (performances sur entrée de gamme)

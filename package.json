@@ -2,18 +2,13 @@
   "name": "until-the-end",
   "version": "2.0.0",
   "private": true,
-  "description": "Until The End — jeu pixel art de stratégie et de minage (Android, iOS)",
+  "description": "Until The End — jeu pixel art de stratégie et de minage (app Expo iOS et Android, moteur dans www/)",
   "scripts": {
     "serve": "npx serve www",
     "art": "node tools/gen-art.mjs",
     "test": "node tools/test.mjs",
     "audio": "node tools/gen-audio.mjs",
     "audio:extra": "node tools/gen-audio.mjs --extra",
-    "assets": "npx capacitor-assets generate --android --ios --iconBackgroundColor '#0b0a16' --iconBackgroundColorDark '#0b0a16' --splashBackgroundColor '#0b0a16' --splashBackgroundColorDark '#0b0a16'",
-    "sync": "npx cap sync",
-    "apk": "npx cap sync android && cd android && ./gradlew assembleDebug",
-    "aab": "npx cap sync android && cd android && ./gradlew bundleRelease",
-    "ios": "npx cap sync ios && npx cap open ios",
     "expo-go": "node scripts/start-expo-go.mjs",
     "start-all": "bash scripts/start-all.sh",
     "start-all:ios": "bash scripts/start-all.sh --ios",
@@ -26,12 +21,6 @@
     "@aws-sdk/client-s3": "^3.1068.0",
     "@aws-sdk/s3-request-presigner": "^3.1068.0",
     "@better-auth/expo": "^1.5.6",
-    "@capacitor/android": "^8.0.0",
-    "@capacitor/app": "^8.0.0",
-    "@capacitor/core": "^8.0.0",
-    "@capacitor/haptics": "^8.0.0",
-    "@capacitor/ios": "^8.0.0",
-    "@capacitor/share": "^8.0.3",
     "@convex-dev/better-auth": "^0.11.5",
     "@lumail/convex": "^0.1.1",
     "@react-email/components": "^1.0.12",
@@ -44,8 +33,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^8.0.0",
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17"
   }
