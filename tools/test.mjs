@@ -25,7 +25,8 @@ async function test(name, fn, opt = {}) {
   console.log((bad ? 'ÉCHEC ' : 'ok    ') + name + (bad ? ' → ' + bad : '')); if (bad) failed++;
   await ctx.close();
 }
-const start = `const G=__game,D=G.dbg;D.PROF.tutDone=true;const sec=n=>G.step(n*30);const units=(t,k)=>G.ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&(!k||e.kind===k));`;
+// les bénédictions sont coupées par défaut : leur tirage dépend du monde (aléatoire) et fausserait les règles vérifiées ici ; leurs deux tests les rallument
+const start = `const G=__game,D=G.dbg;D.PROF.tutDone=true;D.boon.off=true;const sec=n=>G.step(n*30);const units=(t,k)=>G.ents.filter(e=>e.type==='unit'&&e.team===t&&!e.dead&&(!k||e.kind===k));`;
 const run = body => new Function(start + body);
 
 await test('écran titre et panneaux de menu', run(`
@@ -72,14 +73,14 @@ await test('sauvegarde et reprise (ordre Tenir, garde, vétérans)', run(`
   G.newGame(0);if(!G.loadGame())return 'chargement refusé';const b2=G.bases[0];
   return b2.order==='hold'&&b2.holdX===999&&D.ai.vet===.1&&D.ai.stand&&units(0,'healer').length===4&&Math.abs(G.time-t)<1?'':'données perdues'`));
 await test('bénédictions : 3 offres au début, jeu figé, choix appliqué, tirage stable après reprise', run(`
-  G.newGame(1);G.step(60,1/30,false);const p=D.boon.pick;if(!p||p.length!==3||new Set(p).size!==3)return 'pas de tirage au début : '+JSON.stringify(p);
+  D.boon.off=false;G.newGame(1);G.step(60,1/30,false);const p=D.boon.pick;if(!p||p.length!==3||new Set(p).size!==3)return 'pas de tirage au début : '+JSON.stringify(p);
   const t=G.time;G.step(30,1/30,false);if(G.time!==t)return 'le jeu avance pendant le choix';
   G.saveGame();G.newGame(0);if(!G.loadGame())return 'chargement refusé';G.step(5,1/30,false);if(JSON.stringify(D.boon.pick)!==JSON.stringify(p))return 'tirage changé après reprise';
   D.boon.reroll();if(D.boon.re!==0||JSON.stringify(D.boon.pick)===JSON.stringify(p))return 'relance sans effet';D.boon.reroll();
   const id=D.boon.pick[1];D.boon.choose(1);if(D.boon.pick||D.boon.own[id]!==1)return 'choix non appliqué';G.step(30,1/30,false);if(D.boon.pick)return 'second tirage le même jour';
   G.time=299;sec(3);if(G.stats.boons!==2)return 'pas de tirage à l\\'aube : '+G.stats.boons;return ''`));
 await test('bénédictions : effets (unités, héros, cœur, prix) et sauvegarde', run(`
-  G.newGame(1);sec(3);const B=D.boon,b=G.bases[0],c=b.core.maxhp,own0=Object.keys(B.own)[0];
+  G.newGame(1);sec(3);const B=D.boon,b=G.bases[0],c=b.core.maxhp;
   const w0=units(0,'warrior').length,m0=units(0,'miner').length;
   for(const id of['vigor','heart','bastion','supply','crew','levy','fury','march','volley','thorns','pulse','mend','leech','vein','tithe','loot','regen','haste','drill','hearth','ballista','might','bombs','cache','golem'])B.give(id);
   const hp=Math.round(D.UNITS.warrior.hp*(1+.2*B.own.vigor)),w=units(0,'warrior');if(w.length!==w0+3||w.some(e=>e.maxhp!==hp))return 'Sang de fer / Levée : '+w.map(e=>e.maxhp)+' attendu '+hp;
@@ -90,7 +91,9 @@ await test('bénédictions : effets (unités, héros, cœur, prix) et sauvegarde
   // le cœur attaqué : épines et onde gardienne blessent l'assaillant
   const foe=G.recruit(1,'warrior',true);foe.x=b.core.x+30;foe.y=b.core.y;const h=foe.hp;D.hurt(b.core,20,foe);if(foe.hp>=h)return 'épines ou onde sans effet';
   sec(25);G.saveGame();const n=Object.keys(B.own).length;G.newGame(0);G.loadGame();
-  return Object.keys(B.own).length===n&&G.player.maxhp===mh?'':'bénédictions perdues à la reprise'`));
+  if(Object.keys(B.own).length!==n||G.player.maxhp!==mh)return 'bénédictions perdues à la reprise';
+  // Pierre de foyer : rappel en 1 s, 15 s de recharge
+  const p=G.player;p.x=150*16;p.y=20*16;sec(1);D.startRecall();sec(2);return Math.abs(p.x-G.bases[0].core.x)<80&&p.recallCd>10&&p.recallCd<=15?'':'Pierre de foyer : x='+Math.round(p.x)+' recharge '+p.recallCd`));
 await test('migration : anciens records et ancienne sauvegarde Brutal', run(`
   if(D.PROF.rec.kb!==777||D.PROF.rec.kn!==555||D.PROF.rec['2'])return 'records : '+JSON.stringify(D.PROF.rec);if(D.PROF.lastDiff!==3)return 'dernier niveau choisi : '+D.PROF.lastDiff;
   G.newGame(1);sec(2);G.saveGame();const s=JSON.parse(localStorage.getItem('ute-save-v1'));delete s.dv;s.diff=2;localStorage.setItem('ute-save-v1',JSON.stringify(s));
