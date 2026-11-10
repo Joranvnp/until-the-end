@@ -285,8 +285,8 @@ function buildTextures(){
 
 // Bottom-aligned pixel creatures; all poses retain the original frame bounds.
 function humanoid(o,p){const c=mk(18,26),P=pen(c.getContext('2d')),ink='#05050c';
-  const role=o.role,hero=role==='hero',boss=role==='champion',ogre=role==='ogre',zombie=role==='zombie';
-  const body=hero?'#f2c9a0':zombie?'#9eafa0':ogre?'#b03a52':o.tunic,lo=hero?'#c98f6b':zombie?'#627c76':ogre?'#641f3a':shade(body,-.35),hi=hero?'#ffe4c6':zombie?'#c5d3b0':ogre?'#e8707f':shade(body,.35);
+  const role=o.role,hero=role==='hero',boss=role==='champion',zombie=role==='zombie';
+  const body=hero?'#f2c9a0':zombie?'#9eafa0':o.tunic,lo=hero?'#c98f6b':zombie?'#627c76':shade(body,-.35),hi=hero?'#ffe4c6':zombie?'#c5d3b0':shade(body,.35);
   const w=(boss?12:hero?10:9)+(p.bob?1:0)-(p.jump?1:0),h=(boss?12:hero?10:9)-(p.bob?1:0)+(p.jump?3:0);
   const x=Math.floor((18-w)/2)+(p.atk?1:0),y=24-h;
   if(hero){const tail=p.lf||0;P(x-2,y+3,3,Math.max(2,h-4),'#a95572');P(x-3,y+h-3+Math.sign(tail),3,2,'#703c62')}
@@ -298,9 +298,6 @@ function humanoid(o,p){const c=mk(18,26),P=pen(c.getContext('2d')),ink='#05050c'
   P(x+2,24-(step>0?1:0),2,1,lo);P(x+w-4,24-(step<0?1:0),2,1,body);
   const ey=y+Math.floor(h*.4),ex=x+w-7;
   if(zombie){for(const xx of[ex,ex+4]){P(xx,ey,1,1,ink);P(xx+2,ey,1,1,ink);P(xx+1,ey+1,1,1,ink);P(xx,ey+2,1,1,ink);P(xx+2,ey+2,1,1,ink)}P(ex+1,ey+3,1,1,lo)}
-  // ogre de la lune de sang : yeux de braise, cornes et crocs (dessiné deux fois plus grand en jeu)
-  else if(ogre){for(const xx of[ex,ex+4]){P(xx,ey,2,2,'#ffe066');P(xx,ey-1,2,1,ink)}P(ex,ey+4,6,1,ink);P(ex+1,ey+5,1,1,'#f3e6d0');P(ex+4,ey+5,1,1,'#f3e6d0');
-    P(x+1,y-2,1,2,'#f3e6d0');P(x+2,y-1,1,1,'#f3e6d0');P(x+w-2,y-2,1,2,'#f3e6d0');P(x+w-3,y-1,1,1,'#f3e6d0')}
   else{for(const xx of[ex,ex+4]){P(xx,ey,3,3,ink);P(xx,ey,1,1,'#ffffff')}}
   const arm=p.wind?-2:p.atk?2:(p.lf||0);
   P(x-1,y+h-5-arm,2,3,lo);P(x+w-1,y+h-5+arm,2,3,hi);
@@ -336,6 +333,30 @@ function golemSet(eye){const mkF=(f,attack=false,jump=false)=>{const c=mk(20,26)
   P(x+9,y+8,2,1,rim);if(attack){P(16,21,3,2,body);P(17,20,2,1,rim)}
   return outline(c,'#05050c')};
   const fr={walk:[mkF(0),mkF(1),mkF(0),mkF(-1)],idle:[mkF(0),mkF(1)],jump:mkF(0,false,true),wind:mkF(2),atk:mkF(0,true)};
+  return{R:fr,L:{walk:fr.walk.map(flipC),idle:fr.idle.map(flipC),jump:flipC(fr.jump),atk:flipC(fr.atk),wind:flipC(fr.wind)}}}
+// ogre de sang : dessiné à sa taille réelle (44x54) pour garder la même finesse de pixel que le reste du monde.
+// Corps centré sur x=19 ; la massue repose sur l'épaule, se lève (wind) puis s'abat devant lui (atk).
+function ogreSet(){const ink='#05050c',body='#b03a52',lo='#641f3a',hi='#e8707f',belly='#c9566c',bone='#f3e6d0',boneLo='#b9a58f',wood='#6b4a52',woodHi='#a07a6a';
+  const mkF=o=>{const c=mk(44,54),P=pen(c.getContext('2d')),st=o.step||0,up=o.jump?3:0,x=7+(o.atk?2:0),w=24,h=30-(o.bob||0),y=47-h-up,a=o.arm||0;
+    // bras arrière, puis jambes (une levée sur deux en marche)
+    P(x-2,y+12+a,4,9,lo);P(x-3,y+20+a,5,4,lo);
+    P(x+4,47-up,7,5-(st>0?2:0),lo);P(x+3,51-up-(st>0?2:0),9,1,body);P(x+w-11,47-up,7,5-(st<0?2:0),lo);P(x+w-12,51-up-(st<0?2:0),9,1,body);
+    // corps : gros ovale en gradins, ventre plus clair, reflet sur le crâne
+    for(let j=0;j<h;j++){const k=Math.min(j,h-1-j),inset=k===0?5:k===1?3:k===2?2:k<5?1:0;P(x+inset,y+j,w-inset*2,1,j>=h-6?lo:body)}
+    P(x+6,y+h-13,w-13,7,belly);P(x+7,y+h-14,w-15,1,belly);P(x+7,y+h-6,w-15,1,belly);P(x+7,y+1,w-14,1,hi);P(x+2,y+6,1,6,hi);
+    // cornes recourbées
+    for(const[hx,d]of[[x+3,-1],[x+w-4,1]]){P(hx-1,y-2,3,3,boneLo);P(hx+d-1,y-5,2,4,bone);P(hx+d*2,y-7,1,3,bone)}
+    // yeux de braise sous des sourcils froncés, gueule à crocs
+    const ey=y+9;for(const ex of[x+9,x+17]){P(ex,ey,4,3,'#ffe066');P(ex+2,ey+1,1,1,ink);P(ex-1,ey-2,6,1,ink)}P(x+8,ey-3,2,1,ink);P(x+21,ey-3,2,1,ink);P(x+13,ey-1,4,1,ink);
+    P(x+15,ey+4,2,1,lo);P(x+9,ey+7,14,2,ink);P(x+10,ey+5,2,3,bone);P(x+20,ey+5,2,3,bone);P(x+14,ey+7,1,1,bone);P(x+17,ey+7,1,1,bone);
+    // massue cloutée (manche + tête) : tête en haut au repos et à l'armé, tête en bas quand elle s'abat
+    const club=(cx,cy,len,down)=>{const hy=down?cy+len-1:cy-8;P(cx,cy,3,len,wood);P(cx,cy,1,len,woodHi);P(cx-1,hy,5,9,wood);P(cx-1,hy,1,9,woodHi);P(cx-2,hy+2,1,1,bone);P(cx+4,hy+4,1,1,bone);P(cx+4,hy+1,1,1,bone);P(cx+1,down?hy+9:hy-1,1,1,bone)};
+    if(o.wind){club(x+w-1,y-4,11);P(x+w-3,y+5,5,9,body);P(x+w-3,y+4,5,3,hi)}
+    else if(o.atk){P(x+w-2,y+12,6,5,body);club(x+w+4,y+15,24-(y+15-17),true);P(x+w+2,y+13,6,4,hi)}
+    else{club(x+w+1,y+8-a,13);P(x+w-2,y+13-a,4,8,body);P(x+w-1,y+19-a,5,4,hi)}
+    return outline(c,ink)};
+  const stp=[1,1,0,-1,-1,0],bob=[0,1,0,0,1,0],arm=[1,0,-1,-1,0,1];
+  const fr={walk:stp.map((s,i)=>mkF({step:s,bob:bob[i],arm:arm[i]})),idle:[mkF({}),mkF({bob:1})],jump:mkF({jump:true,step:1}),wind:mkF({wind:true}),atk:mkF({atk:true,bob:1})};
   return{R:fr,L:{walk:fr.walk.map(flipC),idle:fr.idle.map(flipC),jump:flipC(fr.jump),atk:flipC(fr.atk),wind:flipC(fr.wind)}}}
 function slimeFrames(col){return[0,1,2].map(f=>{const c=mk(16,14),P=pen(c.getContext('2d')),w=[10,12,8][f],h=[8,6,10][f],x=(16-w)/2,y=12-h;
   for(let j=0;j<h;j++){const inset=j===0||j===h-1?2:j===1?1:0;P(x+inset,y+j,w-inset*2,1,j>h-3?shade(col,-.35):col)}
@@ -381,7 +402,7 @@ function buildSprites(){
   SPR.champion0=charSet({role:'champion',tunic:'#4f9df5'});
   SPR.champion1=charSet({role:'champion',skin:'#ae8e93',tunic:'#e5534b',pants:'#302238',boots:'#161626',helm:'#43394f',plume:'#ff8666',cape:'#942f4c',belt:'#ceaa6b'});
   SPR.zombie=charSet({role:'zombie',skin:'#87a18b',hair:'#303d46',tunic:'#665575',pants:'#303047',boots:'#1b2130'});
-  SPR.ogre=charSet({role:'ogre'});
+  SPR.ogre=ogreSet();
   SPR.slime=slimeFrames('#8273d9');SPR.slimeB=slimeFrames('#628ee7');
   SPR.arrow=(()=>{const c=mk(10,3),P=pen(c.getContext('2d'));P(0,0,2,1,'#92a9b9');P(1,1,8,1,'#797dc4');P(0,2,2,1,'#92a9b9');P(7,0,1,3,'#778ba4');P(8,1,2,1,'#dce3d8');return c})();
   const met={1:['#4e4e8b','#8f9bcf'],2:ORE[COPPER].slice(1),3:ORE[IRON].slice(1),4:ORE[DIAMOND].slice(1)};
@@ -1192,13 +1213,14 @@ function spawnMonsters(dt){const night=daylight()<.25,bm=isBlood()?2:1;const n=e
 // Il naît au pied de la montagne (une bonne minute de marche), avance vers ton cœur en brisant ce qui le bloque et frappe en zone. Abattu par les bleus : diamants, or et une relique.
 // S'il tient jusqu'à l'aube, il s'évapore sans rien laisser.
 function spawnOgre(){if(ents.some(e=>e.kind==='ogre'&&!e.dead))return;const x=clamp(Math.floor(WW*R(.27,.36)),40,WW-60),n=stats.ogres=(stats.ogres||0)+1,hp=Math.round((520+diff*150)*(1+.35*(n-1)));
-  ents.push({type:'monster',kind:'ogre',boss:true,team:2,x:x*T,y:surf[x]*T-39,w:16,h:38,vx:0,vy:0,hp,maxhp:hp,dir:-1,onGround:false,atk:0,flash:0,anim:0,stepOff:0,digT:0});
+  ents.push({type:'monster',kind:'ogre',boss:true,team:2,x:x*T,y:surf[x]*T-41,w:16,h:40,vx:0,vy:0,hp,maxhp:hp,dir:-1,onGround:false,atk:0,flash:0,anim:0,stepOff:0,digT:0});
   toast('Un ogre de sang marche sur ta base ! Abats-le avant l\'aube pour son trésor.',6,'#ff5a5a')}
 function updateOgre(e,dt){
   if(daylight()>.5){e.dead=true;burst(e.x+e.w/2,e.y+e.h/2,'#ffb43a',26,70,-80,1.2,2);toast('L\'ogre de sang s\'évapore à l\'aube.',3,'#9fd0ff');return}
   // cible à sa hauteur seulement : il ne s'arrête pas au-dessus d'un mineur enfoui
   const cx=e.x+e.w/2;let tgt=null,bd=110;for(const o of tgtNear(e.x,110)){if(o.dead||!o.hp||o.team===2)continue;if(Math.abs(o.y+o.h-(e.y+e.h))>30)continue;const d=Math.abs(o.x+o.w/2-cx);if(d<bd){bd=d;tgt=o}}
   const goal=tgt?tgt.x+tgt.w/2:bases[0].core.x+11,gap=tgt?bd-tgt.w/2-e.w/2:1e9;e.dir=Math.sign(goal-cx)||e.dir;
+  e.pose=gap<8&&e.atk<.4?'wind':null; // il arme sa massue juste avant de frapper
   if(gap<8){e.vx=0;
     // coup de massue : tout ce qui se tient devant lui encaisse
     if(e.atk<=0){e.atk=1.5;const dm=26+diff*4;for(const o of tgtNear(e.x,60)){if(o.dead||!o.hp||o.team===2)continue;const ox=o.x+o.w/2-cx;if(ox*e.dir>-6&&Math.abs(ox)<o.w/2+e.w/2+16&&Math.abs(o.y+o.h-(e.y+e.h))<34)hurt(o,o.type==='core'?dm*.5:dm,e)}
@@ -1537,9 +1559,9 @@ function drawEnts(g,cx,cy){
       if(e.kind==='archer'&&!(e.atk>0&&e.atk<.18))drawHeld(g,ICON.bow,X+e.w/2+(e.swing>0?e.dir*2:0),Y+11,e.dir,-1);
       if(e.kind==='miner'&&(e.carryN>0||e.junk>0)){const best=['diamond','gold','silver','iron','copper','coal','stone','wood'].find(k=>e.carry[k]>0);if(best){g.drawImage(ICON[best],X-4+(e.dir>0?-6:6),Y+3,10,10)}}
       g.globalAlpha=1;if(e.spawnT>.3){g.globalCompositeOperation='lighter';g.globalAlpha=(e.spawnT-.3)/.3;g.drawImage(img,X-(e.kind==='golem'?2:5),Y+e.h-img.height+1);g.globalAlpha=1;g.globalCompositeOperation='source-over'}}
-    else if(e.type==='monster'){if(e.kind==='ogre'){const im=sprFrame(SPR.ogre,e),dx=X-10,dy=Y+e.h-im.height*2+3;g.drawImage(im,dx,dy,im.width*2,im.height*2);
-        if(e.flash>0){g.globalCompositeOperation='lighter';g.globalAlpha=.7;g.drawImage(im,dx,dy,im.width*2,im.height*2);g.globalAlpha=1;g.globalCompositeOperation='source-over'}
-        wtxt(g,'Ogre de sang',X+e.w/2,Y-17,'#ff6fae',7)}
+    else if(e.type==='monster'){if(e.kind==='ogre'){const im=e.pose==='wind'?(e.dir<0?SPR.ogre.L:SPR.ogre.R).wind:sprFrame(SPR.ogre,e),dx=X+(e.w>>1)-(e.dir<0?im.width-19:19),dy=Y+e.h-im.height+2;g.drawImage(im,dx,dy);
+        if(e.flash>0){g.globalCompositeOperation='lighter';g.globalAlpha=.7;g.drawImage(im,dx,dy);g.globalAlpha=1;g.globalCompositeOperation='source-over'}
+        wtxt(g,'Ogre de sang',X+e.w/2,Y-22,'#ff6fae',7)}
       else if(e.kind==='slime'){const fr=(e.blue?SPR.slimeB:SPR.slime);img=fr[e.onGround?(Math.sin(e.anim*6)>0?0:1):2];g.drawImage(img,X-2,Y+e.h-img.height+1)}
       else{img=sprFrame(SPR.zombie,e);g.drawImage(img,X-5,Y+e.h-img.height+1)}}
     if(e.flash>0&&img){g.globalCompositeOperation='lighter';g.globalAlpha=.7;g.drawImage(img,X-(e.kind==='golem'?2:e.kind==='slime'?2:5),Y+e.h-img.height+1);g.globalAlpha=1;g.globalCompositeOperation='source-over'}
@@ -1547,7 +1569,7 @@ function drawEnts(g,cx,cy){
     if(e.kind==='champion')wtxt(g,'Champion',X+e.w/2,Y-15,'#ff9a8a',7)
     // galvanisé par le champion : étincelle au-dessus de la tête
     if(e.aura>time&&((time*6+e.x)|0)%3===0){g.fillStyle='#ffd27a';g.fillRect(X+(e.w>>1),Y-4,1,2);g.fillRect(X+(e.w>>1)-1,Y-3,3,1)}
-    if(e.hp<e.maxhp||e.kind==='champion'||e.boss){const wd=e.boss?34:Math.max(12,e.w+4);g.fillStyle='#120e1c';g.fillRect(X+e.w/2-wd/2-1,Y-6,wd+2,3);g.fillStyle=e.team===0?'#5fb0ff':e.team===1?'#ff5a4a':'#7ddf6a';g.fillRect(X+e.w/2-wd/2,Y-5,Math.max(1,wd*e.hp/e.maxhp),1)}}
+    if(e.hp<e.maxhp||e.kind==='champion'||e.boss){const wd=e.boss?34:Math.max(12,e.w+4);const by=Y-(e.boss?8:0);g.fillStyle='#120e1c';g.fillRect(X+e.w/2-wd/2-1,by-6,wd+2,3);g.fillStyle=e.team===0?'#5fb0ff':e.team===1?'#ff5a4a':'#7ddf6a';g.fillRect(X+e.w/2-wd/2,by-5,Math.max(1,wd*e.hp/e.maxhp),1)}}
   // joueur
   const p=player;if(!p.dead&&!(p.iframes>0&&Math.floor(time*20)%2)){const img=sprFrame(SPR.player,p,!!mining);const X=Math.round(p.x+ox),Y=Math.round(p.y+oy+(p.stepOff||0));
     // écrasement à l'atterrissage, étirement au saut
