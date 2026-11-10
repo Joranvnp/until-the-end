@@ -3,6 +3,8 @@
 Jeu 2D pixel art façon Terraria, app mobile native (Expo + React Native, iOS et Android) sur le socle NowStack (Convex, better-auth, achats Apple/Google/Stripe).
 Inspiré du projet LÖVE2D d'origine (`3 - Projets/until-the-end` sur Google Drive) et de son document `UNTIL_THE_END_Reference_Complète.md`.
 
+> **Avant de toucher aux graphismes, lire `docs/note-prochaine-session.md`** (décisions de l'auteur du 2026-11-10 : style « peuple d'ombre » pour les unités et monstres, héros modulaire conservé, pas d'herbe sous les sprites, état des branches).
+
 ## Où est le jeu
 - **Moteur : `mobile-app/game/engine.js`, source unique.** Tout le jeu (monde, IA, combat, rendu, HUD) est dans ce fichier JavaScript dense, sans dépendance. C'est lui qu'on modifie. Il n'y a plus de version web ni de copie générée (`www/` et `sync-game` supprimés le 2026-11-10, Capacitor aussi).
 - L'app l'exécute sans WebView sur de faux window/document/canvas : `game/canvas.ts` (Canvas2D → Skia, une SkPicture par frame), `game/env.ts` (stockage AsyncStorage, sons react-native-audio-api, tactile, haptique, partage, et l'objet `window.Capacitor` que le moteur interroge encore pour ces services), `game/runtime.ts` (une instance par lancement). Écran : `app/(app)/game.tsx`.
