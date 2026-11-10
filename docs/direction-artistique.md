@@ -233,6 +233,8 @@ Personnages, monstres, cœurs, arbres et tuiles du terrain viennent de Higgsfiel
 - Personnages : environ 34 px de haut (golem 40, slime 16), recolorés par le code (tenues du héros, équipes bleue et rouge) avec les yeux en émissif.
 - Tuiles : une bande 64x64 par matière, soit 16 variantes 16x16 choisies selon la position, assombrie pour coller au terrain.
 - Arbres : 4 canopées sans tronc, les troncs restent des tuiles LOG.
+- Guérisseurs et ogre de sang (ajoutés le 2026-11-10) : `gpt_image_2_6`, qualité high, 1k carré, avec un sprite existant en référence (`medias` = identifiant de la génération d'origine dans l'historique Higgsfield, rôle `image_references`). Ce modèle ignore le fond uni demandé et rend un fond noir avec halo, impossible à détourer : toujours passer `background: "transparent"`, puis poser le résultat sur magenta (bleus) ou vert (rouges) avant de le ranger dans `art/hd-sources/`. Le guérisseur rouge a été généré à partir du guérisseur bleu pour obtenir une paire aux mêmes proportions.
+- Ajouter une unité sans toucher aux autres : `python3 tools/gen-hd-art.py --add nom:hauteur`.
 - Chaque image a un repli procédural si elle ne charge pas. Toute nouvelle image doit aussi être ajoutée à `IMAGES` dans `mobile-app/game/env.ts`.
 
 ### Sprites animés (si besoin)
