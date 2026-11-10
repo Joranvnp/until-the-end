@@ -1,5 +1,8 @@
 /* eslint-disable */
-// Généré par scripts/sync-game.mjs depuis www/index.html : ne pas modifier à la main.
+// Moteur du jeu Until The End : c'est ICI qu'on modifie le jeu (source unique, plus de copie depuis une page web).
+// L'app l'exécute sur de faux window/document/canvas fournis par game/env.ts (rendu Skia, sons, stockage, tactile).
+// Pour le lancer dans un navigateur (développement, tests) : `npm run play` à la racine, qui sert tools/game.html.
+// Sons et images : mobile-app/assets/audio et mobile-app/assets/art (toute nouvelle image va aussi dans IMAGES de game/env.ts).
 export default function createGame(env) {
   const { window, document, navigator, localStorage, performance, addEventListener, Image, fetch, innerWidth, innerHeight, location, ResizeObserver, visualViewport, requestAnimationFrame, setTimeout, atob, btoa } = env;
   return (function () {
@@ -2942,8 +2945,6 @@ const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capa
 if(NATIVE){const App=window.Capacitor.Plugins.App;
   if(App){App.addListener('backButton',()=>{if(menuPanel)menuPanel=null;else if(state==='play'){if(panel)panel=null;else if(paused&&pauseHelp)pauseHelp=false;else paused=!paused}else if(state==='title')App.exitApp();else state='title'});
     App.addListener('pause',()=>{saveGame();if(state==='play')paused=true;if(AC)AC.suspend()});App.addListener('resume',()=>{if(AC)AC.resume().catch(()=>{});resize()})}}
-// version web : mise en cache hors ligne (installable comme une appli)
-else if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
 let last=performance.now();
 // ---------- manette (Gamepad API, disposition standard) ----------
 // A saut / valider · B retour · X ou RT action · Y sac · LB/RB barre d'objets · LT base · L3 forge · Select ordre · Start pause

@@ -1,4 +1,4 @@
-// Types de l'objet que le moteur expose (window.__game dans www/index.html).
+// Types de l'objet que le moteur expose (window.__game, voir la fin de engine.js).
 export type GameApi = {
   readonly state: string;
   paused: boolean;

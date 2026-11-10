@@ -19,7 +19,7 @@ function emptyPicture() {
   return rec.finishRecordingAsPicture();
 }
 
-// Le jeu complet (moteur de www/index.html) dessiné en Skia, plein écran dans la zone sûre.
+// Le jeu complet (moteur game/engine.js) dessiné en Skia, plein écran dans la zone sûre.
 export default function GameScreen() {
   useKeepAwake();
   const router = useRouter();

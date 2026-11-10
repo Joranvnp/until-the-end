@@ -1,6 +1,6 @@
 ---
 name: calques-decor
-description: Crée ou remplace les calques de décor en parallaxe d'Until The End (montagnes, ruines, forêt) - génération Higgsfield, pixelisation en 4 tons avec tools/gen-calques.py, intégration dans www/index.html et captures de vérification. À utiliser pour « nouveau décor », « change le fond », « ajoute un biome en arrière-plan », « calques », « parallaxe ».
+description: Crée ou remplace les calques de décor en parallaxe d'Until The End (montagnes, ruines, forêt) - génération Higgsfield, pixelisation en 4 tons avec tools/gen-calques.py, intégration dans mobile-app/game/engine.js et captures de vérification. À utiliser pour « nouveau décor », « change le fond », « ajoute un biome en arrière-plan », « calques », « parallaxe ».
 ---
 
 # Calques de décor (parallaxe)
@@ -13,9 +13,9 @@ Une brume monte au pied des calques lointains.
 - Sources : `art/calques/<nom>.png` (images Higgsfield en demi-résolution, fond transparent).
 - Conversion : `python3 tools/gen-calques.py` (Pillow + numpy). Le script recadre, réduit chaque image à 4 tons,
   la ramène à la taille du jeu par vote majoritaire (bords nets), retire les pixels isolés, raccorde le calque
-  avec son miroir, puis incruste le résultat entre `// <calques>` et `// </calques>` dans `www/index.html`.
+  avec son miroir, puis incruste le résultat entre `// <calques>` et `// </calques>` dans `mobile-app/game/engine.js`.
   Il écrit aussi `art/calques-apercu.png`.
-- Rendu : `drawCalque`, `calqueRamp`, `tintCalque` dans la section RENDU de `www/index.html`.
+- Rendu : `drawCalque`, `calqueRamp`, `tintCalque` dans la section RENDU de `mobile-app/game/engine.js`.
   Réglages par calque : `CQ_PAR` (vitesse de parallaxe), `CQ_VY` (suivi vertical), `CQ_FOOT` (pied du calque
   sous le sol, en pixels), `CQ_DEPTH` (fondu dans le ciel), `CQ_K` (contraste), `CQ_HUE` (teinte).
 

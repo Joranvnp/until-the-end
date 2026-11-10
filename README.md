@@ -2,8 +2,8 @@
 
 Jeu 2D pixel art façon Terraria : mine, forge, recrute des troupes et détruis le cœur de la base adverse.
 
-- **Jouer sur navigateur** : ouvre `www/index.html` (ordinateur, tablette ou téléphone), ou `npm run serve`.
-- **iPhone, iPad et Android** : app native Expo dans `mobile-app/` (le moteur du jeu, `www/index.html`, y est recopié par `cd mobile-app && npm run sync-game`). L'ancien emballage Capacitor (`android/`, `ios/`) a été retiré.
+- **Jouer sur ordinateur (développement)** : `npm run play`, puis ouvre l'adresse affichée. C'est le moteur de l'app lancé dans un navigateur, pas une version web publiée.
+- **iPhone, iPad et Android** : app native Expo dans `mobile-app/`. Le moteur du jeu est `mobile-app/game/engine.js`, source unique. L'ancienne version web (`www/`) et l'emballage Capacitor ont été retirés.
 - **Tests** : `npm test` (tests de fumée sans écran, Playwright requis).
 - **Liste de tâches** : [ROADMAP.md](ROADMAP.md).
 

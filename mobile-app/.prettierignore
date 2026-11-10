@@ -8,5 +8,5 @@ node_modules/
 credentials.json
 credentials/
 
-# Moteur du jeu recopié depuis www/index.html (npm run sync-game).
-game/engine.generated.js
+# Moteur du jeu : un seul gros fichier au style dense, hors Prettier.
+game/engine.js

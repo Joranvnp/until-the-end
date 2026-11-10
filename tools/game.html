@@ -1,0 +1,29 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Until The End — banc d'essai du moteur</title>
+<meta name="theme-color" content="#0b0a16">
+<!--
+  Banc d'essai : lance le moteur de l'app (mobile-app/game/engine.js) dans un navigateur, pour développer et tester.
+  Ce n'est pas une version web du jeu : aucune logique ici, seulement la toile et les objets du navigateur passés au moteur.
+  À ouvrir avec `npm run play` (tools/game-server.mjs), qui sert aussi /engine.js, /audio et /art depuis mobile-app/.
+-->
+<style>
+:root{--bg:#0b0a16;color-scheme:dark}
+html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;overscroll-behavior:none}
+canvas#c{position:fixed;top:env(safe-area-inset-top,0px);left:env(safe-area-inset-left,0px);width:calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));image-rendering:pixelated;touch-action:none;outline:none;cursor:none}
+</style>
+<canvas id="c" tabindex="0"></canvas>
+<script type="module">
+import createGame from './engine.js';
+// mêmes entrées que game/env.ts dans l'app, mais avec les vrais objets du navigateur
+const w = window, bind = (f) => f.bind(w);
+createGame({
+  window: w, document, navigator, localStorage, performance, location, Image,
+  addEventListener: bind(w.addEventListener), fetch: bind(w.fetch),
+  innerWidth: w.innerWidth, innerHeight: w.innerHeight,
+  ResizeObserver: w.ResizeObserver, visualViewport: w.visualViewport,
+  requestAnimationFrame: bind(w.requestAnimationFrame), setTimeout: bind(w.setTimeout),
+  atob: bind(w.atob), btoa: bind(w.btoa),
+});
+</script>

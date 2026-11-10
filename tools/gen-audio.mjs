@@ -13,7 +13,7 @@ import { spawnSync } from 'node:child_process';
 
 const SR = 44100, TAU = 2 * Math.PI;
 const extra = process.argv.includes('--extra');
-const output = resolve(dirname(fileURLToPath(import.meta.url)), extra ? '../musiques/nouvelles' : '../www/audio');
+const output = resolve(dirname(fileURLToPath(import.meta.url)), extra ? '../musiques/nouvelles' : '../mobile-app/assets/audio');
 const started = performance.now();
 let seed = 0x554e544c;
 function random() {
@@ -1016,7 +1016,7 @@ run(ffmpeg, ['-version']);
 await mkdir(output, { recursive: true });
 const temporary = await mkdtemp(join(tmpdir(), 'until-the-end-audio-'));
 const temporaryFiles = [];
-// Sans --extra, les nouvelles partitions sont aussi écrites dans www/audio (music-aube, music-victoire…) pour le jeu.
+// Sans --extra, les nouvelles partitions sont aussi écrites dans mobile-app/assets/audio (music-aube, music-victoire…) pour le jeu.
 const names = extra ? Object.keys(extraMusics) : [...Object.keys(effects), ...[...Object.keys(musics), ...Object.keys(extraMusics)].map(name => `music-${name}`)];
 try {
   for (const name of names) {

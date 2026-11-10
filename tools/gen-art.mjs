@@ -1,17 +1,19 @@
-// Génère les icônes web et les visuels des stores (icône, bannière, captures) à partir des sprites du jeu.
+// Génère les visuels des stores (icône, bannière, captures) à partir des sprites du jeu, en lançant le moteur dans Chromium.
 // Les icônes et l'écran de démarrage de l'app sont dans mobile-app/assets/ (app Expo).
 // Usage : node tools/gen-art.mjs   (Playwright + Chromium requis)
 import { createRequire } from 'module';
 import { writeFileSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import { startGameServer } from './game-server.mjs';
 const require = createRequire(import.meta.url);
 let pw; try { pw = require('playwright'); } catch { pw = createRequire('/opt/node-tools/node_modules/')('playwright'); }
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const game = 'file://' + path.join(root, 'www/index.html');
+const server = await startGameServer();
+const game = server.url;
 const browser = await pw.chromium.launch();
 const page = await browser.newPage();
-await page.goto(game); await page.waitForTimeout(300);
+await page.goto(game); await page.waitForFunction('window.__game'); await page.waitForTimeout(300);
 const save = (file, dataUrl) => { mkdirSync(path.dirname(file), { recursive: true }); writeFileSync(file, Buffer.from(dataUrl.split(',')[1], 'base64')); console.log('écrit', path.relative(root, file)); };
 // art(kind, size) : dessine dans une toile et renvoie un PNG en data URL
 const art = (kind, w, h) => page.evaluate(([kind, w, h]) => {
@@ -30,9 +32,6 @@ const art = (kind, w, h) => page.evaluate(([kind, w, h]) => {
   if (kind === 'feature') { bg(); core(w*.82, h*.5, h*.6, 1); const z = Math.floor(h*.42/26); hero(w*.08, h*.82, z); D.text(g, 'UNTIL THE END', w*.47, h*.36, '#e4e9ff', 49); D.text(g, 'MINE. FORGE. DÉTRUIS LEUR CŒUR.', w*.47, h*.62, '#ffd27a', 21); }
   return c.toDataURL('image/png');
 }, [kind, w, h]);
-save(path.join(root, 'www/icons/icon-512.png'), await art('icon', 512, 512));
-save(path.join(root, 'www/icons/icon-192.png'), await art('icon', 192, 192));
-save(path.join(root, 'www/icons/icon-maskable-512.png'), await art('mask', 512, 512));
 save(path.join(root, 'store/icone-512.png'), await art('icon', 512, 512));
 save(path.join(root, 'store/banniere-1024x500.png'), await art('feature', 1024, 500));
 await page.close();
@@ -55,7 +54,7 @@ mkdirSync(path.join(root, 'store/en/ios'), { recursive: true });
 for (const [locale, prefix] of [['fr-FR', ''], ['en-US', 'en/']]) for (const d0 of devices) {
   const d = { ...d0, out: d0.out.replace('store/', 'store/' + prefix) };
   const ctx = await browser.newContext({ locale, viewport: d.viewport, deviceScaleFactor: d.deviceScaleFactor, hasTouch: true, isMobile: true });
-  for (const [n, code] of Object.entries(scenes)) { const p = await ctx.newPage(); await p.goto(game); await p.waitForTimeout(400); if (code) await p.evaluate(code); await p.waitForTimeout(1200); const f = `${d.out}-${n}.png`; await p.screenshot({ path: path.join(root, f) }); console.log('écrit ' + f); await p.close(); }
+  for (const [n, code] of Object.entries(scenes)) { const p = await ctx.newPage(); await p.goto(game); await p.waitForFunction('window.__game'); await p.waitForTimeout(400); if (code) await p.evaluate(code); await p.waitForTimeout(1200); const f = `${d.out}-${n}.png`; await p.screenshot({ path: path.join(root, f) }); console.log('écrit ' + f); await p.close(); }
   await ctx.close();
 }
-await browser.close();
+await browser.close(); server.close();

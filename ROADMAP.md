@@ -2,7 +2,7 @@
 
 ## Fait (version 1.1.0)
 ### Dépôt
-- [x] La version web devient le projet principal (`www/`), suppression de la version LÖVE2D (Lua)
+- [x] La version web devient le projet principal (`www/`), suppression de la version LÖVE2D (Lua) — remplacée le 2026-11-10 par l'app Expo, moteur dans `mobile-app/game/engine.js`
 - [x] Jeu 100 % hors ligne (police bitmap partout, plus de Google Fonts)
 
 ### Graphismes et animations

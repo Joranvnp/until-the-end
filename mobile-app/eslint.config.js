@@ -6,14 +6,7 @@ module.exports = defineConfig([
   {
     // Generated/native output: `expo prebuild` and `npm run ios` create these,
     // and linting them makes `npm run lint` fail after any native build.
-    ignores: [
-      'dist/*',
-      'web-app/dist/*',
-      '.expo/**',
-      'ios/**',
-      'android/**',
-      'game/engine.generated.js',
-    ],
+    ignores: ['dist/*', 'web-app/dist/*', '.expo/**', 'ios/**', 'android/**', 'game/engine.js'],
   },
   {
     rules: {

@@ -11,7 +11,7 @@ Guide pour améliorer les visuels (menus, camp, logo, store, illustrations) avec
 ## Notre style (référence)
 
 - **Pixel art 2D, vue de côté**, façon Terraria pour la lecture, ambiance **Animal Well** : lumière colorée, brume, grottes vivantes, nuit profonde.
-- Tuiles 16×16, contour encre `#06060f`, palettes courtes (3 à 5 teintes par matière). Tout le jeu est dessiné par code dans `www/index.html` (section `GÉNÉRATION DES TEXTURES PIXEL ART`).
+- Tuiles 16×16, contour encre `#06060f`, palettes courtes (3 à 5 teintes par matière). Tout le jeu est dessiné par code dans `mobile-app/game/engine.js` (section `GÉNÉRATION DES TEXTURES PIXEL ART`).
 - Polices de l'app : **Pixelify Sans** (texte) et **Press Start 2P** (titres).
 - Camp allié = **bleu**, ennemi = **rouge**. Le héros contraste en jaune chaud.
 
@@ -73,11 +73,11 @@ Règle : **une source de lumière par zone visuelle**. Le chaud (or, orange) est
 ### Personnages et monstres
 
 - **Cadre 24×32** (`humanoid`) : corps arrondi (`roundBody`), rampe `hueRamp` par matière (peau, tenue, métal), `selout`, yeux et éléments magiques dans `c.emi`.
-- **Sprites HD** (Higgsfield, environ 34 px, golem 40, slime 16) dans `www/art/units-hd.png`, avec repli procédural. Recolorés par code pour l'équipe bleue ou rouge (le héros est à part, voir « Héros modulaire »).
+- **Sprites HD** (Higgsfield, environ 34 px, golem 40, slime 16) dans `mobile-app/assets/art/units-hd.png`, avec repli procédural. Recolorés par code pour l'équipe bleue ou rouge (le héros est à part, voir « Héros modulaire »).
 - **Héros** : capuche **jaune or** (`#ffe066`), visage dans l'ombre, il doit ressortir sur tous les fonds. Alliés **bleus** (`#4f9df5`), ennemis **rouges** (`#e5534b`).
 - Monstres : silhouettes simples et lisibles, deux ou trois tons par matière, yeux brillants. Animations courtes (4 images), mouvements discrets.
 
-### Héros modulaire (`// HÉROS MODULAIRE` dans `www/index.html`, fait le 2026-11-09)
+### Héros modulaire (`// HÉROS MODULAIRE` dans `mobile-app/game/engine.js`, fait le 2026-11-09)
 
 Le héros **est le sprite HD Higgsfield** (`hero` dans `units-hd.png`, capuche or, visage noir, yeux en croix), **découpé en calques par code** pour l'animer et préparer une **boutique de personnalisation**. Le héros entièrement procédural (`heroFrame`, `heroDollProc`) reste en repli si l'image HD manque.
 
@@ -126,7 +126,7 @@ Brume en couches, poussières qui flottent, ciel de nuit étoilé (`#9bb8d6`, `#
 
 ### HUD en jeu (`drawHUD`, `drawTouch`, fait le 2026-11-09)
 
-Tout est dessiné par code, sans image. Les utilitaires sont dans le bloc `// ==== HUD : utilitaires propres` de `www/index.html`, juste après `heart`. Ils sont propres au HUD : les menus gardent `button`, `box`, `plate` et `coreBar`.
+Tout est dessiné par code, sans image. Les utilitaires sont dans le bloc `// ==== HUD : utilitaires propres` de `mobile-app/game/engine.js`, juste après `heart`. Ils sont propres au HUD : les menus gardent `button`, `box`, `plate` et `coreBar`.
 - **Cadres** : `hudFrame` fait une plaque sombre (`#0b0c1ae0`), un contour encre `INK`, une arête claire en haut et un trait d'accent en bas, coloré selon le rôle. `hudSlot` sert aux cases d'objet et `hudBtn` aux boutons (même contrat que `button`, pousse dans `uiHits`).
 - **Icônes pixel** : `hudPix(masque,x,y,couleurs)` détoure chaque masque avec un contour encre. Elle dessine le cœur (`HUD_HEART`), le soleil et la lune (`hudSky`), ainsi que les cristaux des cœurs de base (`hudCrystal`).
 - **Barres** : `hudBar` fait 7 px de haut, avec des repères aux quarts. Elle clignote sous 25 %.
@@ -147,7 +147,7 @@ Tout est dessiné par code, sans image. Les utilitaires sont dans le bloc `// ==
   - `HL.touchY` dit où poser les pavés ; `drawObjPointer` reste entre le bas des boutons-icônes et le haut des pavés.
 - **Lisibilité** : vérifier à 390x844, 844x390, 1024x768 et 1366x768. En mode étroit, aucun « +n » ni halo ne doit recouvrir le texte voisin.
 
-### Menus (`// ==== MENUS PIXEL ART` dans `www/index.html`, fait le 2026-11-09)
+### Menus (`// ==== MENUS PIXEL ART` dans `mobile-app/game/engine.js`, fait le 2026-11-09)
 
 Écran titre, pause, panneaux du menu (réglages, quêtes, reliques, boutique, succès) et écran de fin partagent les primitives de `PixelFrame` (`mobile-app/components/game/pixel-frame.tsx`) pour que web et mobile se ressemblent :
 - `MTONE` : tons `hero` (or, action principale), `panel` (neutre), `ally` (bleu, choix actif), `danger` (rouge, irréversible), `window` (fond de fenêtre), `off` (désactivé). Mêmes valeurs que `lib/theme.ts`.
@@ -157,7 +157,7 @@ Tout est dessiné par code, sans image. Les utilitaires sont dans le bloc `// ==
 - Titres forts (VICTOIRE/DÉFAITE) : contour encre plus halo de couleur en marches qui alterne entre deux intensités, pas de flou.
 - Victoire : pas de confettis. Des lucioles turquoise et or (orbes façon Animal Well) montent lentement en ondulant derrière le panneau, avec un halo en croix pixel (`drawConfetti`, appelé dans `drawEnd`).
 - Ambiance des menus : `mmist(bas, hauteur, t, couleur, alpha)` dessine trois nappes de brume au bord en marches de 2 px (jamais de flou) et `mmotes(n, t, y0, y1)` des lucioles turquoise et or qui clignotent. Titre : brume turquoise + violette et 14 lucioles par-dessus l'illustration ; pause : brume violette et 8 lucioles sous le panneau.
-- Fonds de l'écran de fin (Higgsfield, nano_banana, 16:9, STYLE FORMULA + gabarit de fond, réduits à 960×540 au plus proche voisin) : `www/art/fin-victoire.png` (château bleu à l'aube, bannières or, lucioles turquoise, forteresse rouge brisée au loin) et `www/art/fin-defaite.png` (château bleu en ruine, forteresse de cristal rouge sous la lune de sang). `endBackdrop(win)` les dessine en cover avec un lent panoramique, une brume turquoise ou rouge et un voile léger ; repli sur le voile sombre tant que l'image n'est pas chargée. Déclarés dans `IMAGES` de `mobile-app/game/env.ts`.
+- Fonds de l'écran de fin (Higgsfield, nano_banana, 16:9, STYLE FORMULA + gabarit de fond, réduits à 960×540 au plus proche voisin) : `mobile-app/assets/art/fin-victoire.png` (château bleu à l'aube, bannières or, lucioles turquoise, forteresse rouge brisée au loin) et `mobile-app/assets/art/fin-defaite.png` (château bleu en ruine, forteresse de cristal rouge sous la lune de sang). `endBackdrop(win)` les dessine en cover avec un lent panoramique, une brume turquoise ou rouge et un voile léger ; repli sur le voile sombre tant que l'image n'est pas chargée. Déclarés dans `IMAGES` de `mobile-app/game/env.ts`.
 - Illustration du titre (`menu.png`) au plus proche voisin, à position entière ; braises en pixels pleins.
 - Les panneaux de jeu (Base, Forge, Sac) utilisent aussi les primitives `m*` (fait le 2026-11-09) : rangées en `mframe` ton panel (ton off si la recette est impossible), amélioration au max liserée d'or, case choisie du sac liserée d'or, barre rapide plus sombre. Le filet de `mhead` s'arrête avant les boutons et l'aide à droite. Les sprites d'unité sont réduits à 20 px de haut dans les rangées de recrutement.
 
@@ -171,7 +171,7 @@ Tout est dessiné par code, sans image. Les utilitaires sont dans le bloc `// ==
 
 ## Higgsfield : ce qu'on utilise, ce qu'on n'utilise pas
 
-- **Mode « game » (website-builder-flow, `type: "game"`) : non.** Il construit un jeu web hébergé (salons multijoueur sur un Worker Cloudflare). Ça ne s'intègre pas à notre app Expo native ni au moteur `www/index.html`.
+- **Mode « game » (website-builder-flow, `type: "game"`) : non.** Il construit un jeu web hébergé (salons multijoueur sur un Worker Cloudflare). Ça ne s'intègre pas à notre app Expo native ni au moteur `mobile-app/game/engine.js`.
 - **Oui** : ses guides d'assets de jeu et les outils d'image et de vidéo.
 
 | Besoin | Outil Higgsfield | Modèle |
@@ -219,17 +219,16 @@ Couleur clé (transparence) : `#FF00FF` par défaut ; `#00FF00` si l'asset conti
    - sprites : 32, 48 ou 64 px de haut.
 4. **Planche contact** : tous les assets côte à côte à l'échelle relative, comparée à une capture du jeu. On valide seulement si tout se tient.
 5. Ranger :
-   - jeu web : `www/art/` (ex. `www/art/menu.png`) ;
-   - app : `mobile-app/assets/art/` (même nom de fichier) ;
+   - jeu et app : `mobile-app/assets/art/` (ex. `menu.png`), à déclarer dans `IMAGES` de `mobile-app/game/env.ts` si le moteur la charge ;
    - visuels de store : régénérer avec `npm run art` (`tools/gen-art.mjs`) ; icône et écran de démarrage de l'app dans `mobile-app/assets/`.
 6. Brancher :
    - fonds de menu : `mobile-app/components/game/menu-backdrop.tsx` (garder le ratio 960/540 ou mettre à jour `ART_RATIO`) ;
-   - si le moteur du jeu change : `cd mobile-app && npm run sync-game` (ne jamais modifier `game/engine.generated.js` à la main).
+   - le moteur se modifie directement dans `mobile-app/game/engine.js` ; relancer `npm test` ensuite.
 
 ### Sprites et tuiles du jeu (fait le 2026-11-09)
 
 Personnages, monstres, cœurs, arbres et tuiles du terrain viennent de Higgsfield, sur fond vert ou magenta uni pour le détourage. Les sources réduites à 512 px sont dans `art/hd-sources/`.
-`python3 tools/gen-hd-art.py` les convertit en `www/art/units-hd.png`, `trees-hd.png` et `tiles-hd.png`, puis affiche les rectangles à recopier dans `UNIT_ART.r` et `TREE_ART.r` (`www/index.html`). Ici on réduit en moyenne de boîte plus une palette de 16 à 32 couleurs, et non au plus proche voisin, sinon le détail est perdu.
+`python3 tools/gen-hd-art.py` les convertit en `mobile-app/assets/art/units-hd.png`, `trees-hd.png` et `tiles-hd.png`, puis affiche les rectangles à recopier dans `UNIT_ART.r` et `TREE_ART.r` (`mobile-app/game/engine.js`). Ici on réduit en moyenne de boîte plus une palette de 16 à 32 couleurs, et non au plus proche voisin, sinon le détail est perdu.
 - Personnages : environ 34 px de haut (golem 40, slime 16), recolorés par le code (tenues du héros, équipes bleue et rouge) avec les yeux en émissif.
 - Tuiles : une bande 64x64 par matière, soit 16 variantes 16x16 choisies selon la position, assombrie pour coller au terrain.
 - Arbres : 4 canopées sans tronc, les troncs restent des tuiles LOG.
@@ -248,7 +247,7 @@ Pose clé avec `flux_2`, puis vidéo `seedance_1_5` de 4 s en 720p, ratio explic
 5. Réduire en plus proche voisin.
 6. Nommer `{asset}_{action}_f{n}_{WxH}_g{cxr}_fps{n}_{loop|once}.png`.
 
-Viser 8 à 12 fps et des mouvements discrets. Le moteur dessine ses sprites par code : un sprite animé généré demande un chargement d'image dans `www/index.html`, à prévoir comme un vrai chantier.
+Viser 8 à 12 fps et des mouvements discrets. Le moteur dessine ses sprites par code : un sprite animé généré demande un chargement d'image dans `mobile-app/game/engine.js`, à prévoir comme un vrai chantier.
 
 ## Priorités
 

@@ -1,4 +1,4 @@
-import createGame, { type GameApi } from './engine.generated';
+import createGame, { type GameApi } from './engine';
 import { createEnv } from './env';
 
 type Runtime = Awaited<ReturnType<typeof createEnv>> & { game: GameApi };

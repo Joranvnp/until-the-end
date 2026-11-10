@@ -1,4 +1,4 @@
-# Calques de décor (parallaxe) : images Higgsfield -> pixel art à 4 tons, incrustées dans www/index.html.
+# Calques de décor (parallaxe) : images Higgsfield -> pixel art à 4 tons, incrustées dans mobile-app/game/engine.js.
 # Usage : python3 tools/gen-calques.py   (Pillow + numpy)
 # Méthode (skills codixel / pixel-art-studio) : partir d'une vraie image, la pixeliser à la taille du jeu,
 # réduire à 4 tons, nettoyer les pixels isolés. Les couleurs sont posées au rendu (jour, nuit, aube, lune de sang).
@@ -8,7 +8,7 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'art', 'calques')
-GAME = os.path.join(ROOT, 'www', 'index.html')
+GAME = os.path.join(ROOT, 'mobile-app', 'game', 'engine.js')
 PREVIEW = os.path.join(ROOT, 'art', 'calques-apercu.png')
 
 # nom du fichier source, hauteur du calque en pixels de jeu (du plus lointain au plus proche)
@@ -75,7 +75,7 @@ def main():
     src = open(GAME, encoding='utf-8').read()
     pat = re.compile(r'// <calques>.*?// </calques>', re.S)
     if not pat.search(src):
-        raise SystemExit('marqueurs // <calques> introuvables dans www/index.html')
+        raise SystemExit('marqueurs // <calques> introuvables dans mobile-app/game/engine.js')
     open(GAME, 'w', encoding='utf-8').write(pat.sub(lambda m: block, src))
     # aperçu : calques empilés avec une teinte de crépuscule, agrandis x2
     ramps = [[(70, 80, 130), (95, 105, 160), (125, 135, 185), (165, 170, 210)],

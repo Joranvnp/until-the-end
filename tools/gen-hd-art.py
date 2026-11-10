@@ -1,16 +1,16 @@
 """Convertit les images Higgsfield de art/hd-sources/ en sprites pixel art pour le jeu.
 
-Usage : python3 tools/gen-hd-art.py [dossier_sortie]   (défaut : www/art)
+Usage : python3 tools/gen-hd-art.py [dossier_sortie]   (défaut : mobile-app/assets/art)
         python3 tools/gen-hd-art.py --add nom:hauteur [nom:hauteur ...]
-        Ajoute des sprites à droite de www/art/units-hd.png SANS régénérer le reste, puis affiche leurs rectangles
+        Ajoute des sprites à droite de mobile-app/assets/art/units-hd.png SANS régénérer le reste, puis affiche leurs rectangles
         à recopier dans UNIT_ART.r. À préférer pour toute nouvelle unité : voir la remarque sur les sources ci-dessous.
 Besoin : Pillow et numpy.
 
 Sorties :
-- units-hd.png : atlas des personnages et monstres sur une ligne (rects affichés -> UNIT_ART.r dans index.html)
+- units-hd.png : atlas des personnages et monstres sur une ligne (rects affichés -> UNIT_ART.r dans le moteur (mobile-app/game/engine.js))
 - trees-hd.png : 4 canopées (ronde petite/grande, saule petit/grand) (rects -> TREE_ART.r)
 - tiles-hd.png : 64 px de large, une bande de 64x64 par matière (16 variantes 16x16), ordre HD_TILES.row
-Les trois images sont aussi intégrées en base64 dans index.html (bloc // <hd-art>).
+Les trois images sont aussi intégrées en base64 dans le moteur (mobile-app/game/engine.js) (bloc // <hd-art>).
 Les sources sont sur fond vert ou magenta uni (détourage par couleur clé).
 Les sources du dépôt sont réduites à 512 px : une régénération complète ne redonne PAS les PNG livrés
 (tailles et pixels différents, vérifié le 2026-11-10). Pour ajouter une unité, utiliser --add, qui ne touche pas aux sprites existants.
@@ -26,7 +26,7 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'art', 'hd-sources')
-OUT = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('--') else os.path.join(ROOT, 'www', 'art')
+OUT = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('--') else os.path.join(ROOT, 'mobile-app', 'assets', 'art')
 
 
 def keyed(n):
@@ -87,14 +87,14 @@ if '--add' in sys.argv:
         x += i.width + 1
     at.save(os.path.join(OUT, 'units-hd.png'))
     print('units-hd.png, rectangles à ajouter à UNIT_ART.r :', json.dumps(R, separators=(',', ':')))
-    HTML = os.path.join(ROOT, 'www', 'index.html')
+    HTML = os.path.join(ROOT, 'mobile-app', 'game', 'engine.js')
     html = open(HTML, encoding='utf-8').read()
     b64 = base64.b64encode(open(os.path.join(OUT, 'units-hd.png'), 'rb').read()).decode()
     html, k = re.subn(r"const UNITS_HD='data:image/png;base64,[^']*';", "const UNITS_HD='data:image/png;base64," + b64 + "';", html)
     if k != 1:
-        raise SystemExit('const UNITS_HD introuvable dans www/index.html')
+        raise SystemExit('const UNITS_HD introuvable dans mobile-app/game/engine.js')
     open(HTML, 'w', encoding='utf-8').write(html)
-    print('index.html : UNITS_HD mis à jour')
+    print('engine.js : UNITS_HD mis à jour')
     sys.exit(0)
 
 UNITS = {'hero': 34, 'warrior0': 34, 'warrior1': 34, 'archer0': 34, 'archer1': 34, 'miner0': 34, 'miner1': 34,
@@ -120,16 +120,16 @@ for j, (n, k) in enumerate(TILES):
 ts.save(os.path.join(OUT, 'tiles-hd.png'))
 print('tiles-hd.png', [n for n, _ in TILES])
 
-# les trois images sont aussi intégrées en base64 dans index.html : le jeu lit leurs pixels (getImageData),
+# les trois images sont aussi intégrées en base64 dans le moteur (mobile-app/game/engine.js) : le jeu lit leurs pixels (getImageData),
 # ce qu'un navigateur refuse pour une image chargée depuis file://
-if OUT == os.path.join(ROOT, 'www', 'art'):
-    HTML = os.path.join(ROOT, 'www', 'index.html')
+if OUT == os.path.join(ROOT, 'mobile-app', 'assets', 'art'):
+    HTML = os.path.join(ROOT, 'mobile-app', 'game', 'engine.js')
     d = lambda n: 'data:image/png;base64,' + base64.b64encode(open(os.path.join(OUT, n), 'rb').read()).decode()
     html = open(HTML, encoding='utf-8').read()
     pat = re.compile(r'(// <hd-art>[^\n]*\n).*?(// </hd-art>)', re.S)
     if not pat.search(html):
-        raise SystemExit('marqueurs // <hd-art> introuvables dans www/index.html')
+        raise SystemExit('marqueurs // <hd-art> introuvables dans mobile-app/game/engine.js')
     body = f"const UNITS_HD='{d('units-hd.png')}';\nconst TILES_HD='{d('tiles-hd.png')}';\nconst TREES_HD='{d('trees-hd.png')}';\n"
     html = pat.sub(lambda m: m.group(1) + body + m.group(2), html)
     open(HTML, 'w', encoding='utf-8').write(html)
-    print('index.html : bloc // <hd-art> mis à jour')
+    print('engine.js : bloc // <hd-art> mis à jour')

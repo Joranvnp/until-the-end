@@ -3,7 +3,7 @@
 Morceaux originaux style 16 bits, entièrement générés par code (`tools/gen-audio.mjs`, aucun extrait protégé).
 Les boucles sont pliées à la génération et encodées en MP3 sans blanc (gapless) : dans le jeu, elles s'enchaînent sans coupure.
 
-## `jeu-16-bits/` — utilisées dans le jeu (copie de `www/audio/`, `npm run audio`)
+## `jeu-16-bits/` — utilisées dans le jeu (copie de `mobile-app/assets/audio/`, `npm run audio`)
 
 | Fichier | Moment | Tonalité | Tempo | Durée |
 |---|---|---|---|---|

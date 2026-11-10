@@ -17,8 +17,7 @@
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
     "format": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix && prettier \"**/*.{js,jsx,ts,tsx,json}\" --write",
     "web": "expo start --web",
-    "postinstall": "patch-package",
-    "sync-game": "node scripts/sync-game.mjs"
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.58",

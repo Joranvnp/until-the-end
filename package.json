@@ -2,9 +2,9 @@
   "name": "until-the-end",
   "version": "2.0.0",
   "private": true,
-  "description": "Until The End — jeu pixel art de stratégie et de minage (app Expo iOS et Android, moteur dans www/)",
+  "description": "Until The End — jeu pixel art de stratégie et de minage (app Expo iOS et Android, moteur dans mobile-app/game/engine.js)",
   "scripts": {
-    "serve": "npx serve www",
+    "play": "node tools/game-server.mjs",
     "art": "node tools/gen-art.mjs",
     "test": "node tools/test.mjs",
     "audio": "node tools/gen-audio.mjs",

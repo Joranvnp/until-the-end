@@ -12,7 +12,7 @@ import { AudioContext } from 'react-native-audio-api';
 import type { SkPicture } from '@shopify/react-native-skia';
 import { CanvasElement, ImageElement } from './canvas';
 
-// Fait croire au moteur du jeu (www/index.html, inchangé) qu'il tourne dans une page web :
+// Fait croire au moteur du jeu (game/engine.js) qu'il tourne dans une page web :
 // window/document/navigator, stockage, sons, images, tactile, et le pont « Capacitor » qu'il
 // utilise déjà pour les vibrations, le partage, le bouton retour et la mise en arrière-plan.
 
@@ -21,41 +21,41 @@ type Bus = Map<string, Set<Listener>>;
 
 const SAVE_KEYS = ['ute-save-v1', 'ute-profile-v1'];
 
-// Fichiers du jeu web (Metro surveille le dossier parent, voir metro.config.js).
+// Sons et images du jeu (le moteur les demande par leur chemin relatif : audio/x.mp3, art/x.png).
 const AUDIO: Record<string, number> = {
-  ach: require('../../www/audio/ach.mp3'),
-  boom: require('../../www/audio/boom.mp3'),
-  bow: require('../../www/audio/bow.mp3'),
-  brk: require('../../www/audio/brk.mp3'),
-  buy: require('../../www/audio/buy.mp3'),
-  click: require('../../www/audio/click.mp3'),
-  coin: require('../../www/audio/coin.mp3'),
-  deny: require('../../www/audio/deny.mp3'),
-  hit: require('../../www/audio/hit.mp3'),
-  horn: require('../../www/audio/horn.mp3'),
-  hurt: require('../../www/audio/hurt.mp3'),
-  jump: require('../../www/audio/jump.mp3'),
-  pick: require('../../www/audio/pick.mp3'),
-  place: require('../../www/audio/place.mp3'),
-  sword: require('../../www/audio/sword.mp3'),
-  'music-aube': require('../../www/audio/music-aube.mp3'),
-  'music-blood': require('../../www/audio/music-blood.mp3'),
-  'music-combat': require('../../www/audio/music-combat.mp3'),
-  'music-day': require('../../www/audio/music-day.mp3'),
-  'music-defaite': require('../../www/audio/music-defaite.mp3'),
-  'music-grotte': require('../../www/audio/music-grotte.mp3'),
-  'music-menu': require('../../www/audio/music-menu.mp3'),
-  'music-night': require('../../www/audio/music-night.mp3'),
-  'music-raid': require('../../www/audio/music-raid.mp3'),
-  'music-victoire': require('../../www/audio/music-victoire.mp3'),
-  'music-village': require('../../www/audio/music-village.mp3'),
+  ach: require('../assets/audio/ach.mp3'),
+  boom: require('../assets/audio/boom.mp3'),
+  bow: require('../assets/audio/bow.mp3'),
+  brk: require('../assets/audio/brk.mp3'),
+  buy: require('../assets/audio/buy.mp3'),
+  click: require('../assets/audio/click.mp3'),
+  coin: require('../assets/audio/coin.mp3'),
+  deny: require('../assets/audio/deny.mp3'),
+  hit: require('../assets/audio/hit.mp3'),
+  horn: require('../assets/audio/horn.mp3'),
+  hurt: require('../assets/audio/hurt.mp3'),
+  jump: require('../assets/audio/jump.mp3'),
+  pick: require('../assets/audio/pick.mp3'),
+  place: require('../assets/audio/place.mp3'),
+  sword: require('../assets/audio/sword.mp3'),
+  'music-aube': require('../assets/audio/music-aube.mp3'),
+  'music-blood': require('../assets/audio/music-blood.mp3'),
+  'music-combat': require('../assets/audio/music-combat.mp3'),
+  'music-day': require('../assets/audio/music-day.mp3'),
+  'music-defaite': require('../assets/audio/music-defaite.mp3'),
+  'music-grotte': require('../assets/audio/music-grotte.mp3'),
+  'music-menu': require('../assets/audio/music-menu.mp3'),
+  'music-night': require('../assets/audio/music-night.mp3'),
+  'music-raid': require('../assets/audio/music-raid.mp3'),
+  'music-victoire': require('../assets/audio/music-victoire.mp3'),
+  'music-village': require('../assets/audio/music-village.mp3'),
 };
 const IMAGES: Record<string, number> = {
-  'art/menu.png': require('../../www/art/menu.png'),
-  'art/fin-victoire.png': require('../../www/art/fin-victoire.png'),
-  'art/fin-defaite.png': require('../../www/art/fin-defaite.png'),
-  'art/bg-far.png': require('../../www/art/bg-far.png'),
-  'art/bg-near.png': require('../../www/art/bg-near.png'),
+  'art/menu.png': require('../assets/art/menu.png'),
+  'art/fin-victoire.png': require('../assets/art/fin-victoire.png'),
+  'art/fin-defaite.png': require('../assets/art/fin-defaite.png'),
+  'art/bg-far.png': require('../assets/art/bg-far.png'),
+  'art/bg-near.png': require('../assets/art/bg-near.png'),
 };
 
 async function localUri(mod: number) {

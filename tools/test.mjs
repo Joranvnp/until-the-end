@@ -1,21 +1,15 @@
-// Tests de fumée du jeu dans Chromium sans écran : node tools/test.mjs   (Playwright requis, comme pour gen-art.mjs)
+// Tests de fumée du moteur (mobile-app/game/engine.js) dans Chromium sans écran : npm test   (Playwright requis, comme pour gen-art.mjs)
 // Vérifie qu'aucune erreur n'apparaît dans la console et que les règles principales tiennent :
 // 5 difficultés, IA rouge (vagues, champion, dernier carré), guérisseur, ordre Tenir, rappel, potion, ogre de sang, sauvegarde et migrations.
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
-import { createServer } from 'http';
-import { existsSync, readFileSync } from 'fs';
+import { startGameServer } from './game-server.mjs';
 import path from 'path';
 const require = createRequire(import.meta.url);
 let pw; try { pw = require('playwright'); } catch { pw = createRequire('/opt/node-tools/node_modules/')('playwright'); }
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// le jeu est servi en HTTP local (comme sur le site) : en file://, le chargement des sons par fetch est refusé
-const www = path.join(root, 'www'), MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.png': 'image/png', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json' };
-const server = createServer((req, res) => { const p = path.join(www, decodeURIComponent(req.url.split('?')[0]).replace(/\/$/, '/index.html'));
-  if (!p.startsWith(www) || !existsSync(p)) { res.writeHead(404); res.end(); return; }
-  res.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream' }); res.end(readFileSync(p)); });
-await new Promise(r => server.listen(0, '127.0.0.1', r));
-const game = 'http://127.0.0.1:' + server.address().port + '/index.html';
+// le moteur de l'app est servi par le banc d'essai (tools/game-server.mjs), comme avec `npm run play`
+const server = await startGameServer();
+const game = server.url;
 const browser = await pw.chromium.launch();
 let failed = 0;
 // chaque test reçoit une page neuve (profil vide) ; `fn` s'exécute dans la page et renvoie '' si tout va bien, sinon le problème
@@ -24,7 +18,7 @@ async function test(name, fn, opt = {}) {
   const page = await ctx.newPage(); const errs = [];
   page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); }); page.on('pageerror', e => errs.push(String(e)));
   if (opt.init) await page.addInitScript(opt.init);
-  await page.goto(game); await page.waitForTimeout(250);
+  await page.goto(game); await page.waitForFunction('window.__game'); await page.waitForTimeout(150);
   let res; try { res = await page.evaluate(fn); if (opt.after) res = res || await opt.after(page); } catch (e) { res = 'exception : ' + e.message; }
   await page.waitForTimeout(150);
   const bad = res || (errs.length ? 'console : ' + errs[0] : '');
