@@ -565,7 +565,7 @@ function buildSprites(){
     if(x>=7&&x<=8&&y===5)return '#4f5aa0';if(x>=7&&x<=8&&y>=3&&y<=4)return '#6a7390';if(y===2&&x===9)return '#ff6a3a';if(y===1&&x===10)return '#ffb653';if(y===0&&x===11)return '#fff3bb';return null},3),INK);
   ICON.torch=(()=>{const c=mk(16,16);c.getContext('2d').drawImage(TEX[TORCH][0],0,0);return c})();
 }
-function tileIcons(){for(const[k,id]of[['dirt',DIRT],['stone',STONE],['plank',PLANK],['brick',BRICK]]){const c=mk(16,16),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(TEX[id][0],2,2,12,12);ICON[k]=outline(c,INK)}}
+function tileIcons(){for(const[k,id]of[['dirt',DIRT],['stone',STONE],['plank',PLANK],['brick',BRICK]]){const c=mk(16,16),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(TEX[id][0],2,2,12,12);ICON[k]=outline(c,INK)}resetHeld()}
 // personnages peints (www/art/units-hd.png, Higgsfield façon Animal Well, ~34 px de haut : silhouettes, yeux lumineux) ;
 // tant que l'image n'est pas chargée (ou si elle manque), les sprites dessinés par code ci-dessus servent
 // <hd-art> généré par tools/gen-hd-art.py, ne pas modifier à la main (images intégrées : getImageData marche aussi en file://)
@@ -598,6 +598,42 @@ function artGolem(src){const W=src.width,H=src.height,fr=(bob,dx=0,dy=0)=>{const
 function artSlime(src){const W=src.width,H=src.height,CW=W+6,CH=H+5;
   return[[W,H],[W+4,H-3],[W-3,H+4]].map(([w,h])=>{const c=mk(CW,CH),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(src,0,0,W,H,(CW-w)>>1,CH-1-h,w,h);return c})}
 function artCore(src){const W=26,H=src.height+3;return[0,-1,0,1].map(dy=>{const c=mk(W,H),g=c.getContext('2d');g.drawImage(src,(W-src.width)>>1,2+dy);return c})}
+// ==================== OBJETS TENUS EN MAIN ====================
+// Chaque outil est dessiné droit (tête en haut), puis tourné par rotPix et cerné d'encre APRÈS la rotation : le contour reste net
+// à tous les angles. Les poses du héros l'intègrent au point de prise (heroHDFrame) ; les unités le reçoivent par drawHeld.
+const TOOL_R=24,HELD={},TOOL_MAT=['#c9a06a','#ff9a5c','#c3d0ee','#6ff2ff']; // matière par rang : bois, cuivre, fer, diamant
+const TOOLS={pick1:['pick',1],pick2:['pick',2],pick3:['pick',3],pick4:['pick',4],sword1:['sword',1],sword2:['sword',2],sword3:['sword',3],sword4:['sword',4],bow:['bow',1],torch:['torch',1]};
+// rest : angle au repos (0 = droit, positif = vers l'avant) ; k : part de la rotation de la pose (q.sw) appliquée à l'outil ; g : point de prise
+const TOOL_POSE={pick:{rest:.75,k:1,g:[12,21]},sword:{rest:2.05,k:1,g:[12,21]},bow:{rest:.12,k:.2,g:[11,13]},torch:{rest:.3,k:.45,g:[12,21]}};
+function toolBase(kind,tier=1,v=0){const c=mkE(25,27),P=pen(c.getContext('2d')),E=pen(c.emi.getContext('2d')),Wd=hueRamp('#9a6a44'),M=hueRamp(TOOL_MAT[tier-1]||TOOL_MAT[0]);
+  if(kind==='pick'){P(11,4,3,20,Wd[2]);P(11,4,1,20,Wd[3]);P(13,4,1,20,Wd[0]);P(11,24,3,1,Wd[0]);
+    P(8,2,9,1,M[4]);P(6,3,13,1,M[3]);P(4,4,17,1,M[2]);P(3,5,5,1,M[2]);P(17,5,5,1,M[2]);P(2,6,3,1,M[1]);P(20,6,3,1,M[1]);P(1,7,2,1,M[1]);P(22,7,2,1,M[1]);P(10,3,5,3,M[1]);P(11,3,3,1,M[2])}
+  else if(kind==='sword'){const G=hueRamp('#f2b941');P(11,24,3,2,G[1]);P(11,20,3,4,Wd[1]);P(11,20,1,4,Wd[3]);P(8,18,9,2,G[2]);P(8,18,9,1,G[4]);
+    P(11,3,3,15,M[2]);P(11,3,1,15,M[4]);P(13,3,1,15,M[1]);P(11,2,3,1,M[3]);P(12,1,1,1,M[4])}
+  else if(kind==='bow'){const B=hueRamp('#c98f58'); // arc court : branches claires recourbées vers l'avant, corde fine, poignée bandée au milieu
+    for(let y=4;y<=22;y++){const dx=Math.round(4*Math.sin(Math.PI*(y-4)/18));P(10+dx,y,2,1,B[2]);P(10+dx,y,1,1,B[4]);if(y>4&&y<22)P(9,y,1,1,'#9aa3c4')}
+    P(9,3,2,1,B[3]);P(9,23,2,1,B[1]);P(13,11,3,5,B[0]);P(13,12,3,3,'#e8dcc0')}
+  else if(kind==='torch'){P(11,9,3,15,Wd[2]);P(11,9,1,15,Wd[3]);P(13,9,1,15,Wd[0]);P(10,7,5,3,'#3a3550');P(10,7,5,1,'#6d6a94');
+    P(10,3+v,5,4-v,'#ff8a3a');P(11,1+v,3,3,'#ffc24a');P(12-v,v,1,2,'#fff3bb');P(11,4,3,2,'#fff3bb');E(10,1+v,5,6-v,'#ffb04a')} // v : 2e forme de flamme (vacillement)
+  return c}
+// rotation de pixel art : 9 échantillons par pixel, couleur majoritaire (bords plus propres qu'une rotation de toile), puis contour d'encre
+function rotPix(src,a,gx,gy){const R=TOOL_R,N=R*2+1,W=src.width,H=src.height,ca=Math.cos(a),sa=Math.sin(a);
+  const turn=im=>{const D=im.getContext('2d').getImageData(0,0,W,H).data,c=mk(N,N),g=c.getContext('2d'),id=g.createImageData(N,N),o=id.data;
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){const cnt=new Map();let n=0;
+      for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const dx=x-R+i/3,dy=y-R+j/3,sx=Math.floor(gx+.5+dx*ca+dy*sa),sy=Math.floor(gy+.5-dx*sa+dy*ca);
+        if(sx<0||sy<0||sx>=W||sy>=H)continue;const p=(sy*W+sx)*4;if(D[p+3]<128)continue;n++;const key=(D[p]<<16)|(D[p+1]<<8)|D[p+2];cnt.set(key,(cnt.get(key)||0)+1)}
+      if(n<4)continue;let best=0,bn=0;for(const[key,v]of cnt)if(v>bn){bn=v;best=key}const q=(y*N+x)*4;o[q]=best>>16;o[q+1]=(best>>8)&255;o[q+2]=best&255;o[q+3]=255}
+    g.putImageData(id,0,0);return c};
+  const c=outline(turn(src),INK);if(src.emi)c.emi=turn(src.emi);return c}
+// outil tourné, centré sur sa prise (toile de 2*TOOL_R+1) ; angle arrondi au 12e de radian pour limiter le cache
+function heldTool(id,a,v=0){const t=TOOLS[id];if(!t)return null;a=Math.round(a*12)/12;const key=id+'|'+a+'|'+v;if(HELD[key])return HELD[key];
+  const ps=TOOL_POSE[t[0]];return HELD[key]=rotPix(toolBase(t[0],t[1],v),a,ps.g[0],ps.g[1])}
+// objet quelconque (bombe, potion, bloc, minerai) : son icône posée dans la main
+function heldItem(id){const key='i|'+id,ic=ICON[id];if(HELD[key]||!ic)return HELD[key]||null;const N=TOOL_R*2+1,c=mk(N,N),g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(ic,TOOL_R-6,TOOL_R-12,12,12);return HELD[key]=c}
+// ce que tient le héros selon la pose q (sw : rotation de la pose, fl : flamme alternée)
+function heldFn(id){const t=TOOLS[id];if(!t)return()=>heldItem(id);const ps=TOOL_POSE[t[0]];return q=>heldTool(id,ps.rest+(q.sw||0)*ps.k,t[0]==='torch'&&q.fl?1:0)}
+// les icônes des blocs changent quand les tuiles HD arrivent : on oublie les objets et les poses déjà construits
+function resetHeld(){for(const k in HELD)delete HELD[k];if(SPR.player&&SPR.player.hs)SPR.player.hs={}}
 // ==================== HÉROS MODULAIRE (poupée de papier) ====================
 // Le héros est le sprite HD Higgsfield (units-hd.png, 'hero'), découpé en calques et animé par code (heroHDDoll) ;
 // heroFrame ne sert plus que de repli procédural quand l'atlas HD n'est pas chargé.
@@ -688,43 +724,50 @@ function heroHDParts(k){const S=artCrop('hero'),w=S.width,h=S.height,D=S.getCont
   H.RC=RC;H.ER=hueRamp(k.eyes);return H}
 // une pose : bob (buste qui descend), lean (tête), la/lb ua/ub (pas et levée des jambes), tuck (jambes repliées), cape (flottement),
 // sw (rotation de l'épée, 0 = au repos), sx/sy (déplacement de la main), blink, hurt, dead
-function heroHDFrame(H,k,q={},armed=true){const W=48,HT=38,OX=12-H.PAD,OY=3-H.PAD,c=mkE(W,HT),g=c.getContext('2d'),E=pen(c.emi.getContext('2d')),P=pen(g),ink='#05050c';
+function heroHDFrame(H,k,q={},held=null){const W=64,HT=38,BX=20,OX=BX-H.PAD,OY=3-H.PAD,c=mkE(W,HT),g=c.getContext('2d'),E=pen(c.emi.getContext('2d')),P=pen(g),ink='#05050c';
   g.imageSmoothingEnabled=false;const b=q.bob||0,f=Math.max(0,q.cape||0),ln=q.lean||0,lt=q.tuck?2:0,d=(p,x,y)=>g.drawImage(p.c,OX+x,OY+y);
   if(k.cape==='short'||k.cape==='long'){const len=k.cape==='long'?18:10,RC=H.RC;
-    for(let j=0;j<len;j++){const ww=3+Math.floor(j*.4),dx=Math.round(f*j/len*2),x0=12+6-ww-dx;
+    for(let j=0;j<len;j++){const ww=3+Math.floor(j*.4),dx=Math.round(f*j/len*2),x0=BX+6-ww-dx;
       P(x0-1,3+13+b+j,ww+5,1,ink);P(x0,3+13+b+j,ww+4,1,j===0?RC[3]:j===len-1?RC[0]:RC[2]);P(x0,3+13+b+j,1,1,RC[1])}
-    P(12+6-3-Math.floor(len*.4)-Math.round(f*2)-1,3+13+b+len,Math.floor(len*.4)+8,1,ink)}
+    P(BX+6-3-Math.floor(len*.4)-Math.round(f*2)-1,3+13+b+len,Math.floor(len*.4)+8,1,ink)}
   d(H.legB,q.lb||0,-(q.ub||0)-lt);d(H.legF,q.la||0,-(q.ua||0)-lt);
   if(f)d(H.hem,-f,b);d(H.body,0,b);d(H.head,ln,b);d(H.over,ln,b);
-  if(k.cape==='scarf'){const RC=H.RC;for(let j=0;j<5;j++){const x=12+5-j-Math.max(0,f-1),y=3+13+b+(j>>1);P(x,y-1,2,1,ink);P(x,y,2,1,RC[j<2?2:1])}}
+  if(k.cape==='scarf'){const RC=H.RC;for(let j=0;j<5;j++){const x=BX+5-j-Math.max(0,f-1),y=3+13+b+(j>>1);P(x,y-1,2,1,ink);P(x,y,2,1,RC[j<2?2:1])}}
   const EC=q.dead?'#3a3a55':q.hurt?'#ffffff':k.eyes;
-  for(const[x,y,hi]of H.eyes){const X=12+x+ln,Y=3+y+b;
+  for(const[x,y,hi]of H.eyes){const X=BX+x+ln,Y=3+y+b;
     if(q.dead)P(X,Y,1,1,EC);else if(q.blink){if(y===8){P(X,Y,1,1,H.ER[1]);E(X,Y,1,1,H.ER[2])}else P(X,Y,1,1,'#292837')}
     else{const cc=hi&&!q.hurt?H.ER[3]:EC;P(X,Y,1,1,cc);E(X,Y,1,1,cc)}}
-  if(armed){g.save();g.translate(12+19.5+(q.sx||0),3+23.5+b+(q.sy||0));g.rotate(q.sw||0);g.drawImage(H.sword.c,-19.5-H.PAD,-23.5-H.PAD);g.restore()}
+  // objet en main : posé au point de prise (là où le sprite d'origine tenait son épée), tourné selon la pose, puis la manche par-dessus
+  if(held){const hx=Math.round(BX+19.5+(q.sx||0)),hy=Math.round(3+23.5+b+(q.sy||0)),t=held(q),RG=hueRamp(k.headCol);
+    if(t){g.drawImage(t,hx-TOOL_R,hy-TOOL_R);if(t.emi)c.emi.getContext('2d').drawImage(t.emi,hx-TOOL_R,hy-TOOL_R)}
+    P(hx-2,hy-2,4,4,ink);P(hx-1,hy-1,2,2,RG[2]);P(hx-1,hy-1,1,1,RG[4])}
   return c}
 // rotation d'une pose HD (chute), pivot aux hanches
 // rotation d'une pose HD (chute), pivot aux pieds, puis reposée au sol (dernière ligne opaque sur la ligne 36)
-function heroRotHD(img,a){const T=[img,img.emi].map(s=>{const t=mk(96,96),g=t.getContext('2d');g.imageSmoothingEnabled=false;g.translate(48,60);g.rotate(a);g.drawImage(s,-24,-36);return t});
+function heroRotHD(img,a){const T=[img,img.emi].map(s=>{const t=mk(96,96),g=t.getContext('2d');g.imageSmoothingEnabled=false;g.translate(48,60);g.rotate(a);g.drawImage(s,-(s.width>>1),-36);return t});
   const D=T[0].getContext('2d').getImageData(0,0,96,96).data;let by=60;for(let i=D.length-1;i>=0;i-=4)if(D[i]>100){by=Math.floor((i>>2)/96);break}
   const c=mkE(64,38);c.getContext('2d').drawImage(T[0],-16,36-by);c.emi.getContext('2d').drawImage(T[1],-16,36-by);return c}
-function heroHDDoll(k){const H=heroHDParts(k),mkSet=armed=>{const F=q=>heroHDFrame(H,k,q,armed),lf=[0,1,2,1,0,-1,-2,-1],kneel=F({tuck:1,bob:3,lean:-1,dead:1,sw:.6});
-  const R={walk:lf.map((s,i)=>F({la:s,lb:-s,ua:i===5||i===6?1:0,ub:i===1||i===2?1:0,bob:Math.abs(s)===2?0:i%4===0?1:0,cape:1+(i%4<2?0:1),sw:s*.06})),
-    idle:[F({}),F({cape:1}),F({bob:1,cape:1}),F({bob:1})],blink:F({blink:1}),
+// un jeu de poses par objet tenu (construit à la première utilisation) : l'objet suit la marche, le saut, le coup et le minage
+function heroHDDoll(k){const H=heroHDParts(k),mkSet=held=>{const F=q=>heroHDFrame(H,k,q,held),lf=[0,1,2,1,0,-1,-2,-1],kneel=F({tuck:1,bob:3,lean:-1,dead:1,sw:.6});
+  const R={walk:lf.map((s,i)=>F({la:s,lb:-s,ua:i===5||i===6?1:0,ub:i===1||i===2?1:0,bob:Math.abs(s)===2?0:i%4===0?1:0,cape:1+(i%4<2?0:1),sw:s*.06,fl:i&1})),
+    idle:[F({}),F({cape:1,fl:1}),F({bob:1,cape:1}),F({bob:1,fl:1})],blink:F({blink:1}),
     jump:F({tuck:1,cape:2,sw:-.35,sy:-1}),fall:F({la:1,lb:-1,cape:1,sw:-.6,sy:-2}),
     wind:F({lean:-1,sw:-2.5,sx:-3,sy:-4,la:1,lb:-1}),atk:F({lean:1,sw:-.75,sx:2,sy:-2,la:2,lb:-1,bob:1,cape:2}),atk2:F({lean:1,sw:.55,sx:2,la:2,lb:-1,bob:1,cape:1}),
-    mine:[F({lean:-1}),F({lean:1,bob:1})],hurt:F({lean:-1,hurt:1,lb:-1,cape:2,sw:-.4}),
+    // minage en 4 temps : armé derrière l'épaule, descente, impact, rebond
+    mine:[F({lean:-1,sw:-1.75,sx:-2,sy:-3,cape:1}),F({sw:-.7,sx:-1,sy:-3}),F({lean:1,bob:1,sw:.95,sx:2,sy:1,cape:2}),F({lean:1,bob:1,sw:.6,sx:2,cape:1})],
+    hurt:F({lean:-1,hurt:1,lb:-1,cape:2,sw:-.4}),
     death:[F({hurt:1,lean:-1,bob:1}),kneel,heroRotHD(kneel,-Math.PI/4),heroRotHD(F({dead:1,sw:.3}),-Math.PI/2)]};
   const L={};for(const n in R)L[n]=Array.isArray(R[n])?R[n].map(flipE):flipE(R[n]);R.eyes=R.idle[0].emi;L.eyes=L.idle[0].emi;return{R,L}};
-  const A=mkSet(true);A.U=mkSet(false);return A}
+  const A=mkSet(heldFn('sword1'));A.U=mkSet(null);A.hs={};A.held=id=>A.hs[id||'']||(A.hs[id||'']=id?mkSet(heldFn(id)):A.U);return A}
 function heroDoll(k){return UNIT_ART.ok?heroHDDoll(k):heroDollProc(k)}
 const heroLookOf=(id,extra)=>{const o=OUTFITS.find(o=>o.id===id)||OUTFITS[0];return Object.assign({},HERO_BASE,o.look,extra)};
 function heroSet(id,extra=id===PROF.outfit?PROF.look:null){return heroDoll(heroLookOf(id,extra))}
 // pose du joueur : blessé, minage, coup d'épée en 3 temps, saut/chute, marche, respiration et clignement
-// armed=false : jeu de poses sans l'épée du sprite (pioche ou autre objet en main)
-function heroPick(set,p,armed=true){const s=(armed||!set.U?set:set.U)[p.dir<0?'L':'R'];
-  if(p.iframes>.12)return s.hurt;if(mining)return(time*5)%1<.45?s.mine[0]:s.mine[1];
+// le jeu de poses (set) est celui de l'objet tenu : SPR.player.held(id) ; shoot = l'arc vient de tirer
+function heroPick(set,p,shoot=false){const s=set[p.dir<0?'L':'R'];
+  if(p.iframes>.12)return s.hurt;if(mining)return s.mine[Math.floor((time*5)%1*s.mine.length)];
   if(p.swing>0){const t=1-p.swing/.32;return t<.22?s.wind:t<.6?s.atk:s.atk2}
+  if(shoot)return s.atk;
   if(!p.onGround)return p.vy<-20?s.jump:s.fall;if(Math.abs(p.vx)>4)return s.walk[Math.floor(p.anim)%s.walk.length];
   return time%3.4<.13?s.blink:s.idle[Math.floor(time*2.4)%4]}
 function artSprites(){UNIT_ART.ok=true;
@@ -2018,8 +2061,8 @@ function drawEnts(g,cx,cy){
       if(hpf<.33){g.fillStyle='#05050c';for(const[a,b]of[[13,9],[14,8],[12,17],[13,18],[8,15],[7,16]])g.fillRect(X+a,Y+b+cy,1,1);if(rnd()<.15)parts.push({x:e.x+R(4,18),y:e.y+R(6,22),vx:R(-30,30),vy:R(-50,-10),g:200,life:.4,max:.4,col:'#ffffff',size:1,glow:1})}if(e.flash>0){g.globalCompositeOperation='lighter';g.globalAlpha=.6;g.drawImage(f,fx,fy);g.globalAlpha=1;g.globalCompositeOperation='source-over'}continue}
     let img;
     if(e.type==='unit'){if(e.spawnT>0)g.globalAlpha=clamp(1-e.spawnT/.6,0,1);img=sprFrame(SPR[e.kind+e.team],e);const big=e.kind==='golem';const ox=(img.width>>1)-(e.w>>1);drawBody(g,img,e,X-ox,Y+e.h-img.height+1,SPR[e.kind+e.team]);emit(img,X-ox,Y+e.h-img.height+1,g.globalAlpha);
-      // armes
-      if((e.kind==='warrior'||e.kind==='miner'||e.kind==='champion')&&(!UNIT_ART.ok||e.swing>0||e.digVisualUntil>time)){const wi=ICON[e.kind==='miner'?'pick1':e.kind==='champion'?'sword4':(e.team?'sword3':'sword2')];drawHeld(g,wi,X+e.w/2,Y+11,e.dir,e.digVisualUntil>time?e.digVisualPhase%1:e.swing>0?1-e.swing/.25:0,e.digVisualUntil>time||e.swing>0)}
+      // armes : avec les sprites HD l'arme fait partie du dessin, seule la traînée du coup est ajoutée ; sinon l'outil est tracé par-dessus
+      if((e.kind==='warrior'||e.kind==='miner'||e.kind==='champion')&&(!UNIT_ART.ok||e.swing>0||e.digVisualUntil>time)){const wk=e.kind==='miner'?'pick1':e.kind==='champion'?'sword4':(e.team?'sword3':'sword2');drawHeld(g,UNIT_ART.ok?null:ICON[wk],X+e.w/2,Y+11,e.dir,e.digVisualUntil>time?e.digVisualPhase%1:e.swing>0?1-e.swing/.25:0,e.digVisualUntil>time||e.swing>0,UNIT_ART.ok?null:wk)}
       if(e.kind==='archer'&&!UNIT_ART.ok&&!(e.atk>0&&e.atk<.18))drawHeld(g,ICON.bow,X+e.w/2+(e.swing>0?e.dir*2:0),Y+11,e.dir,-1);
       if(e.kind==='miner'&&(e.carryN>0||e.junk>0)){const best=['diamond','gold','silver','iron','copper','coal','stone','wood'].find(k=>e.carry[k]>0);if(best){g.drawImage(ICON[best],X-4+(e.dir>0?-6:6),Y+3,10,10)}}
       g.globalAlpha=1;if(e.spawnT>.3){g.globalCompositeOperation='lighter';g.globalAlpha=(e.spawnT-.3)/.3;g.drawImage(img,X-(img.width>>1)+(e.w>>1),Y+e.h-img.height+1);g.globalAlpha=1;g.globalCompositeOperation='source-over'}}
@@ -2037,12 +2080,16 @@ function drawEnts(g,cx,cy){
   // chute du héros : blessé, à genoux, bascule, allongé puis disparaît (cadres heroDoll().death)
   if(p.dead&&SPR.player.R.death){const t=6-(p.respawn||0),d=(p.dir<0?SPR.player.L:SPR.player.R).death,img=d[Math.min(3,Math.floor(t/.14))],al=t<1.5?1:Math.max(0,1-(t-1.5));
     if(al>0){const X=Math.round(p.x+ox)+(p.w>>1)-(img.width>>1),Y=Math.round(p.y+oy)+p.h+1-img.height;g.globalAlpha=al;g.drawImage(img,X,Y);g.globalAlpha=1;emit(img,X,Y,al)}}
-  if(!p.dead&&!(p.iframes>.12&&p.iframes<.2&&Math.floor(time*20)%2)){const sel=p.inv[p.sel],tl=sel&&IT[sel.id]&&IT[sel.id].tool,armed=!sel||tl==='sword',img=SPR.player.R.death?heroPick(SPR.player,p,armed):sprFrame(SPR.player,p,!!mining);const X=Math.round(p.x+ox),Y=Math.round(p.y+oy+(p.stepOff||0));
+  if(!p.dead&&!(p.iframes>.12&&p.iframes<.2&&Math.floor(time*20)%2)){const sel=p.inv[p.sel],tl=sel&&IT[sel.id]&&IT[sel.id].tool,hd=!!SPR.player.held;
+    // objet montré en main : la pioche pendant le minage (même si un autre objet est choisi), sinon l'objet de la barre
+    const pk=!!mining,hk=pk?bestPick():sel?sel.id:null,S=hd?SPR.player.held(hk):SPR.player,img=S.R.death?heroPick(S,p,hk==='bow'&&p.useCd>.25):sprFrame(SPR.player,p,pk);
+    const X=Math.round(p.x+ox),Y=Math.round(p.y+oy+(p.stepOff||0));
     // écrasement à l'atterrissage, étirement au saut
-    {const ox=(img.width>>1)-(p.w>>1);drawBody(g,img,p,X-ox,Y+p.h-img.height+1,SPR.player);emit(img,X-ox,Y+p.h-img.height+1)}
-    if(sel&&ICON[sel.id]&&(tl||SPR.player.U)){const sw=tl==='sword'?(p.swing>0?1-p.swing/.32:0):tl==='pick'?(mining?((time*5)%1):0):tl?-1:-2,hd=!!SPR.player.U;
-      // héros HD : l'épée fait partie du sprite (seule la traînée est ajoutée), les autres outils se tiennent à la main du sprite
-      drawHeld(g,hd&&tl==='sword'?null:ICON[sel.id],hd?X+p.w/2+p.dir*4.5:X+p.w/2,hd?Y+p.h-9:Y+12,p.dir,sw,(tl==='pick'&&!!mining)||(tl==='sword'&&p.swing>0))}
+    {const ox=(img.width>>1)-(p.w>>1);drawBody(g,img,p,X-ox,Y+p.h-img.height+1,S);emit(img,X-ox,Y+p.h-img.height+1)}
+    // héros HD : l'objet fait partie de la pose, seule la traînée du coup est ajoutée ; héros dessiné par code (repli) : l'outil est tracé par-dessus
+    {const sw=pk?(time*5)%1:tl==='sword'?(p.swing>0?1-p.swing/.32:0):tl?-1:-2,tr=pk||(tl==='sword'&&p.swing>0);
+     if(hd){if(tr)drawHeld(g,null,X+p.w/2+p.dir*4.5,Y+p.h-9,p.dir,sw,true)}
+     else if(hk&&ICON[hk]&&(tl||pk))drawHeld(g,ICON[hk],X+p.w/2,Y+12,p.dir,sw,tr,hk)}
     if(p.flash>0){g.globalCompositeOperation='lighter';g.globalAlpha=.6;g.drawImage(img,X-(img.width>>1)+(p.w>>1),Y+p.h-img.height+1);g.globalAlpha=1;g.globalCompositeOperation='source-over'}}
   // flèches
   // traînée des flèches
@@ -2053,7 +2100,9 @@ function drawEnts(g,cx,cy){
   for(const b of bombs){g.save();g.translate(Math.round(b.x+ox),Math.round(b.y+oy));g.rotate(b.vx*.004*(1.4-b.t)*8);g.drawImage(ICON.bomb,-8,-10);if(Math.sin((1.6-b.t)**2*30)>0){g.globalCompositeOperation='lighter';g.globalAlpha=.55;g.fillStyle='#ff5a4a';g.fillRect(-5,-3,10,6);g.fillRect(-3,-5,6,10);g.globalAlpha=.9;g.fillStyle='#fff3bb';g.fillRect(2,-10,2,2)}g.restore()}
   for(const a of arrows){g.save();g.translate(Math.round(a.x+ox),Math.round(a.y+oy));g.rotate(a.stuck?a.rot:(a.rot=Math.atan2(a.vy,a.vx)));g.drawImage(SPR.arrow,-8,-1);g.restore()}
 }
-function drawHeld(g,img,x,y,dir,sw,trail=false){g.save();g.translate(x+dir*3,y);g.scale(dir,1);if(trail&&sw>.12)g.drawImage(SPR.slash[Math.min(5,Math.floor(clamp(sw,0,1)*6))],-20,-20);if(sw===-2){if(img)g.drawImage(img,-6,-9,11,11);g.restore();return}let a=sw<0?.2:(-1.6+sw*2.6);g.rotate(a);if(img)g.drawImage(img,-3,-13);g.restore()}
+function drawHeld(g,img,x,y,dir,sw,trail=false,tool=null){g.save();g.translate(x+dir*3,y);g.scale(dir,1);if(trail&&sw>.12)g.drawImage(SPR.slash[Math.min(5,Math.floor(clamp(sw,0,1)*6))],-20,-20);if(sw===-2){if(img)g.drawImage(img,-6,-9,11,11);g.restore();return}let a=sw<0?.2:(-1.6+sw*2.6);
+  // outil connu : redessiné à l'angle voulu, contour net (l'icône pointait à 45°) ; sinon l'icône tournée par la toile
+  const t=tool&&TOOLS[tool]&&TOOLS[tool][0]!=='bow'?heldTool(tool,a+Math.PI/4):null;if(t)g.drawImage(t,-TOOL_R,-TOOL_R);else{g.rotate(a);if(img)g.drawImage(img,-3,-13)}g.restore()}
 function drawParts(g,cx,cy){for(const p of parts){if(p.dust)continue;const a=clamp(p.life/(p.max||1),0,1);g.globalAlpha=p.fly?(.5+.5*Math.sin(time*6+p.x)):a;g.fillStyle=p.col;g.fillRect(Math.round(p.x-cx),Math.round(p.y-cy),p.size,p.size)}g.globalAlpha=1}
 function drawGlows(g,cx,cy){g.save();g.globalCompositeOperation='lighter';
   for(const p of parts)if(p.glow){g.globalAlpha=.25*clamp(p.life/p.max,0,1);g.fillStyle=p.col;g.fillRect(Math.round(p.x-cx),Math.round(p.y-cy),2,2)}
@@ -2715,7 +2764,7 @@ function drawShopPanel(close){const two=VW>=420,W=Math.min(VW-12,two?430:280),co
     mbox(cx,cy,cw,cardH,on?'#ffe0661c':o.tunic+'14',on?COL.gold:hov?'#ffffff':'#e8ecff33');
     // aperçu agrandi du héros (×2 quand la carte le permet), sur un petit socle à la couleur de la tenue
     const im=outfitImg(o.id),hd=im.width>40,z=1,pw=hd?22:19,ph=hd?25:22,px=Math.round(cx+cw/2-pw/2),py=cy+cardH-15-ph;
-    ctx.fillStyle=o.tunic+'40';ctx.fillRect(Math.round(cx+cw/2-11),cy+cardH-16,22,2);ctx.globalAlpha=own||hov?1:.75;if(hd)ctx.drawImage(im,12,3,30,34,px,py,pw,ph);else ctx.drawImage(im,4,0,19,22,px,py,pw,ph);ctx.globalAlpha=1;
+    ctx.fillStyle=o.tunic+'40';ctx.fillRect(Math.round(cx+cw/2-11),cy+cardH-16,22,2);ctx.globalAlpha=own||hov?1:.75;if(hd)ctx.drawImage(im,20,3,30,34,px,py,pw,ph);else ctx.drawImage(im,4,0,19,22,px,py,pw,ph);ctx.globalAlpha=1;
     if(on){ctx.fillStyle=COL.gold;const kx=Math.round(cx+cw/2)-4,ky=cy+cardH-11;[[0,3],[1,4],[2,5],[3,4],[4,3],[5,2],[6,1],[7,0]].forEach(([i,j])=>ctx.fillRect(kx+i,ky+j,1,2))}else if(own)txt(uiFit('Choisir',cw-4,6),cx+cw/2,cy+cardH-10,COL.dim,6,'center');else coinTag(o.p,cx+cw/2,cy+cardH-10,PROF.coins>=o.p?COL.txt:'#ff6fae',6);
     uiHits.push({x:cx,y:cy,w:cw,h:cardH,fn:()=>buyOutfit(o)})});
   const cur=OUTFITS.find(o=>o.id===PROF.outfit);txt(uiFit(tr('Portée : ')+tr(cur.n),colW,6),lx+colW/2,ly+cardH+14,COL.dim,6,'center');
