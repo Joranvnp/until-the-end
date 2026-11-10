@@ -76,7 +76,8 @@
 - [x] Bénédictions : au début de la partie puis à chaque aube, le jeu se fige et propose 1 bonus parmi 3, valable pour la partie en cours (25 bonus : économie, armée, héros, base ; certains montent jusqu'au niveau 3, les rares ont un cadre doré)
 - [x] Une relance du tirage par partie ; tirage lié à la graine du monde (identique pour tous en défi du jour, inchangé si on quitte et reprend)
 - [x] Liste des bénédictions acquises dans le menu Pause (bouton Bonus), succès « Béni des anciens », sauvegarde, anglais, manette et touches 1/2/3
-- [x] Cœurs bleu et rouge en cristal flottant sur leur socle (GPT Image 2), à la place des cœurs en forme de cœur
+- [x] Cœurs bleu et rouge en cristal flottant sur leur socle (GPT Image 2), à la place des cœurs en forme de cœur ; animés par code en 16 temps (flottement, reflet, éclats en orbite, runes et centre qui palpitent, étincelles)
+- [x] Héros jaune refait avec GPT Image 2 (net, main vide), découpage et tenues recalés
 
 ## Version 1.2 — reste à faire (rendre le jeu addictif et prêt pour le Play Store)
 ### Graphismes et animations (Codex)

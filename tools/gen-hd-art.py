@@ -1,7 +1,8 @@
 """Convertit les images Higgsfield de art/hd-sources/ en sprites pixel art pour le jeu.
 
 Usage : python3 tools/gen-hd-art.py [dossier_sortie]   (défaut : mobile-app/assets/art)
-        python3 tools/gen-hd-art.py --add nom:hauteur [nom:hauteur ...]
+        python3 tools/gen-hd-art.py --add nom:hauteur[:net] [nom:hauteur ...]
+        (:net = réduction nette, couleur la plus fréquente par case : pour les sources GPT Image 2 en gros pixels)
         Ajoute des sprites à droite de mobile-app/assets/art/units-hd.png SANS régénérer le reste, puis affiche leurs rectangles
         à recopier dans UNIT_ART.r. À préférer pour toute nouvelle unité : voir la remarque sur les sources ci-dessous.
 Besoin : Pillow et numpy.
@@ -62,6 +63,29 @@ def shrink(im, h, colors=28):
     return Image.fromarray(np.dstack([np.asarray(q), np.where(aa, 255, 0).astype(np.uint8)]), 'RGBA')
 
 
+def shrink_net(im, h, colors=24):
+    """Réduction nette : chaque pixel prend la couleur la plus fréquente de sa case (palette restreinte), au lieu de la moyenne.
+    Garde des aplats francs et un contour lisible ; à préférer pour une source déjà en gros pixels (GPT Image 2)."""
+    w = max(1, round(im.width * h / im.height))
+    al = np.asarray(im)[..., 3] > 128
+    q = im.convert('RGB').quantize(colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    pal = np.array(q.getpalette()[:colors * 3]).reshape(-1, 3)
+    idx = np.asarray(q)
+    out = np.zeros((h, w, 4), np.uint8)
+    for y in range(h):
+        y0 = int(y * im.height / h)
+        y1 = max(int((y + 1) * im.height / h), y0 + 1)
+        for x in range(w):
+            x0 = int(x * im.width / w)
+            x1 = max(int((x + 1) * im.width / w), x0 + 1)
+            m = al[y0:y1, x0:x1]
+            if m.mean() < .5:
+                continue
+            out[y, x, :3] = pal[np.bincount(idx[y0:y1, x0:x1][m], minlength=colors).argmax()]
+            out[y, x, 3] = 255
+    return Image.fromarray(out, 'RGBA')
+
+
 def atlas(ims, name):
     W = sum(i.width + 1 for i in ims.values())
     H = max(i.height for i in ims.values())
@@ -80,8 +104,8 @@ if '--add' in sys.argv:
     old = Image.open(os.path.join(OUT, 'units-hd.png')).convert('RGBA')
     new = {}
     for a in sys.argv[sys.argv.index('--add') + 1:]:
-        n, h = a.split(':')
-        new[n] = shrink(keyed(n), int(h))
+        n, h, *opt = a.split(':')
+        new[n] = (shrink_net if 'net' in opt else shrink)(keyed(n), int(h))
     at = Image.new('RGBA', (old.width + sum(i.width + 1 for i in new.values()), max([old.height] + [i.height for i in new.values()])))
     at.paste(old, (0, 0))
     x, R = old.width + 1, {}
