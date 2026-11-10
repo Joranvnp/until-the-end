@@ -1,7 +1,8 @@
 """Convertit les images Higgsfield de art/hd-sources/ en sprites pixel art pour le jeu.
 
 Usage : python3 tools/gen-hd-art.py [dossier_sortie]   (défaut : mobile-app/assets/art)
-        python3 tools/gen-hd-art.py --add nom:hauteur [nom:hauteur ...]
+        python3 tools/gen-hd-art.py --add nom:hauteur[:net] [nom:hauteur ...]
+        (:net = réduction nette, couleur la plus fréquente par case : pour les sources GPT Image 2 en gros pixels)
         Ajoute des sprites à droite de mobile-app/assets/art/units-hd.png SANS régénérer le reste, puis affiche leurs rectangles
         à recopier dans UNIT_ART.r. À préférer pour toute nouvelle unité : voir la remarque sur les sources ci-dessous.
 Besoin : Pillow et numpy.
@@ -43,11 +44,15 @@ def keyed(n):
 
 
 def shrink(im, h, colors=28):
-    """Réduction en moyenne de boîte puis palette restreinte ; retire le liseré de couleur clé."""
+    """Réduction en moyenne de boîte puis palette restreinte ; retire le liseré de couleur clé.
+    La moyenne est pondérée par l'opacité : la couleur clé du fond ne se mélange pas aux pixels du bord."""
     w = max(1, round(im.width * h / im.height))
-    al = np.asarray(im)[..., 3]
-    rgb = im.convert('RGB').resize((w, h), Image.BOX)
-    aa = np.asarray(Image.fromarray(al).resize((w, h), Image.BOX)) > 140
+    a = np.asarray(im).astype(np.float32)
+    al = a[..., 3]
+    pm = Image.fromarray((a[..., :3] * (al[..., None] / 255)).astype(np.uint8), 'RGB').resize((w, h), Image.BOX)
+    cov = np.asarray(Image.fromarray(al.astype(np.uint8)).resize((w, h), Image.BOX)).astype(np.float32) / 255
+    rgb = Image.fromarray((np.asarray(pm) / np.maximum(cov[..., None], .02)).clip(0, 255).astype(np.uint8), 'RGB')
+    aa = cov * 255 > 140
     c = np.asarray(rgb).astype(int)
     r, g, b = c[..., 0], c[..., 1], c[..., 2]
     if im.spill == 'm':
@@ -56,6 +61,29 @@ def shrink(im, h, colors=28):
         aa &= ~(g - np.maximum(r, b) > 45)
     q = rgb.quantize(colors, method=Image.Quantize.MEDIANCUT).convert('RGB')
     return Image.fromarray(np.dstack([np.asarray(q), np.where(aa, 255, 0).astype(np.uint8)]), 'RGBA')
+
+
+def shrink_net(im, h, colors=24):
+    """Réduction nette : chaque pixel prend la couleur la plus fréquente de sa case (palette restreinte), au lieu de la moyenne.
+    Garde des aplats francs et un contour lisible ; à préférer pour une source déjà en gros pixels (GPT Image 2)."""
+    w = max(1, round(im.width * h / im.height))
+    al = np.asarray(im)[..., 3] > 128
+    q = im.convert('RGB').quantize(colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+    pal = np.array(q.getpalette()[:colors * 3]).reshape(-1, 3)
+    idx = np.asarray(q)
+    out = np.zeros((h, w, 4), np.uint8)
+    for y in range(h):
+        y0 = int(y * im.height / h)
+        y1 = max(int((y + 1) * im.height / h), y0 + 1)
+        for x in range(w):
+            x0 = int(x * im.width / w)
+            x1 = max(int((x + 1) * im.width / w), x0 + 1)
+            m = al[y0:y1, x0:x1]
+            if m.mean() < .5:
+                continue
+            out[y, x, :3] = pal[np.bincount(idx[y0:y1, x0:x1][m], minlength=colors).argmax()]
+            out[y, x, 3] = 255
+    return Image.fromarray(out, 'RGBA')
 
 
 def atlas(ims, name):
@@ -76,8 +104,8 @@ if '--add' in sys.argv:
     old = Image.open(os.path.join(OUT, 'units-hd.png')).convert('RGBA')
     new = {}
     for a in sys.argv[sys.argv.index('--add') + 1:]:
-        n, h = a.split(':')
-        new[n] = shrink(keyed(n), int(h))
+        n, h, *opt = a.split(':')
+        new[n] = (shrink_net if 'net' in opt else shrink)(keyed(n), int(h))
     at = Image.new('RGBA', (old.width + sum(i.width + 1 for i in new.values()), max([old.height] + [i.height for i in new.values()])))
     at.paste(old, (0, 0))
     x, R = old.width + 1, {}
@@ -98,7 +126,7 @@ if '--add' in sys.argv:
     sys.exit(0)
 
 UNITS = {'hero': 34, 'warrior0': 34, 'warrior1': 34, 'archer0': 34, 'archer1': 34, 'miner0': 34, 'miner1': 34,
-         'champion0': 36, 'champion1': 36, 'zombie': 34, 'golem0': 40, 'golem1': 40, 'slime': 16, 'core0': 38, 'core1': 38}
+         'champion0': 36, 'champion1': 36, 'zombie': 34, 'golem0': 40, 'golem1': 40, 'slime': 16, 'core0': 44, 'core1': 44}
 sp = {n: shrink(keyed(n), h) for n, h in UNITS.items()}
 s = np.asarray(sp['slime']).copy()
 s[..., [0, 1, 2]] = s[..., [1, 0, 2]]  # slime rouge de l'ennemi
