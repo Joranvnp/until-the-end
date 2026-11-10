@@ -6,6 +6,7 @@
 - [x] Jeu 100 % hors ligne (police bitmap partout, plus de Google Fonts)
 
 ### Graphismes et animations
+- [x] Unités et monstres animés en style « peuple d'ombre » (Higgsfield) : guerrier, archer, mineur, guérisseur, champion, zombie, golem chat fantôme, slimes, ogre de sang ; marche, repos, saut, attaque, yeux qui brillent dans le noir ; le héros reste le héros modulaire
 - [x] Ciel jour/nuit coloré : aube et crépuscule rosés, soleil et lune sur un arc, étoiles scintillantes, étoiles filantes
 - [x] Nuages en pixel art qui dérivent entre les plans de montagnes
 - [x] Météo : averses et orages (éclairs, tonnerre, éclaboussures), arbres et herbes qui ondulent au vent

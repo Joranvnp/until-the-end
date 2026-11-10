@@ -73,7 +73,8 @@ Règle : **une source de lumière par zone visuelle**. Le chaud (or, orange) est
 ### Personnages et monstres
 
 - **Cadre 24×32** (`humanoid`) : corps arrondi (`roundBody`), rampe `hueRamp` par matière (peau, tenue, métal), `selout`, yeux et éléments magiques dans `c.emi`.
-- **Sprites HD** (Higgsfield, environ 34 px, golem 40, slime 16) dans `mobile-app/assets/art/units-hd.png`, avec repli procédural. Recolorés par code pour l'équipe bleue ou rouge (le héros est à part, voir « Héros modulaire »).
+- **Unités et monstres animés, style « peuple d'ombre »** (choisi par l'auteur le 2026-11-10, planche de concept B) : silhouettes sombres éclairées par un liseré de lumière froide, seuls les yeux, la lampe du mineur et le cristal du guérisseur brillent (pixels émissifs). Spritesheets Higgsfield dans `art/persos/` (grille 2x6 sur fond magenta ou vert : marche x6, repos x2, saut, préparation, coup, retour), découpées par `python3 tools/gen-persos.py` et incrustées dans le moteur entre `// <persos>` et `// </persos>` (`loadPersos`, `persoSet`, `applyPersos`). Versions d'équipe par rotation de teinte (bleu → rouge), yeux des mineurs teintés. Les armes font partie de l'animation. Consigne de génération : « NO ground, NO ground line, NO grass » (sinon le script retire la ligne de sol et les touffes).
+- **Sprites HD fixes** (Higgsfield, environ 34 px, golem 40, slime 16) dans `mobile-app/assets/art/units-hd.png` : servent au héros modulaire et de repli tant que les spritesheets animées ne sont pas chargées, avec repli procédural. Recolorés par code pour l'équipe bleue ou rouge (le héros est à part, voir « Héros modulaire »).
 - **Héros** : capuche **jaune or** (`#ffe066`), visage dans l'ombre, il doit ressortir sur tous les fonds. Alliés **bleus** (`#4f9df5`), ennemis **rouges** (`#e5534b`).
 - Monstres : silhouettes simples et lisibles, deux ou trois tons par matière, yeux brillants. Animations courtes (4 images), mouvements discrets.
 
